@@ -8,17 +8,18 @@ namespace com.example
 	{
 		// Public Unity References
 		public SupabaseManager SupabaseManager = null!;
-		public TMP_Text LoggedInEmailAddress = null!;
+		public TMP_Text LoggedInEmailAddress;
 
 		public void UnityAuthListener(IGotrueClient<User, Session> sender, Constants.AuthState newState)
 		{
-			if (sender.CurrentUser?.Email == null)
+			/*
+			if (sender.CurrentUser?.Id == null)
 				LoggedInEmailAddress.text = "No user logged in";
 			else
 			{
-				LoggedInEmailAddress.text = $"Logged in as {sender.CurrentUser.Email}";
+				LoggedInEmailAddress.text = $"Logged in as {sender.CurrentUser.Email ?? sender.CurrentUser.Id}";
 			}
-
+			*/
 			switch (newState)
 			{
 				case Constants.AuthState.SignedIn:

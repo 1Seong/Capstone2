@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Supabase;
 using Supabase.Gotrue;
+using Supabase.Gotrue.Interfaces;
 using TMPro;
 using UnityEngine;
 using Client = Supabase.Client;
@@ -23,7 +24,10 @@ namespace com.example
 		// Internals
 		private Client? _client;
 
-		public Client? Supabase() => _client;
+        private bool _isLoggedIn = false;
+        public bool IsLoggedIn() => _isLoggedIn;
+
+        public Client? Supabase() => _client;
 
 		public static SupabaseManager Instance;
         private void Awake()
@@ -60,6 +64,7 @@ namespace com.example
 
 			// This will be called whenever the session changes
 			client.Auth.AddStateChangedListener(SessionListener.UnityAuthListener);
+			client.Auth.AddStateChangedListener(OnAuthStateChanged);
 
 			// Fetch the session from the persistence layer
 			// If there is a valid/unexpired session available this counts as a user log in
@@ -141,7 +146,7 @@ namespace com.example
             }
         }
 
-        public async Task<bool> IsNetworkAvailableAsync()
+        public async Task<bool> IsNetworkAvailableAsync() // 정확한 네트워크 진단 - 맵 업로드 같은 중요한 작업 전에 사용
         {
             if (!_networkStatus.Ready) return false;
 
@@ -149,14 +154,24 @@ namespace com.example
             return await _networkStatus.PingCheck(url);
         }
 
-		public bool IsNetworkAvailable()
+		public bool IsNetworkAvailable() // 빠른 체크 - UI 숨기기 또는 비활성화 용도로 사용
 		{
 			return _client.Auth.Online;
 		}
 
-		public bool IsLoggedIn()
-		{
-			return _client.Auth.CurrentSession != null;
-		}
+        private void OnAuthStateChanged(IGotrueClient<User, Session> sender, Constants.AuthState state)
+        {
+            _isLoggedIn = state switch
+            {
+                Constants.AuthState.SignedIn => sender.CurrentUser?.Id != null,
+                Constants.AuthState.TokenRefreshed => sender.CurrentUser?.Id != null,
+                Constants.AuthState.UserUpdated => sender.CurrentUser?.Id != null,
+                Constants.AuthState.SignedOut => false,
+                Constants.AuthState.Shutdown => false,
+                Constants.AuthState.PasswordRecovery => false,
+                _ => _isLoggedIn
+            };
+        }
+
     }
 }
