@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Supabase;
 using Supabase.Gotrue;
 using TMPro;
@@ -24,7 +25,21 @@ namespace com.example
 
 		public Client? Supabase() => _client;
 
-		private async void Start()
+		public static SupabaseManager Instance;
+        private void Awake()
+        {
+            if(Instance != null && Instance != this)
+			{
+				Destroy(gameObject);
+			}
+			else
+			{
+				Instance = this;
+				DontDestroyOnLoad(gameObject);
+			}
+        }
+
+        private async void Start()
 		{
 			SupabaseOptions options = new();
 			// We set an option to refresh the token automatically using a background thread.
@@ -100,16 +115,48 @@ namespace com.example
 				Debug.LogException(e, gameObject);
 		}
 
-		// This is called when Unity shuts down. You want to be sure to include this so that the
-		// background thread is terminated cleanly. Keep in mind that if you are running the app
-		// in the Unity Editor, if you don't call this method you will leak the background thread!
-		private void OnApplicationQuit()
+        // This is called when Unity shuts down. You want to be sure to include this so that the
+        // background thread is terminated cleanly. Keep in mind that if you are running the app
+        // in the Unity Editor, if you don't call this method you will leak the background thread!
+        private void OnApplicationQuit()
+        {
+            Cleanup();
+        }
+
+#if UNITY_EDITOR
+        private void OnDestroy()
+        {
+            // 중복 인스턴스가 파괴될 때는 정리하지 않음
+            if (this != Instance) return;
+            Cleanup();
+        }
+#endif
+
+        private void Cleanup()
+        {
+            if (_client != null)
+            {
+                _client?.Auth.Shutdown();
+                _client = null;
+            }
+        }
+
+        public async Task<bool> IsNetworkAvailableAsync()
+        {
+            if (!_networkStatus.Ready) return false;
+
+            string url = $"{SupabaseSettings.SupabaseURL}/auth/v1/settings?apikey={SupabaseSettings.SupabaseAnonKey}";
+            return await _networkStatus.PingCheck(url);
+        }
+
+		public bool IsNetworkAvailable()
 		{
-			if (_client != null)
-			{
-				_client?.Auth.Shutdown();
-				_client = null;
-			}
+			return _client.Auth.Online;
 		}
-	}
+
+		public bool IsLoggedIn()
+		{
+			return _client.Auth.CurrentSession != null;
+		}
+    }
 }
