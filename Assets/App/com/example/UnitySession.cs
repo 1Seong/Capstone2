@@ -23,7 +23,7 @@ namespace com.example
 		private static string FilePath()
 		{
 			const string cacheFileName = "gotrue.cache";
-			string filePath = Path.Join(Application.persistentDataPath, cacheFileName);
+			var filePath = Path.Join(Application.persistentDataPath, cacheFileName);
 			return filePath;
 		}
 
@@ -37,8 +37,8 @@ namespace com.example
 
 			try
 			{
-				string filePath = FilePath();
-				string str = JsonConvert.SerializeObject(session);
+				var filePath = FilePath();
+				var str = JsonConvert.SerializeObject(session);
 				using StreamWriter file = new(filePath);
 				file.Write(str);
 				file.Dispose();
