@@ -74,6 +74,7 @@ namespace com.example
 			// Allow unconfirmed user sessions. If you turn this on you will have to complete the
 			// email verification flow before you can use the session.
 			client.Auth.Options.AllowUnconfirmedUserSessions = false;
+			client.Auth.Options.AutoRefreshToken = true;
 
 			// We check the network status to see if we are online or offline using a request to fetch
 			// the server settings from our project. Here's how we build that URL.
