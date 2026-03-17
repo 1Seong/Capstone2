@@ -29,6 +29,14 @@ namespace com.example
 
 		public void SaveSession(Session? session)
 		{
+			Debug.Log($"SaveSession Called, session null: {session == null}");
+			Debug.Log($"AccessToken: {session?.AccessToken?[..20]}");
+			Debug.Log($"RefreshToken: {session?.RefreshToken}");
+			Debug.Log($"Session Expired: {session?.Expired()}");
+			Debug.Log($"Created At: {session?.CreatedAt}");
+			Debug.Log($"Expires At: {session?.ExpiresAt()}");
+			Debug.Log($"Expires in: {session?.ExpiresIn}");
+			
 			if (session == null)
 			{
 				DestroySession();
@@ -39,6 +47,7 @@ namespace com.example
 			{
 				var filePath = FilePath();
 				var str = JsonConvert.SerializeObject(session);
+				Debug.Log("SaveSession - write");
 				using StreamWriter file = new(filePath);
 				file.Write(str);
 				file.Dispose();
@@ -73,6 +82,7 @@ namespace com.example
 			{
 				return null;
 			}
+			Debug.Log("LoadSession Called");
 
 			try
 			{

@@ -16,7 +16,7 @@ namespace com.example
 		public SessionListener SessionListener = null!;
 		public SupabaseSettings SupabaseSettings = null!;
 
-		public TMP_Text ErrorText = null!;
+		//public TMP_Text ErrorText = null!;
 
 		// Public in case other components are interested in network status
 		private readonly NetworkStatus _networkStatus = new();
@@ -24,7 +24,7 @@ namespace com.example
 		// Internals
 		private Client? _client;
 
-        private bool _isLoggedIn = false;
+        [SerializeField]private bool _isLoggedIn = false;
         public bool IsLoggedIn() => _isLoggedIn;
 
         public Client? Supabase() => _client;
@@ -73,7 +73,7 @@ namespace com.example
 
 			// Allow unconfirmed user sessions. If you turn this on you will have to complete the
 			// email verification flow before you can use the session.
-			client.Auth.Options.AllowUnconfirmedUserSessions = true;
+			client.Auth.Options.AllowUnconfirmedUserSessions = false;
 
 			// We check the network status to see if we are online or offline using a request to fetch
 			// the server settings from our project. Here's how we build that URL.
@@ -91,7 +91,7 @@ namespace com.example
 			catch (Exception e)
 			{
 				// Something else went wrong, so we assume we are offline
-				ErrorText.text = e.Message;
+				//ErrorText.text = e.Message;
 				Debug.Log(e.Message, gameObject);
 				Debug.LogException(e, gameObject);
 
@@ -99,10 +99,49 @@ namespace com.example
 			}
 			if (client.Auth.Online)
 			{
+				Debug.Log($"CurrentSession: {client.Auth.CurrentSession != null}");
+				Debug.Log($"CurrentSession Expired: {client.Auth.CurrentSession?.Expired()}");
+				Debug.Log($"RefreshToken: {client.Auth.CurrentSession?.RefreshToken}");
+				if (client.Auth.CurrentSession != null)
+				{
+					try
+					{
+						await client.Auth.RefreshSession();
+						Debug.Log("세션 갱신 성공");
+						_isLoggedIn = true;
+					}
+					catch (Exception e)
+					{
+						Debug.LogWarning($"세션 갱신 실패: {e.Message}");
+						_isLoggedIn = false;
+					}
+				}
+				
 				// Now we start up the client, which will in turn start up the background thread.
 				// This will attempt to refresh the session token, which in turn may send a second
 				// user login event to the UnityAuthListener.
 				await client.InitializeAsync();
+				/*
+				if (client.Auth.CurrentSession == null)
+				{
+					try
+					{
+						await client.Auth.RefreshSession();
+						Debug.Log("세션 갱신 성공");
+						_isLoggedIn = true;
+					}
+					catch (Exception e)
+					{
+						Debug.LogWarning($"세션 갱신 실패: {e.Message}");
+						_isLoggedIn = false;
+					}
+				}
+				*/
+				Debug.Log($"Online: {client.Auth.Online}");
+				Debug.Log($"CurrentSession: {client.Auth.CurrentSession != null}");
+				Debug.Log($"CurrentSession Expired: {client.Auth.CurrentSession?.Expired()}");
+				Debug.Log($"RefreshToken: {client.Auth.CurrentSession?.RefreshToken}");
+				Debug.Log($"CurrentUser: {client.Auth.CurrentUser?.Email}");
 
 				// Here we fetch the server settings and log them to the console
 				Settings serverConfiguration = (await client.Auth.Settings())!;
@@ -113,7 +152,7 @@ namespace com.example
 
 		private void DebugListener(string message, Exception e)
 		{
-			ErrorText.text = message;
+			//ErrorText.text = message;
 			Debug.Log(message, gameObject);
 			// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 			if (e != null)
@@ -161,11 +200,21 @@ namespace com.example
 
         private void OnAuthStateChanged(IGotrueClient<User, Session> sender, Constants.AuthState state)
         {
+	        if (state == Constants.AuthState.SignedIn && sender.CurrentSession != null)
+	        {
+		        Debug.Log("Signed In");
+		        Debug.Log($"CurrentSession Expired: {sender.CurrentSession?.Expired()}");
+		        Debug.Log($"CurrentSession Expired at: {sender.CurrentSession?.ExpiresAt()}");
+		        Debug.Log($"CurrentSession Created at: {sender.CurrentSession?.CreatedAt}");
+		        // SignedIn 시점에 명시적으로 저장
+		        new UnitySession().SaveSession(sender.CurrentSession);
+		        Debug.Log("SignedIn 시점 세션 강제 저장");
+	        }
             _isLoggedIn = state switch
             {
-                Constants.AuthState.SignedIn => sender.CurrentUser?.Id != null,
-                Constants.AuthState.TokenRefreshed => sender.CurrentUser?.Id != null,
-                Constants.AuthState.UserUpdated => sender.CurrentUser?.Id != null,
+                Constants.AuthState.SignedIn => sender.CurrentSession?.AccessToken != null,
+                Constants.AuthState.TokenRefreshed => sender.CurrentSession?.AccessToken != null,
+                Constants.AuthState.UserUpdated => sender.CurrentSession?.AccessToken != null,
                 Constants.AuthState.SignedOut => false,
                 Constants.AuthState.Shutdown => false,
                 Constants.AuthState.PasswordRecovery => false,

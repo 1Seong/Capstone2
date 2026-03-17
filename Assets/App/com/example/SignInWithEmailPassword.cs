@@ -18,6 +18,7 @@ namespace com.example
         public TMP_InputField EmailInput = null!;
         public TMP_InputField PasswordInput = null!;
         public TMP_Text ErrorText = null!;
+        public Button SignInCloseButton = null!;
         
         [Header("SignUp")]
         public GameObject SignupPanel;
@@ -25,6 +26,8 @@ namespace com.example
         public TMP_InputField SignUpPasswordInput = null!;
         public TMP_InputField SecondaryPasswordInput = null!;
         public TMP_Text SignUpText = null!;
+        public TMP_Text SignUpSucessText = null!;
+        public Button SignUpCloseButton = null!;
         
         [Header("SignOut")]
         public GameObject SignoutPanel;
@@ -147,6 +150,7 @@ namespace com.example
 					if(_isSigningIn) return;
 
 					_isSigningIn = true;
+					SignInCloseButton.interactable = false;
 					try
 					{
 						await PerformSignIn();
@@ -154,6 +158,7 @@ namespace com.example
 					finally
 					{
 						_isSigningIn = false;
+						SignInCloseButton.interactable = true;
 					}
 				
 				}
@@ -164,6 +169,7 @@ namespace com.example
 					if (_isSigningUp) return;
 
 					_isSigningUp = true;
+					SignUpCloseButton.interactable = false;
 					try
 					{
 						await PerformSignUp();
@@ -171,6 +177,7 @@ namespace com.example
 					finally
 					{
 						_isSigningUp = false;
+						SignUpCloseButton.interactable = true;
 					}
 
 				}
@@ -203,10 +210,14 @@ namespace com.example
 		{
 			try
 			{
-                Session session = (await SupabaseManager.Supabase()!.Auth.SignIn(EmailInput.text, PasswordInput.text))!;
+                var session = (await SupabaseManager.Supabase()!.Auth.SignIn(EmailInput.text, PasswordInput.text))!;
                 //ErrorText.text = $"Success! Signed In as {session.User?.Email}";
-                SignoutPanel.SetActive(false);
-                SigninPanel.SetActive(true);
+
+                if (session?.AccessToken != null)
+                {
+	                SigninPanel.SetActive(false);
+	                SignoutPanel.SetActive(true);
+                }
 			}
             catch (GotrueException goTrueException)
             {
@@ -235,8 +246,8 @@ namespace com.example
             {
                 await SupabaseManager.Supabase()!.Auth.SignOut();
                 //SignOutText.text = $"Signed out";
-                SigninPanel.SetActive(false);
-                SignoutPanel.SetActive(true);
+                SignoutPanel.SetActive(false);
+                SigninPanel.SetActive(true);
             }
             catch (GotrueException goTrueException)
             {
@@ -264,16 +275,16 @@ namespace com.example
                 var response = await SupabaseManager.Supabase()!.Auth.SignUp(SignUpEmailInput.text, SignUpPasswordInput.text, new SignUpOptions { 
                     RedirectTo = "https://1seong.github.io/3dcubepainting.github.io/" });
 
-                if (response == null)
+                if (response?.AccessToken == null)
                 {
 	                // 이메일 인증이 켜진 경우 — Session이 null로 반환됨
 	                // User 정보를 response에서 꺼낼 수 없으므로 입력값 사용
-	                SignUpText.text = $"{SignUpEmailInput.text}으로 인증 메일을 전송했습니다.";
+	                SignUpSucessText.text = $"{SignUpEmailInput.text}으로 인증 메일을 전송했습니다.";
                 }
                 else
                 {
 	                // 이메일 인증이 꺼진 경우 — 즉시 로그인됨
-	                SignUpText.text = $"{response.User?.Email}으로 가입이 완료되었습니다.";
+	                SignUpSucessText.text = $"{response.User?.Email}으로 가입이 완료되었습니다.";
                 }
             }
             catch (GotrueException goTrueException)
