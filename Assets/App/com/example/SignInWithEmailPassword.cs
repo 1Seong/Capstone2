@@ -38,8 +38,8 @@ namespace com.example
         public TMP_Text RecoveryText = null!;
         public TMP_Text RecoverySucessText = null!;
         public Button RecoveryCloseButton = null!;
-        
-        [Header("ChangePw")]
+
+        [Header("ChangePw")] 
         public TMP_InputField ChangePwPasswordInput = null!;
         public TMP_InputField ChangePwSecondaryPasswordInput = null!;
         public TMP_Text ChangePwText = null!;
@@ -156,7 +156,7 @@ namespace com.example
 
 			if (ChangePwPasswordInput.text == string.Empty || string.IsNullOrWhiteSpace(ChangePwPasswordInput.text))
 			{
-				ChangePwText.text = "비밀번호를 입력해주세요.";
+				ChangePwText.text = "새 비밀번호를 입력해주세요.";
 				return;
 			}
 

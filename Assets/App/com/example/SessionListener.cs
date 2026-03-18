@@ -29,7 +29,7 @@ namespace com.example
 					Debug.Log("Signed Out");
 					break;
 				case Constants.AuthState.UserUpdated:
-					Debug.Log("Signed In");
+					Debug.Log("User Updated");
 					break;
 				case Constants.AuthState.PasswordRecovery:
 					Debug.Log("Password Recovery");
