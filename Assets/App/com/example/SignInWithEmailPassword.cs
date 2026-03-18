@@ -33,6 +33,19 @@ namespace com.example
         public GameObject SignoutPanel;
         public TMP_Text SignOutText = null!;
         
+        [Header("Recovery")]
+        public TMP_InputField RecoveryEmailInput = null!;
+        public TMP_Text RecoveryText = null!;
+        public TMP_Text RecoverySucessText = null!;
+        public Button RecoveryCloseButton = null!;
+        
+        [Header("ChangePw")]
+        public TMP_InputField ChangePwPasswordInput = null!;
+        public TMP_InputField ChangePwSecondaryPasswordInput = null!;
+        public TMP_Text ChangePwText = null!;
+        public TMP_Text ChangePwSucessText = null!;
+        public Button ChangePwCloseButton = null!;
+        
         [Header("Delete")]
         public GameObject AccountDeletePanel;
         public TMP_Text DeleteText;
@@ -42,9 +55,12 @@ namespace com.example
 		private bool _doSignIn;
 		private bool _doSignOut;
 		private bool _doSignUp;
+		private bool _doRecovery;
+		private bool _doChangePw;
         private bool _doDelete;
-		private bool _isSigningIn, _isSigningOut, _isSigningUp, _isDeleting;
+		private bool _isSigningIn, _isSigningOut, _isSigningUp, _isDeleting, _isRecoverying, _isChangingPw;
 
+		#region ButtonCallback
 		// Unity does not allow async UI events, so we set a flag and use Update() to do the async work
 		public void SignIn()
 		{
@@ -99,6 +115,12 @@ namespace com.example
 				return;
 			}
 
+			if (SignUpPasswordInput.text.Length < 6)
+			{
+				SignUpText.text = "비밀번호는 최소 6자리 이상이어야 합니다.";
+				return;
+			}
+
 			if (SignUpPasswordInput.text != SecondaryPasswordInput.text)
 			{
 				SignUpText.text = "비밀번호가 일치하지 않습니다.";
@@ -107,11 +129,57 @@ namespace com.example
 			
 			_doSignUp = true;
 		}
+		
+		public void Recovery()
+		{
+			if (!SupabaseManager.IsNetworkAvailable())
+			{
+				RecoveryText.text = "네트워크 연결을 확인해주세요.";
+				return;
+			}
+			if (!RecoveryEmailInput.text.Contains('@') || string.IsNullOrWhiteSpace(RecoveryEmailInput.text))
+			{
+				RecoveryText.text = "유효하지 않은 이메일 형식입니다.";
+				return;
+			}
+			
+			_doRecovery = true;
+		}
+		
+		public void ChangePw()
+		{
+			if (!SupabaseManager.IsNetworkAvailable())
+			{
+				ChangePwText.text = "네트워크 연결을 확인해주세요.";
+				return;
+			}
+
+			if (ChangePwPasswordInput.text == string.Empty || string.IsNullOrWhiteSpace(ChangePwPasswordInput.text))
+			{
+				ChangePwText.text = "비밀번호를 입력해주세요.";
+				return;
+			}
+
+			if (ChangePwPasswordInput.text.Length < 6)
+			{
+				ChangePwText.text = "비밀번호는 최소 6자리 이상이어야 합니다.";
+				return;
+			}
+
+			if (ChangePwPasswordInput.text != ChangePwSecondaryPasswordInput.text)
+			{
+				ChangePwText.text = "비밀번호가 일치하지 않습니다.";
+				return;
+			}
+			
+			_doChangePw = true;
+		}
 
         public void DeleteAccount()
         {
             _doDelete = true;
         }
+        #endregion
 
         public void OpenAccount()
         {
@@ -170,6 +238,7 @@ namespace com.example
 
 					_isSigningUp = true;
 					SignUpCloseButton.interactable = false;
+					SignUpSucessText.text = "처리 중...";
 					try
 					{
 						await PerformSignUp();
@@ -178,6 +247,46 @@ namespace com.example
 					{
 						_isSigningUp = false;
 						SignUpCloseButton.interactable = true;
+					}
+
+				}
+				
+				if (_doRecovery)
+				{
+					_doRecovery = false;
+					if (_isRecoverying) return;
+
+					_isRecoverying = true;
+					RecoveryCloseButton.interactable = false;
+					RecoverySucessText.text = "처리 중...";
+					try
+					{
+						await PerformRecovery();
+					}
+					finally
+					{
+						_isRecoverying = false;
+						RecoveryCloseButton.interactable = true;
+					}
+
+				}
+				
+				if (_doChangePw)
+				{
+					_doChangePw = false;
+					if (_isChangingPw) return;
+
+					_isChangingPw = true;
+					ChangePwCloseButton.interactable = false;
+					ChangePwSucessText.text = "처리 중...";
+					try
+					{
+						await PerformChangePw();
+					}
+					finally
+					{
+						_isChangingPw = false;
+						ChangePwCloseButton.interactable = true;
 					}
 
 				}
@@ -306,6 +415,81 @@ namespace com.example
 				Debug.Log(e.Message, gameObject);
                 Debug.LogException(e, gameObject);
             }
+        }
+        
+        [SuppressMessage("ReSharper", "Unity.PerformanceCriticalCodeInvocation")]
+        private async Task PerformRecovery()
+        {
+	        try
+	        {
+		        var response = await SupabaseManager.Supabase()!.Auth.ResetPasswordForEmail(RecoveryEmailInput.text);
+
+		        if (response)
+		        {
+			        // 이메일 인증이 켜진 경우
+			        // User 정보를 response에서 꺼낼 수 없으므로 입력값 사용
+			        RecoverySucessText.text = $"{RecoveryEmailInput.text}으로 비밀번호 재설정 메일을 전송했습니다.";
+		        }
+		        else
+		        {
+			        RecoveryText.text = $"이메일 전송에 실패했습니다. 다시 확인해주세요.";
+		        }
+	        }
+	        catch (GotrueException goTrueException)
+	        {
+		        RecoveryText.text = goTrueException.Reason switch
+		        {
+			        FailureHint.Reason.Offline => "네트워크 연결을 확인해주세요.",
+			        _ => goTrueException.Message.Contains("invalid format")
+				        ? "유효하지 않은 형식입니다."
+				        : $"오류: {goTrueException.Message}"
+		        };
+		        Debug.Log(goTrueException.Message, gameObject);
+		        Debug.LogException(goTrueException, gameObject);
+	        }
+	        catch (Exception e)
+	        {
+		        RecoveryText.text = "오류가 발생했습니다. 나중에 다시 시도해주세요.";
+		        Debug.Log(e.Message, gameObject);
+		        Debug.LogException(e, gameObject);
+	        }
+        }
+        
+        [SuppressMessage("ReSharper", "Unity.PerformanceCriticalCodeInvocation")]
+        private async Task PerformChangePw()
+        {
+	        try
+	        {
+		        var response = await SupabaseManager.Supabase()!.Auth.Update(new UserAttributes()
+			        { Password = ChangePwPasswordInput.text });
+
+		        if (response != null)
+		        {
+			        ChangePwSucessText.text = $"비밀번호 변경이 완료되었습니다.";
+		        }
+		        else
+		        {
+			        ChangePwText.text = $"변경 실패, 나중에 다시 시도해주세요.";
+		        }
+	        }
+	        catch (GotrueException goTrueException)
+	        {
+		        ChangePwText.text = goTrueException.Reason switch
+		        {
+			        FailureHint.Reason.Offline => "네트워크 연결을 확인해주세요.",
+			        _ => goTrueException.Message.Contains("invalid format")
+				        ? "유효하지 않은 형식입니다."
+				        : $"오류: {goTrueException.Message}"
+		        };
+		        Debug.Log(goTrueException.Message, gameObject);
+		        Debug.LogException(goTrueException, gameObject);
+	        }
+	        catch (Exception e)
+	        {
+		        ChangePwText.text = "오류가 발생했습니다. 나중에 다시 시도해주세요.";
+		        Debug.Log(e.Message, gameObject);
+		        Debug.LogException(e, gameObject);
+	        }
         }
 
         /*

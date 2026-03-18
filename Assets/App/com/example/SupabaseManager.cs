@@ -219,9 +219,9 @@ namespace com.example
 	        }
             _isLoggedIn = state switch
             {
-                Constants.AuthState.SignedIn => sender.CurrentSession?.AccessToken != null && sender.CurrentSession.Expired(),
-                Constants.AuthState.TokenRefreshed => sender.CurrentSession?.AccessToken != null && sender.CurrentSession.Expired(),
-                Constants.AuthState.UserUpdated => sender.CurrentSession?.AccessToken != null && sender.CurrentSession.Expired(),
+                Constants.AuthState.SignedIn => sender.CurrentSession?.AccessToken != null && !sender.CurrentSession.Expired(),
+                Constants.AuthState.TokenRefreshed => sender.CurrentSession?.AccessToken != null && !sender.CurrentSession.Expired(),
+                Constants.AuthState.UserUpdated => sender.CurrentSession?.AccessToken != null && !sender.CurrentSession.Expired(),
                 Constants.AuthState.SignedOut => false,
                 Constants.AuthState.Shutdown => false,
                 Constants.AuthState.PasswordRecovery => false,
