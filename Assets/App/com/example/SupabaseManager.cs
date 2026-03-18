@@ -100,9 +100,11 @@ namespace com.example
 			}
 			if (client.Auth.Online)
 			{
+				/*
 				Debug.Log($"CurrentSession: {client.Auth.CurrentSession != null}");
 				Debug.Log($"CurrentSession Expired: {client.Auth.CurrentSession?.Expired()}");
 				Debug.Log($"RefreshToken: {client.Auth.CurrentSession?.RefreshToken}");
+				*/
 				if (client.Auth.CurrentSession != null)
 				{
 					try
@@ -141,6 +143,8 @@ namespace com.example
 				Debug.Log($"Online: {client.Auth.Online}");
 				Debug.Log($"CurrentSession: {client.Auth.CurrentSession != null}");
 				Debug.Log($"CurrentSession Expired: {client.Auth.CurrentSession?.Expired()}");
+				Debug.Log($"Created at: {client.Auth.CurrentSession?.CreatedAt}");
+				Debug.Log($"Expired at: {client.Auth.CurrentSession?.ExpiresAt()}");
 				Debug.Log($"RefreshToken: {client.Auth.CurrentSession?.RefreshToken}");
 				Debug.Log($"CurrentUser: {client.Auth.CurrentUser?.Email}");
 
@@ -203,19 +207,21 @@ namespace com.example
         {
 	        if (state == Constants.AuthState.SignedIn && sender.CurrentSession != null)
 	        {
+		        /*
 		        Debug.Log("Signed In");
 		        Debug.Log($"CurrentSession Expired: {sender.CurrentSession?.Expired()}");
 		        Debug.Log($"CurrentSession Expired at: {sender.CurrentSession?.ExpiresAt()}");
 		        Debug.Log($"CurrentSession Created at: {sender.CurrentSession?.CreatedAt}");
+		        */
 		        // SignedIn 시점에 명시적으로 저장
 		        new UnitySession().SaveSession(sender.CurrentSession);
 		        Debug.Log("SignedIn 시점 세션 강제 저장");
 	        }
             _isLoggedIn = state switch
             {
-                Constants.AuthState.SignedIn => sender.CurrentSession?.AccessToken != null,
-                Constants.AuthState.TokenRefreshed => sender.CurrentSession?.AccessToken != null,
-                Constants.AuthState.UserUpdated => sender.CurrentSession?.AccessToken != null,
+                Constants.AuthState.SignedIn => sender.CurrentSession?.AccessToken != null && sender.CurrentSession.Expired(),
+                Constants.AuthState.TokenRefreshed => sender.CurrentSession?.AccessToken != null && sender.CurrentSession.Expired(),
+                Constants.AuthState.UserUpdated => sender.CurrentSession?.AccessToken != null && sender.CurrentSession.Expired(),
                 Constants.AuthState.SignedOut => false,
                 Constants.AuthState.Shutdown => false,
                 Constants.AuthState.PasswordRecovery => false,

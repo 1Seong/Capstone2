@@ -29,6 +29,7 @@ namespace com.example
 
 		public void SaveSession(Session? session)
 		{
+			/*
 			Debug.Log($"SaveSession Called, session null: {session == null}");
 			Debug.Log($"AccessToken: {session?.AccessToken?[..20]}");
 			Debug.Log($"RefreshToken: {session?.RefreshToken}");
@@ -36,7 +37,7 @@ namespace com.example
 			Debug.Log($"Created At: {session?.CreatedAt}");
 			Debug.Log($"Expires At: {session?.ExpiresAt()}");
 			Debug.Log($"Expires in: {session?.ExpiresIn}");
-			
+			*/
 			if (session == null)
 			{
 				DestroySession();
