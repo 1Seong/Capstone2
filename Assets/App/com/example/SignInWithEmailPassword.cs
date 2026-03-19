@@ -49,6 +49,10 @@ namespace com.example
         [Header("Delete")]
         public GameObject AccountDeletePanel;
         public TMP_Text DeleteText;
+
+        [Header("OAuth")] 
+        [SerializeField] private OAuthManager _oAuthManager;
+        
         
 
 		// Private implementation
@@ -58,7 +62,9 @@ namespace com.example
 		private bool _doRecovery;
 		private bool _doChangePw;
         private bool _doDelete;
-		private bool _isSigningIn, _isSigningOut, _isSigningUp, _isDeleting, _isRecoverying, _isChangingPw;
+        private bool _doGoogleSignIn;
+        private bool _doDiscordSignIn;
+		private bool _isSigningIn, _isSigningOut, _isSigningUp, _isDeleting, _isRecoverying, _isChangingPw, _isSigningInGoogle, _isSigningInDiscord;
 
 		#region ButtonCallback
 		// Unity does not allow async UI events, so we set a flag and use Update() to do the async work
@@ -179,6 +185,28 @@ namespace com.example
         {
             _doDelete = true;
         }
+
+        public void GoogleSignIn()
+        {
+	        if (!SupabaseManager.IsNetworkAvailable())
+	        {
+		        ErrorText.text = "네트워크 연결을 확인해주세요.";
+		        return;
+	        }
+	        
+	        _doGoogleSignIn = true;
+        }
+        
+        public void DiscordSignIn()
+        {
+	        if (!SupabaseManager.IsNetworkAvailable())
+	        {
+		        ErrorText.text = "네트워크 연결을 확인해주세요.";
+		        return;
+	        }
+	        
+	        _doDiscordSignIn = true;
+        }
         #endregion
 
         public void OpenAccount()
@@ -290,6 +318,42 @@ namespace com.example
 					}
 
 				}
+
+				if (_doGoogleSignIn)
+				{
+					_doGoogleSignIn = false;
+					if (_isSigningInGoogle) return;
+
+					_isSigningInGoogle = true;
+					SignInCloseButton.interactable = false;
+					try
+					{
+						await PerformGoogleLogin();
+					}
+					finally
+					{
+						_isSigningInGoogle = false;
+						SignInCloseButton.interactable = true;
+					}
+				}
+				
+				if (_doDiscordSignIn)
+				{
+					_doDiscordSignIn = false;
+					if (_isSigningInDiscord) return;
+
+					_isSigningInDiscord = true;
+					SignInCloseButton.interactable = false;
+					try
+					{
+						await PerformDiscordLogin();
+					}
+					finally
+					{
+						_isSigningInDiscord = false;
+						SignInCloseButton.interactable = true;
+					}
+				}
 				/*
             if(_doDelete && !_isDeleting)
             {
@@ -347,6 +411,70 @@ namespace com.example
                 Debug.LogException(e, gameObject);
             }
         }
+		
+		[SuppressMessage("ReSharper", "Unity.PerformanceCriticalCodeInvocation")]
+		private async Task PerformDiscordLogin()
+		{
+			try
+			{
+				var session = await _oAuthManager.SignInWithDiscord();
+				//ErrorText.text = $"Success! Signed In as {session.User?.Email}";
+
+				if (session?.AccessToken != null)
+				{
+					SigninPanel.SetActive(false);
+					SignoutPanel.SetActive(true);
+				}
+			}
+			catch (GotrueException goTrueException)
+			{
+				ErrorText.text = goTrueException.Reason switch
+				{
+					FailureHint.Reason.Offline => "네트워크 연결을 확인해주세요.",
+					_ => "문제가 발생했습니다. 다시 시도해주세요."
+				};
+				Debug.Log(goTrueException.Message, gameObject);
+				Debug.LogException(goTrueException, gameObject);
+			}
+			catch (Exception e)
+			{
+				ErrorText.text = "오류가 발생했습니다. 나중에 다시 시도해주세요.";
+				Debug.Log(e.Message, gameObject);
+				Debug.LogException(e, gameObject);
+			}
+		}
+		
+		[SuppressMessage("ReSharper", "Unity.PerformanceCriticalCodeInvocation")]
+		private async Task PerformGoogleLogin()
+		{
+			try
+			{
+				var session = await _oAuthManager.SignInWithGoogle();
+				//ErrorText.text = $"Success! Signed In as {session.User?.Email}";
+
+				if (session?.AccessToken != null)
+				{
+					SigninPanel.SetActive(false);
+					SignoutPanel.SetActive(true);
+				}
+			}
+			catch (GotrueException goTrueException)
+			{
+				ErrorText.text = goTrueException.Reason switch
+				{
+					FailureHint.Reason.Offline => "네트워크 연결을 확인해주세요.",
+					_ => "문제가 발생했습니다. 다시 시도해주세요."
+				};
+				Debug.Log(goTrueException.Message, gameObject);
+				Debug.LogException(goTrueException, gameObject);
+			}
+			catch (Exception e)
+			{
+				ErrorText.text = "오류가 발생했습니다. 나중에 다시 시도해주세요.";
+				Debug.Log(e.Message, gameObject);
+				Debug.LogException(e, gameObject);
+			}
+		}
 
         [SuppressMessage("ReSharper", "Unity.PerformanceCriticalCodeInvocation")]
         private async Task PerformSignOut()
