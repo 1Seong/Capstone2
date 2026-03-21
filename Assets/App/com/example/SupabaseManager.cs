@@ -196,9 +196,15 @@ namespace com.example
             return await _networkStatus.PingCheck(url);
         }
 
-		public bool IsNetworkAvailable() => _client!.Auth.Online;// 동기 - UI 관련에 사용
+        public bool IsNetworkAvailable()
+        {
+	        if (_client?.Auth != null)
+		        return _client!.Auth.Online; // 동기 - UI 관련에 사용
+	        
+	        if (!_networkStatus.Ready) return false;
 
-		public bool IsNetworkAvailableAndLoggedIn() => IsNetworkAvailable() && _isLoggedIn;
+	        return true; // 아직 _client가 null이면 true로 간주
+        }
 
 		public async Task<bool> IsNetworkAvailableAsyncAndLoggedIn() => 
 			await IsNetworkAvailableAsync() && _isLoggedIn;

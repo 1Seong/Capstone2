@@ -1,5 +1,6 @@
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Supabase.Gotrue;
 using Supabase.Gotrue.Interfaces;
@@ -56,11 +57,17 @@ namespace com.example
             var port = GetAvailablePort();
 
             // PC와 모바일 콜백 URL 분기
-            _redirectUrl = Application.platform == RuntimePlatform.WindowsPlayer
-                                 || Application.platform == RuntimePlatform.OSXPlayer
-                                 || Application.platform == RuntimePlatform.LinuxPlayer
-                ? $"http://localhost:{port}/callback"
-                : DeepLinkScheme;
+            var isMobile = Application.platform == RuntimePlatform.Android
+                            || Application.platform == RuntimePlatform.IPhonePlayer;
+
+            _redirectUrl = isMobile
+                ? DeepLinkScheme
+                : $"http://localhost:{port}/callback/";
+            
+            // 리스너 먼저 시작
+            var listener = new System.Net.HttpListener();
+            listener.Prefixes.Add(_redirectUrl);
+            listener.Start();
 
             // OAuth URL 요청 (PKCE 자동 처리됨)
             var signInOptions = new SignInOptions
@@ -69,26 +76,33 @@ namespace com.example
                 FlowType = Constants.OAuthFlowType.PKCE,
             };
 
-            _oauthState = await client.Auth.SignIn(provider, signInOptions);
+            try
+            {
+                _oauthState = await client!.Auth.SignIn(provider, signInOptions);
 
-            if (_oauthState?.Uri == null)
-                throw new Exception("OAuth URL 생성 실패");
+                if (_oauthState?.Uri == null)
+                    throw new Exception("OAuth URL 생성 실패");
 
-            // 브라우저 열기
-            Application.OpenURL(_oauthState.Uri.ToString());
+                // 브라우저 열기
+                Application.OpenURL(_oauthState.Uri.ToString());
 
-            // 콜백 대기
-            _callbackTcs = new TaskCompletionSource<string>();
+                // 콜백 대기
+                _callbackTcs = new TaskCompletionSource<string>();
 
-            string callbackUrl;
-            if (_redirectUrl.StartsWith("http://localhost"))
-                callbackUrl = await WaitForLocalCallback();
-            else
-                callbackUrl = await _callbackTcs.Task;
+                string callbackUrl;
+                if (_redirectUrl.StartsWith("http://localhost"))
+                    callbackUrl = await WaitForLocalCallback(listener);
+                else
+                    callbackUrl = await _callbackTcs.Task;
 
-            // URL에서 code 추출 후 세션 교환
-            var session = await ExchangeCodeForSession(client, callbackUrl);
-            return session;
+                // URL에서 code 추출 후 세션 교환
+                return await ExchangeCodeForSession(client, callbackUrl);
+            }
+            catch
+            {
+                listener.Close(); // 예외 경로: 여기서 닫기
+                throw;
+            }
         }
 
         private async Task<Session> ExchangeCodeForSession(Client client, string callbackUrl)
@@ -126,28 +140,37 @@ namespace com.example
         */
 
         // PC: 로컬 HTTP 리스너
-        private async Task<string> WaitForLocalCallback()
+        private async Task<string> WaitForLocalCallback(System.Net.HttpListener listener)
         {
-            using var listener = new System.Net.HttpListener();
-            listener.Prefixes.Add(_redirectUrl);
-            listener.Start();
+            using (listener)
+            using (var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromMinutes(3)))
+            {
+                try
+                {
+                    var contextTask = listener.GetContextAsync();
+                    await Task.WhenAny(contextTask, Task.Delay(Timeout.Infinite, cts.Token));
 
-            Debug.Log($"[OAuth] 로컬 콜백 대기 중 (port {_redirectUrl})...");
+                    if (!contextTask.IsCompleted)
+                        throw new TimeoutException("로그인 대기 시간 초과 (3분)");
 
-            var context = await listener.GetContextAsync();
-            string rawUrl = "http://localhost" + context.Request.RawUrl;
-
-            // 브라우저에 완료 메시지 표시
-            var response = context.Response;
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(
-                "<html><body><h2>로그인 완료! 게임으로 돌아가세요.</h2></body></html>"
-            );
-            response.ContentLength64 = buffer.Length;
-            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
-
-            listener.Stop();
-            return rawUrl;
+                    var context = contextTask.Result;
+                    var rawUrl = "http://localhost" + context.Request.RawUrl;
+                    
+                    // 브라우저를 GitHub Pages로 보내기
+                    var response = context.Response;
+                    response.StatusCode = 302;
+                    response.RedirectLocation = "https://1seong.github.io/3dcubepainting.github.io/login-complete.html";
+                    response.Close();
+                    
+                    // ... 응답 처리
+                    return rawUrl;
+                }
+                catch (TaskCanceledException)
+                {
+                    throw new TimeoutException("로그인 대기 시간 초과 (3분)");
+                }
+                // using 블록 종료 시 listener.Dispose() → Stop() + Close() 자동 호출
+            }
         }
 
         private static int GetAvailablePort()
