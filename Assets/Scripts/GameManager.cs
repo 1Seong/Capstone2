@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void PlayGame(string[,] data)
+    private void PlayGame(char[,,] data)
     {
         var o = Instantiate(playInstance);
         
