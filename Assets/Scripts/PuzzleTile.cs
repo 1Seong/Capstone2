@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class PuzzleTile : MonoBehaviour
@@ -16,11 +16,11 @@ public class PuzzleTile : MonoBehaviour
 
         switch (tile)
         {
-            case '0': // empty
+            case (char)TileType.Empty:
                 return;
-            case '1': // painted
-            case '2': // player
-                transform .GetChild(0).gameObject.SetActive(true);
+            case (char)TileType.Player:
+            case (char)TileType.Painted:
+                transform .GetChild(0).gameObject.SetActive(true); // paint
                 break;
             default:
                 var id = tile - '0';
@@ -30,7 +30,7 @@ public class PuzzleTile : MonoBehaviour
     }
     
     // 이펙트나 애니메이션이 적용된 렌더링
-    public async Task Render(char tile, bool wait = true)
+    public async UniTask Render(char tile, bool wait = true)
     {
         
     }

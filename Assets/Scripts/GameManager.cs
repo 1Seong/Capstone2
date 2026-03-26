@@ -5,7 +5,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [SerializeField] private GameObject playInstance;
+    //[SerializeField] private GameObject playInstance;
     
     private void Awake()
     {
@@ -18,11 +18,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void PlayGame(char[,,] data)
+    public void PlayGame(char[,,] data)
     {
-        var o = Instantiate(playInstance);
+        var o = FindAnyObjectByType<PuzzlePlayer>();
         
-        o.GetComponent<PuzzlePlayer>().SetMapData(data);
-        o.SetActive(true);
+        o.SetMapData(data);
+        o.gameObject.SetActive(true);
     }
 }
