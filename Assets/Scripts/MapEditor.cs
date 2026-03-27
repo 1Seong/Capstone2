@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -245,5 +246,13 @@ public class MapEditor : MonoBehaviour
         tileIndicatorParent.SetActive(true);
         rightSideButtonsParent.SetActive(true);
         stopShowAnswerButton.SetActive(false);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            Undo();
+        }
     }
 }

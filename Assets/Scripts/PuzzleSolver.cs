@@ -55,12 +55,12 @@ public static class PuzzleSolver
                     }
 
                     startPos = new Vector3Int(x, y, z);
-                    Debug.Log(startPos);
+                    //Debug.Log(startPos);
                     foundStart = true;
                     break;
                 case (char)TileType.Road:
                     ++totalPaintable;
-                    Debug.Log(x + " " + y + " " + z);
+                    //Debug.Log(x + " " + y + " " + z);
                     break;
             }
         }
