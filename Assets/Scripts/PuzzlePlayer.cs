@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public enum TileType
@@ -17,6 +16,7 @@ public enum TileType
 public class PuzzlePlayer : MonoBehaviour
 {
     // 게임판
+    // ReSharper disable once InconsistentNaming
     private int CubeSize;
 
     [SerializeField] private Transform cubeParent;
@@ -29,20 +29,20 @@ public class PuzzlePlayer : MonoBehaviour
     [SerializeField] private float playerMoveDuration = 0.5f;
     [SerializeField] private Ease playerMoveEase = Ease.OutExpo;
 
-    private bool _isMoving = false;
+    private bool _isMoving;
 
     // 카메라
     [SerializeField] private Vector3[] cameraPos;
     [SerializeField] private Vector3[] cameraRot;
 
     [SerializeField] private Camera cam;
-    [SerializeField] private int camIndex = 0;
+    [SerializeField] private int camIndex;
     [SerializeField] private float camMoveDuration = 0.5f;
     [SerializeField] private Ease camMoveEase = Ease.OutExpo;
 
     // 시스템
     private Action _onClearAction; // TODO : 각 상황마다 적절한 함수 전달
-    private bool _isCleared = false;
+    private bool _isCleared;
 
     private struct MapState
     {
@@ -51,7 +51,7 @@ public class PuzzlePlayer : MonoBehaviour
         public int RoadLeftCount;
     }
 
-    private Stack<MapState> _undoStack = new Stack<MapState>();
+    private readonly Stack<MapState> _undoStack = new();
     
     private void OnEnable()
     {
@@ -91,30 +91,24 @@ public class PuzzlePlayer : MonoBehaviour
         _roadLeftCount = 0;
 
         for (var i = 0; i < CubeSize; ++i)
+        for (var j = 0; j < CubeSize; ++j)
+        for (var k = 0; k < CubeSize; ++k)
         {
-            for (var j = 0; j < CubeSize; ++j)
+            var c = _map[i, j, k];
+
+            switch (c)
             {
-                for (var k = 0; k < CubeSize; ++k)
-                {
-                    var c = _map[i, j, k];
-
-                    switch (c)
-                    {
-                        case (char)TileType.Empty:
-                            continue;
-                        case (char)TileType.Road:
-                            ++_roadLeftCount;
-                            break;
-                        case (char)TileType.Player:
-                            playerModel.position = new Vector3(i, j, k);
-                            break;
-                        default:
-                            break;
-                    }
-
-                    _tiles[i, j, k].SimpleRender(c);
-                }
+                case (char)TileType.Empty:
+                    continue;
+                case (char)TileType.Road:
+                    ++_roadLeftCount;
+                    break;
+                case (char)TileType.Player:
+                    playerModel.position = new Vector3(i, j, k);
+                    break;
             }
+
+            _tiles[i, j, k].SimpleRender(c);
         }
     }
 
@@ -129,15 +123,11 @@ public class PuzzlePlayer : MonoBehaviour
     private void Render()
     {
         for (var i = 0; i < CubeSize; ++i)
+        for (var j = 0; j < CubeSize; ++j)
+        for (var k = 0; k < CubeSize; ++k)
         {
-            for (var j = 0; j < CubeSize; ++j)
-            {
-                for (var k = 0; k < CubeSize; ++k)
-                {
-                    var c = _map[i, j, k];
-                    _tiles[i, j, k].SimpleRender(c);
-                }
-            }
+            var c = _map[i, j, k];
+            _tiles[i, j, k].SimpleRender(c);
         }
     }
 
@@ -166,10 +156,11 @@ public class PuzzlePlayer : MonoBehaviour
             (int)nPos.z == 10
             || _map[nLayer, nRow, nCol] == (char)TileType.Empty || _map[nLayer, nRow, nCol] == (char)TileType.Painted)
         {
+            // TODO : 통과 아이템 효과
             // 이동 불가 애니메이션
             if (doRender)
             {
-                await playerModel.DOShakePosition(playerMoveDuration);
+                await playerModel.DOShakePosition(playerMoveDuration).AsyncWaitForCompletion().AsUniTask();
             }
 
             return;
@@ -185,7 +176,7 @@ public class PuzzlePlayer : MonoBehaviour
         if (doRender)
         {
             // 플레이어 움직임 애니메이션 기다리고
-            var t = playerModel.DOMove(nPos, playerMoveDuration, true).SetEase(playerMoveEase);
+            var t = playerModel.DOMove(nPos, playerMoveDuration, true).SetEase(playerMoveEase).AsyncWaitForCompletion().AsUniTask();
             // 새 타일 칠하기 및 아이템 발동
             await SetTileWithRender(nLayer, nRow, nCol, (char)TileType.Player, true, true); // 일단 simpleRender 사용
             await t;

@@ -1,6 +1,9 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MapEditor : MonoBehaviour
 {
@@ -13,12 +16,21 @@ public class MapEditor : MonoBehaviour
     
     [SerializeField] private Transform playerModel;
     [SerializeField] private Transform  cubeParent;
+    [SerializeField] private GameObject tileIndicatorParent;
+    [SerializeField] private GameObject rightSideButtonsParent;
     
     private PuzzleTile[,,] _tiles;
 
-    private bool _isValidated = false;
+    private bool _isValidated;
+    [SerializeField] private Button showAnswerButton;
+    [SerializeField] private GameObject stopShowAnswerButton;
+    [SerializeField] private Transform ghostPlayer;
+    [SerializeField] private float showAnswerTimePerPos = 0.5f;
+    private CancellationTokenSource _showAnswerCts;
     
     private EditTile _hoveredTile;
+
+    private Stack<Vector3Int> _answer;
     
     // TODO: 아이템별 material 지정
     
@@ -27,17 +39,16 @@ public class MapEditor : MonoBehaviour
         public char[,,] Map;
         public Vector3 PlayerPos;
         public bool PlayerActive;
-        public bool IsValidated;
     }
 
-    private Stack<MapState> _undoStack = new Stack<MapState>();
+    private readonly Stack<MapState> _undoStack = new();
     
     private void SaveUndoState()
     {
         // 얕은 복사가 아닌 깊은 복사 필수
         var snapshot = (char[,,])_map.Clone();
         _undoStack.Push(new MapState()
-            { Map = snapshot, PlayerPos = playerModel.position, PlayerActive = playerModel.gameObject.activeSelf, IsValidated = _isValidated});
+            { Map = snapshot, PlayerPos = playerModel.position, PlayerActive = playerModel.gameObject.activeSelf});
     }
 
     public void Undo(bool doRender = true)
@@ -48,7 +59,6 @@ public class MapEditor : MonoBehaviour
         _map = s.Map;
         playerModel.position = s.PlayerPos;
         playerModel.gameObject.SetActive(s.PlayerActive);
-        _isValidated = s.IsValidated;
 
         if (doRender)
             Render();
@@ -56,16 +66,12 @@ public class MapEditor : MonoBehaviour
     
     private void Render()
     {
-        for (var i = 0; i < cubeSize; ++i)
+        for (var i = 0; i != cubeSize; ++i)
+        for (var j = 0; j != cubeSize; ++j)
+        for (var k = 0; k != cubeSize; ++k)
         {
-            for (var j = 0; j < cubeSize; ++j)
-            {
-                for (var k = 0; k < cubeSize; ++k)
-                {
-                    var c = _map[i, j, k];
-                    _tiles[i, j, k].SimpleRender(c);
-                }
-            }
+            var c = _map[i, j, k];
+            _tiles[i, j, k].SimpleRender(c);
         }
     }
 
@@ -77,6 +83,8 @@ public class MapEditor : MonoBehaviour
         {
             Instance = this;
         }
+
+        showAnswerButton.onClick.AddListener(() => ShowAnswer().Forget());
         
         InitEditor();
     }
@@ -84,7 +92,13 @@ public class MapEditor : MonoBehaviour
     private void InitEditor()
     {
         _isValidated = false;
+        showAnswerButton.interactable = false;
         _map = new char[cubeSize, cubeSize, cubeSize];
+        
+        for (int i = 0; i != cubeSize; ++i)
+        for (int j = 0; j != cubeSize; ++j)
+        for (int k = 0; k != cubeSize; ++k)
+            _map[i, j, k] = (char)TileType.Empty;
         
         _tiles = new PuzzleTile[cubeSize, cubeSize, cubeSize];
 
@@ -111,8 +125,9 @@ public class MapEditor : MonoBehaviour
     public void SetTile(int layer, int row, int col)
     {
         SaveUndoState();
-        
+        //Debug.Log(layer + " " + row + " " + col);
         _isValidated = false;
+        showAnswerButton.interactable = false;
         _map[layer, row, col] = currentTile;
 
         if (currentTile == (char)TileType.Player)
@@ -147,12 +162,24 @@ public class MapEditor : MonoBehaviour
     {
         gameObject.SetActive(false);
         // 로딩 오래 걸리면 씬 전환 효과 넣기
-        GameManager.Instance.PlayGame(_map);
+        GameManager.Instance.PlayGame((char[,,])_map.Clone());
     }
 
     public void AutoTest()
     {
-        
+        var res = PuzzleSolver.Solve(_map);
+
+        if (!res.IsSolvable)
+        {
+            //Debug.Log(res.ErrorMsg);
+            PopUpManager.Instance.Show(res.ErrorMsg);
+            return;
+        }
+
+        _answer = res.SolutionPath;
+        _isValidated = true;
+        showAnswerButton.interactable = true;
+
     }
 
     public void Export()
@@ -179,34 +206,44 @@ public class MapEditor : MonoBehaviour
     }
     
     #endregion
-    /*
-    private void Update()
+
+    public async UniTaskVoid ShowAnswer()
     {
-        HandleTileInteraction();
+        _showAnswerCts?.Cancel();
+        _showAnswerCts?.Dispose();
+        _showAnswerCts = new CancellationTokenSource();
+        
+        rightSideButtonsParent.SetActive(false);
+        tileIndicatorParent.SetActive(false);
+        stopShowAnswerButton.SetActive(true);
+        
+        ghostPlayer.gameObject.SetActive(true);
+
+        await ShowAnswerAnim(_showAnswerCts.Token);
+    
+        // Cancel이 아닌 정상 완료일 때만 EndShowAnswer 호출
+        if (!_showAnswerCts.IsCancellationRequested)
+            EndShowAnswer();
     }
 
-    private void HandleTileInteraction()
+    private async UniTask ShowAnswerAnim(CancellationToken ct)
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        EditTile hitTile = Physics.Raycast(ray, out RaycastHit hit)
-            ? hit.collider.GetComponent<EditTile>()
-            : null;
-
-        // 호버 하이라이트 갱신
-        if (hitTile != _hoveredTile)
+        foreach(var i in _answer.Reverse())
         {
-            _hoveredTile?.SetHighlight(false);
-            hitTile?.SetHighlight(true);
-            _hoveredTile = hitTile;
-        }
-
-        // 클릭 또는 드래그 중 타일 설정
-        if (Input.GetMouseButton(0) && hitTile != null)
-        {
-            var pos = hitTile.transform.position;
-            SetTile((int)pos.x, (int)pos.y, (int)pos.z);
+            ghostPlayer.position = i;
+            await UniTask.WaitForSeconds(showAnswerTimePerPos, cancellationToken: ct);
         }
     }
-    */
+
+    public void EndShowAnswer()
+    {
+        _showAnswerCts?.Cancel();
+        _showAnswerCts?.Dispose();
+        _showAnswerCts = null;
+    
+        ghostPlayer.gameObject.SetActive(false);
+        tileIndicatorParent.SetActive(true);
+        rightSideButtonsParent.SetActive(true);
+        stopShowAnswerButton.SetActive(false);
+    }
 }
