@@ -48,7 +48,7 @@ public static class PuzzleSolver
                 case (char)TileType.Player:
                     if (foundStart)
                     {
-                        var msg = "[PuzzleSolver] 시작 위치가 2개 이상입니다.";
+                        var msg = "시작 위치가 2개 이상입니다.";
                         //Debug.LogWarning(msg);
                         //PopUpManager.Instance.Show(msg);
                         return new SolveResult { IsSolvable = false, ErrorMsg = msg, SolutionPath = null };
@@ -67,7 +67,7 @@ public static class PuzzleSolver
  
         if (!foundStart)
         {
-            var msg = "[PuzzleSolver] 시작 위치를 찾을 수 없습니다.";
+            var msg = "시작 위치를 찾을 수 없습니다.";
             //Debug.LogWarning(msg);
             //PopUpManager.Instance.Show(msg);
             return new SolveResult { IsSolvable = false, ErrorMsg = msg, SolutionPath = null };

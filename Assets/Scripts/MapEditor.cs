@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -19,6 +20,7 @@ public class MapEditor : MonoBehaviour
     [SerializeField] private Transform  cubeParent;
     [SerializeField] private GameObject tileIndicatorParent;
     [SerializeField] private GameObject rightSideButtonsParent;
+    [SerializeField] private Button exportButton;
     
     private PuzzleTile[,,] _tiles;
 
@@ -55,7 +57,8 @@ public class MapEditor : MonoBehaviour
     public void Undo(bool doRender = true)
     {
         if (_undoStack.Count == 0) return;
-
+        
+        SetValidated(false);
         var s = _undoStack.Pop();
         _map = s.Map;
         playerModel.position = s.PlayerPos;
@@ -92,8 +95,7 @@ public class MapEditor : MonoBehaviour
 
     private void InitEditor()
     {
-        _isValidated = false;
-        showAnswerButton.interactable = false;
+        SetValidated(false);
         _map = new char[cubeSize, cubeSize, cubeSize];
         
         for (int i = 0; i != cubeSize; ++i)
@@ -127,8 +129,7 @@ public class MapEditor : MonoBehaviour
     {
         SaveUndoState();
         //Debug.Log(layer + " " + row + " " + col);
-        _isValidated = false;
-        showAnswerButton.interactable = false;
+        SetValidated(false);
         _map[layer, row, col] = currentTile;
 
         if (currentTile == (char)TileType.Player)
@@ -178,14 +179,15 @@ public class MapEditor : MonoBehaviour
         }
 
         _answer = res.SolutionPath;
-        _isValidated = true;
-        showAnswerButton.interactable = true;
-
+        SetValidated(true);
+        PopUpManager.Instance.Show("자동 테스트를 통과했습니다!");
     }
 
     public void Export()
     {
         if (!_isValidated) return;
+        
+        ExportToFileDownloads();
     }
 
     public void SetCurrentTileToRoad()
@@ -254,5 +256,27 @@ public class MapEditor : MonoBehaviour
         {
             Undo();
         }
+    }
+    
+    private void ExportToFileDownloads(string fileName = "puzzle_export.txt")
+    {
+        var content = StringHelper.Encode(_map);
+        
+        string downloadsPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), 
+            "Downloads", 
+            fileName
+        );
+    
+        File.WriteAllText(downloadsPath, content, System.Text.Encoding.UTF8);
+        PopUpManager.Instance.Show($"파일 저장됨: {downloadsPath}");
+        Debug.Log($"파일 저장됨: {downloadsPath}");
+    }
+
+    private void SetValidated(bool validated)
+    {
+        _isValidated = validated;
+        showAnswerButton.interactable = validated;
+        exportButton.interactable = validated;
     }
 }
