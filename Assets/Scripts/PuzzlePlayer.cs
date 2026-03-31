@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public enum TileType
 {
@@ -15,7 +15,7 @@ public enum TileType
 
 public class PuzzlePlayer : MonoBehaviour
 {
-    // 게임판
+    [Header("GamePlay")]
     // ReSharper disable once InconsistentNaming
     private int CubeSize;
 
@@ -31,18 +31,34 @@ public class PuzzlePlayer : MonoBehaviour
 
     private bool _isMoving;
 
-    // 카메라
-    [SerializeField] private Vector3[] cameraPos;
-    [SerializeField] private Vector3[] cameraRot;
-
+    [Header("Camera")]
     [SerializeField] private Camera cam;
-    [SerializeField] private int camIndex;
+    [SerializeField] private Transform pivot;
     [SerializeField] private float camMoveDuration = 0.5f;
     [SerializeField] private Ease camMoveEase = Ease.OutExpo;
+    [SerializeField] private Vector3 currentUp = Vector3.up;
+    [SerializeField] private Vector3 currentRight = Vector3.right;
+    [SerializeField] private Vector3 currentLeft = Vector3.back;
+    private Vector3 _initialCameraPosition;
+    private Quaternion _initialCameraRotation;
 
-    // 시스템
-    private Action _onClearAction; // TODO : 각 상황마다 적절한 함수 전달
+    [Header("System")] 
+    [SerializeField] private InputActionReference camera1Action;
+    [SerializeField] private InputActionReference camera2Action;
+    [SerializeField] private InputActionReference camera3Action;
+    [SerializeField] private InputActionReference camera4Action;
+    [SerializeField] private InputActionReference camera5Action;
+    [SerializeField] private InputActionReference camera6Action;
+    [SerializeField] private InputActionReference qAction;
+    [SerializeField] private InputActionReference dAction;
+    [SerializeField] private InputActionReference aAction;
+    [SerializeField] private InputActionReference eAction;
+    [SerializeField] private InputActionReference wAction;
+    [SerializeField] private InputActionReference sAction;
+    [SerializeField] private InputActionReference undoAction;
+    private bool _isTesting;
     private bool _isCleared;
+    private Stack<Vector3Int> _answer;
 
     private struct MapState
     {
@@ -51,12 +67,69 @@ public class PuzzlePlayer : MonoBehaviour
         public int RoadLeftCount;
     }
 
-    private readonly Stack<MapState> _undoStack = new();
-    
+    private Stack<MapState> _undoStack;
+
+    private void Awake()
+    {
+        _initialCameraPosition = pivot.position;
+        _initialCameraRotation = pivot.rotation;
+    }
+
     private void OnEnable()
     {
+        camera1Action.action.performed += CameraRotation1InputWrapper;
+        camera2Action.action.performed += CameraRotation2InputWrapper;
+        camera3Action.action.performed += CameraRotation3InputWrapper;
+        camera4Action.action.performed += CameraRotation4InputWrapper;
+        camera5Action.action.performed += CameraRotation5InputWrapper;
+        camera6Action.action.performed += CameraRotation6InputWrapper;
+        undoAction.action.performed += UndoInputWrapper;
+        camera1Action.action.Enable();
+        camera2Action.action.Enable();
+        camera3Action.action.Enable();
+        camera4Action.action.Enable();
+        camera5Action.action.Enable();
+        camera6Action.action.Enable();
+        qAction.action.Enable();
+        dAction.action.Enable();
+        aAction.action.Enable();
+        eAction.action.Enable();
+        wAction.action.Enable();
+        sAction.action.Enable();
+        undoAction.action.Enable();
+        
         InitGame();
         CheckGameCleared();
+    }
+
+    private void OnDisable()
+    {
+        camera1Action.action.performed -= CameraRotation1InputWrapper;
+        camera2Action.action.performed -= CameraRotation2InputWrapper;
+        camera3Action.action.performed -= CameraRotation3InputWrapper;
+        camera4Action.action.performed -= CameraRotation4InputWrapper;
+        camera5Action.action.performed -= CameraRotation5InputWrapper;
+        camera6Action.action.performed -= CameraRotation6InputWrapper;
+        undoAction.action.performed -= UndoInputWrapper;
+        camera1Action.action.Disable();
+        camera2Action.action.Disable();
+        camera3Action.action.Disable();
+        camera4Action.action.Disable();
+        camera5Action.action.Disable();
+        camera6Action.action.Disable();
+        qAction.action.Disable();
+        dAction.action.Disable();
+        aAction.action.Disable();
+        eAction.action.Disable();
+        wAction.action.Disable();
+        sAction.action.Disable();
+        undoAction.action.Disable();
+        
+        pivot.position = _initialCameraPosition;
+        pivot.rotation = _initialCameraRotation;
+        currentUp = Vector3.up;
+        currentRight = Vector3.right;
+        currentLeft = Vector3.back;
     }
 
     #region GameSystem
@@ -110,11 +183,15 @@ public class PuzzlePlayer : MonoBehaviour
 
             _tiles[i, j, k].SimpleRender(c);
         }
+
+        _answer = new();
+        _undoStack = new();
     }
 
-    public void SetMapData(char[,,] map)
+    public void SetMapData(char[,,] map, bool isTest = false)
     {
         _map = map;
+        _isTesting = isTest;
         CubeSize = map.GetLength(0);
     }
 
@@ -136,7 +213,14 @@ public class PuzzlePlayer : MonoBehaviour
         if (_roadLeftCount != 0) return;
 
         _isCleared = true;
-        _onClearAction?.Invoke();
+        
+        if (_isTesting)
+        {
+            FindAnyObjectByType<MapEditor>(FindObjectsInactive.Include).SetValidated(true, _answer);
+            GameManager.Instance.GameClearedTest();
+        }
+        else
+            GameManager.Instance.GameCleared();
     }
 
     #endregion
@@ -160,26 +244,26 @@ public class PuzzlePlayer : MonoBehaviour
             // 이동 불가 애니메이션
             if (doRender)
             {
-                await playerModel.DOShakePosition(playerMoveDuration).AsyncWaitForCompletion().AsUniTask();
+                await playerModel.DOShakePosition(0.2f, 0.2f, 20).AsyncWaitForCompletion().AsUniTask();
             }
 
             return;
         }
 
         SaveUndoState();
+        _answer.Push(new Vector3Int(nLayer, nRow, nCol));
 
-        _map[(int)pos.x, (int)pos.y, (int)pos.z] = (char)TileType.Painted; // 현재 위치 페인트, 단 페인트 렌더링은 플레이어가 도달할 때 해주기때문에 이미 함
+        _map[(int)pos.x, (int)pos.y, (int)pos.z] = (char)TileType.Painted; // 현재 위치 페인트, 단 렌더링은 플레이어가 도달할 때 해주기때문에 이미 되어있다
 
         if (_map[nLayer, nRow, nCol] is not (char)TileType.Painted)
             --_roadLeftCount;
 
         if (doRender)
         {
-            // 플레이어 움직임 애니메이션 기다리고
-            var t = playerModel.DOMove(nPos, playerMoveDuration, true).SetEase(playerMoveEase).AsyncWaitForCompletion().AsUniTask();
+            // 플레이어 움직임 애니메이션 기다리고 - 회전 시 수행 x
+            await playerModel.DOMove(nPos, playerMoveDuration).SetEase(playerMoveEase).AsyncWaitForCompletion().AsUniTask();
             // 새 타일 칠하기 및 아이템 발동
             await SetTileWithRender(nLayer, nRow, nCol, (char)TileType.Player, true, true); // 일단 simpleRender 사용
-            await t;
         }
         else
         {
@@ -196,16 +280,20 @@ public class PuzzlePlayer : MonoBehaviour
         var snapshot = (char[,,])_map.Clone();
         _undoStack.Push(new MapState()
             { Map = snapshot, PlayerPos = playerModel.position, RoadLeftCount = _roadLeftCount });
+        var pos = playerModel.position;
     }
 
+    public void UndoInputWrapper(InputAction.CallbackContext _) => Undo();
     public void Undo(bool doRender = true)
     {
-        if (_undoStack.Count == 0) return;
+        if (_undoStack.Count == 0 || _isMoving || _isCleared) return;
+        if (!GameManager.Instance.isPlaying) return;
 
         var s = _undoStack.Pop();
         _map = s.Map;
         playerModel.position = s.PlayerPos;
         _roadLeftCount = s.RoadLeftCount;
+        _answer.Pop();
 
         if (doRender)
             Render();
@@ -257,85 +345,224 @@ public class PuzzlePlayer : MonoBehaviour
     
     #region PlayerControl
 
-    public async UniTaskVoid MovePlayerControl(Vector3 dir)
+    private async void Update()
     {
-        if (_isMoving) return;
+        if (qAction.action.IsPressed())
+        {
+            await MovePlayerQ();
+        }
+        if (dAction.action.IsPressed())
+        {
+            await MovePlayerD();
+        }
+        if (aAction.action.IsPressed())
+        {
+            await MovePlayerA();
+        }
+        if (eAction.action.IsPressed())
+        {
+            await MovePlayerE();
+        }
+        if (wAction.action.IsPressed())
+        {
+            await MovePlayerW();
+        }
+        if (sAction.action.IsPressed())
+        {
+            await MovePlayerS();
+        }
+    }
+
+    public async UniTask MovePlayerQ()
+    {
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
         _isMoving = true;
         try
         {
-            await MovePlayer(dir);
+            await MovePlayer(-currentRight);
         }
         finally
         {
             _isMoving = false;
         }
     }
+    
+    public async UniTask MovePlayerD()
+    {
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        _isMoving = true;
+        try
+        {
+            await MovePlayer(currentRight);
+        }
+        finally
+        {
+            _isMoving = false;
+        }
+    }
+    
+    public async UniTask MovePlayerA()
+    {
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        _isMoving = true;
+        try
+        {
+            await MovePlayer(currentLeft);
+        }
+        finally
+        {
+            _isMoving = false;
+        }
+    }
+    
+    public async UniTask MovePlayerE()
+    {
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        _isMoving = true;
+        try
+        {
+            await MovePlayer(-currentLeft);
+        }
+        finally
+        {
+            _isMoving = false;
+        }
+    }
+    
+    public async UniTask MovePlayerW()
+    {
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        _isMoving = true;
+        try
+        {
+            await MovePlayer(currentUp);
+        }
+        finally
+        {
+            _isMoving = false;
+        }
+    }
+    
+    public async UniTask MovePlayerS()
+    {
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        _isMoving = true;
+        try
+        {
+            await MovePlayer(-currentUp);
+        }
+        finally
+        {
+            _isMoving = false;
+        }
+    }
+    
     #endregion
 
     #region CameraMove
-    public async UniTask MoveToCornerArc(int index, CancellationToken ct = default)
+
+    private void TransitionTo(Vector3 corner, Vector3 up)
     {
-        var targetPos = cameraPos[index];
-        var targetRot = Quaternion.Euler(cameraRot[index]);
-        var centerElement = (CubeSize - 1) / 2.0f;
-        var center = new Vector3(centerElement, centerElement, centerElement);
-        var distance = CubeSize * 2;
-
-        // 구면 보간으로 중심 기준 호 경로 생성
-        var fromDir = (cam.transform.position - center).normalized;
-        var toDir   = (targetPos - center).normalized;
-
-        var posSeq = DOTween.Sequence();
-        posSeq.Append(
-            DOTween.To(t =>
-            {
-                // Slerp으로 구면 위를 따라 이동
-                var dir = Vector3.Slerp(fromDir, toDir, t);
-                cam.transform.position = center + dir * distance;
-            }, 0f, 1f, camMoveDuration).SetEase(camMoveEase)
-        );
-
-        var rotateTween = cam.transform
-            .DORotateQuaternion(targetRot, camMoveDuration)
-            .SetEase(camMoveEase);
-
-        await UniTask.WhenAll(
-            posSeq.ToUniTask(cancellationToken: ct),
-            rotateTween.ToUniTask(cancellationToken: ct)
-        );
+        var target = Quaternion.LookRotation(-corner, up);
+        // Pivot 회전만 바꾸면 카메라는 자동으로 따라옴
+        pivot.DORotateQuaternion(target, camMoveDuration).SetEase(camMoveEase).OnComplete(() => _isMoving = false);
     }
-    
-    public async UniTaskVoid OnCameraButtonClicked(int i)
+
+    public void CameraRotation1InputWrapper(InputAction.CallbackContext _) => CameraRotation1();
+    public void CameraRotation2InputWrapper(InputAction.CallbackContext _) => CameraRotation2();
+    public void CameraRotation3InputWrapper(InputAction.CallbackContext _) => CameraRotation3();
+    public void CameraRotation4InputWrapper(InputAction.CallbackContext _) => CameraRotation4();
+    public void CameraRotation5InputWrapper(InputAction.CallbackContext _) => CameraRotation5();
+    public void CameraRotation6InputWrapper(InputAction.CallbackContext _) => CameraRotation6();
+    public void CameraRotation1()
     {
-        if (_isMoving) return;
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
         _isMoving = true;
-        try
-        {
-            await MoveToCornerArc(i);
-        }
-        finally
-        {
-            _isMoving = false;
-        }
+
+        var left = currentLeft;
+        var right = currentRight;
+
+        currentLeft = -left;
+        currentRight = -right;
+        
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
+    }
+
+    public void CameraRotation2()
+    {
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        _isMoving = true;
+        
+        var left = currentLeft;
+        var right = currentRight;
+
+        currentLeft = right;
+        currentRight = -left;
+        
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
+    }
+
+    public void CameraRotation3()
+    {
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        _isMoving = true;
+        
+        var left = currentLeft;
+        var right = currentRight;
+        var up = currentUp;
+
+        currentLeft = -up;
+        currentRight = -left;
+        currentUp = right;
+        
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
+    }
+
+    public void CameraRotation4()
+    {
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        _isMoving = true;
+        
+        var left = currentLeft;
+        var right = currentRight;
+        var up = currentUp;
+
+        currentLeft = right;
+        currentRight = left;
+        currentUp = -up;
+        
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
+    }
+
+    public void CameraRotation5()
+    {
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        _isMoving = true;
+        
+        var left = currentLeft;
+        var right = currentRight;
+        var up = currentUp;
+
+        currentLeft = -right;
+        currentRight = -up;
+        currentUp = left;
+        
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
+    }
+
+    public void CameraRotation6()
+    {
+        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        _isMoving = true;
+        
+        var left = currentLeft;
+        var right = currentRight;
+
+        currentLeft = -right;
+        currentRight = left;
+        
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
     }
 
     #endregion
-
-    private void Update()
-    {
-
-        if (_isCleared) return;
-
-        // TODO : 행동이 완료될 때까지 조작 막기 (애니메이션 때문), New Input System으로 분리?
-        // 플레이어 이동 또는 Undo 가능
-        // 키 입력을 적절한 방향으로 변환
-        // 방향으로 이동 시도
-        // 렌더링
-        // 아이템이 있으면 아이템 사용
-        //렌더링
-        //undo 스택 저장
-        // 클리어 검사
-
-        // 카메라 조작
-    }
 }

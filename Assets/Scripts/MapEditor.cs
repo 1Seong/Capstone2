@@ -25,6 +25,7 @@ public class MapEditor : MonoBehaviour
     private PuzzleTile[,,] _tiles;
 
     private bool _isValidated;
+    
     [SerializeField] private Button showAnswerButton;
     [SerializeField] private GameObject stopShowAnswerButton;
     [SerializeField] private Transform ghostPlayer;
@@ -162,9 +163,15 @@ public class MapEditor : MonoBehaviour
 
     public void PlayTest()
     {
+        if (!playerModel.gameObject.activeSelf)
+        {
+            PopUpManager.Instance.Show("시작 위치를 찾을 수 없습니다.");
+            return;
+        }
+        
         gameObject.SetActive(false);
         // 로딩 오래 걸리면 씬 전환 효과 넣기
-        GameManager.Instance.PlayGame((char[,,])_map.Clone());
+        GameManager.Instance.PlayGame((char[,,])_map.Clone(), true);
     }
 
     public void AutoTest()
@@ -177,9 +184,8 @@ public class MapEditor : MonoBehaviour
             PopUpManager.Instance.Show(res.ErrorMsg);
             return;
         }
-
-        _answer = res.SolutionPath;
-        SetValidated(true);
+        
+        SetValidated(true, res.SolutionPath);
         PopUpManager.Instance.Show("자동 테스트를 통과했습니다!");
     }
 
@@ -273,10 +279,11 @@ public class MapEditor : MonoBehaviour
         Debug.Log($"파일 저장됨: {downloadsPath}");
     }
 
-    private void SetValidated(bool validated)
+    public void SetValidated(bool validated, Stack<Vector3Int> answer = null)
     {
         _isValidated = validated;
         showAnswerButton.interactable = validated;
         exportButton.interactable = validated;
+        _answer = answer;
     }
 }
