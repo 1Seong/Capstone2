@@ -127,6 +127,12 @@ public class MapEditor : MonoBehaviour
         Render();
     }
 
+    private void OnDestroy()
+    {
+        if(Instance == this)
+            Instance = null;
+    }
+
     public void ResetEditor()
     {
         SetValidated(false);
