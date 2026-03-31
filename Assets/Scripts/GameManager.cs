@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -21,12 +20,24 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void EnterGame(char[,,] data)
+    {
+        // 플레이 씬 로드
+        PlayGame(data);
+    }
+
     public void PlayGame(char[,,] data, bool isTest = false)
     {
         var o = FindAnyObjectByType<PuzzlePlayer>(FindObjectsInactive.Include);
         
         o.SetMapData(data, isTest);
         o.gameObject.SetActive(true);
+    }
+
+    public void EnterEditor(char[,,] data)
+    {
+        //에디터 씬 로드
+        MapEditor.Instance.SetMapData(data);
     }
 
     public void GameCleared()
@@ -42,10 +53,9 @@ public class GameManager : MonoBehaviour
     public void ReturnToEditor()
     {
         testClearPanel.SetActive(false);
-        var editor = FindAnyObjectByType<MapEditor>(FindObjectsInactive.Include);
         var player = FindAnyObjectByType<PuzzlePlayer>();
         
-        editor.gameObject.SetActive(true);
+        MapEditor.Instance.gameObject.SetActive(true);
         player.gameObject.SetActive(false);
     }
 }

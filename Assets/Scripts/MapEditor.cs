@@ -91,21 +91,7 @@ public class MapEditor : MonoBehaviour
 
         showAnswerButton.onClick.AddListener(() => ShowAnswer().Forget());
         
-        InitEditor();
-    }
-
-    private void InitEditor()
-    {
-        SetValidated(false);
-        _map = new char[cubeSize, cubeSize, cubeSize];
-        
-        for (int i = 0; i != cubeSize; ++i)
-        for (int j = 0; j != cubeSize; ++j)
-        for (int k = 0; k != cubeSize; ++k)
-            _map[i, j, k] = (char)TileType.Empty;
-        
         _tiles = new PuzzleTile[cubeSize, cubeSize, cubeSize];
-
         int x = 0;
         foreach (Transform plane in cubeParent) // 평면 (10개)
         {
@@ -124,6 +110,40 @@ public class MapEditor : MonoBehaviour
 
             x++;
         }
+        
+        SetValidated(false);
+
+        if (_map is null)
+        {
+            _map = new char[cubeSize, cubeSize, cubeSize];
+            for (int i = 0; i != cubeSize; ++i)
+            for (int j = 0; j != cubeSize; ++j)
+            for (int k = 0; k != cubeSize; ++k)
+                _map[i, j, k] = (char)TileType.Empty;
+
+            return;
+        }
+
+        Render();
+    }
+
+    public void ResetEditor()
+    {
+        SetValidated(false);
+        
+        playerModel.gameObject.SetActive(false);
+        
+        for (int i = 0; i != cubeSize; ++i)
+        for (int j = 0; j != cubeSize; ++j)
+        for (int k = 0; k != cubeSize; ++k)
+            _map[i, j, k] = (char)TileType.Empty;
+        
+        Render();
+    }
+    
+    public void SetMapData(char[,,] map)
+    {
+        _map = map;
     }
 
     public void SetTile(int layer, int row, int col)
@@ -237,7 +257,7 @@ public class MapEditor : MonoBehaviour
 
     private async UniTask ShowAnswerAnim(CancellationToken ct)
     {
-        foreach(var i in _answer.Reverse())
+        foreach(var i in _answer)
         {
             ghostPlayer.position = i;
             await UniTask.WaitForSeconds(showAnswerTimePerPos, cancellationToken: ct);
@@ -262,6 +282,11 @@ public class MapEditor : MonoBehaviour
         {
             Undo();
         }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            ResetEditor();
+        }
     }
     
     private void ExportToFileDownloads(string fileName = "puzzle_export.txt")
@@ -284,6 +309,8 @@ public class MapEditor : MonoBehaviour
         _isValidated = validated;
         showAnswerButton.interactable = validated;
         exportButton.interactable = validated;
-        _answer = answer;
+        
+        if(answer is not null)
+            _answer = new Stack<Vector3Int>(answer);
     }
 }

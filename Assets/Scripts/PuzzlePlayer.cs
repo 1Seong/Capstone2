@@ -23,6 +23,7 @@ public class PuzzlePlayer : MonoBehaviour
     private PuzzleTile[,,] _tiles;
 
     private char[,,] _map;
+    private char[,,] _initialMap;
     private int _roadLeftCount; // 캐시데이터 - 연동 주의
 
     [SerializeField] private Transform playerModel;
@@ -56,6 +57,7 @@ public class PuzzlePlayer : MonoBehaviour
     [SerializeField] private InputActionReference wAction;
     [SerializeField] private InputActionReference sAction;
     [SerializeField] private InputActionReference undoAction;
+    [SerializeField] private InputActionReference resetAction;
     private bool _isTesting;
     private bool _isCleared;
     private Stack<Vector3Int> _answer;
@@ -73,69 +75,7 @@ public class PuzzlePlayer : MonoBehaviour
     {
         _initialCameraPosition = pivot.position;
         _initialCameraRotation = pivot.rotation;
-    }
-
-    private void OnEnable()
-    {
-        camera1Action.action.performed += CameraRotation1InputWrapper;
-        camera2Action.action.performed += CameraRotation2InputWrapper;
-        camera3Action.action.performed += CameraRotation3InputWrapper;
-        camera4Action.action.performed += CameraRotation4InputWrapper;
-        camera5Action.action.performed += CameraRotation5InputWrapper;
-        camera6Action.action.performed += CameraRotation6InputWrapper;
-        undoAction.action.performed += UndoInputWrapper;
-        camera1Action.action.Enable();
-        camera2Action.action.Enable();
-        camera3Action.action.Enable();
-        camera4Action.action.Enable();
-        camera5Action.action.Enable();
-        camera6Action.action.Enable();
-        qAction.action.Enable();
-        dAction.action.Enable();
-        aAction.action.Enable();
-        eAction.action.Enable();
-        wAction.action.Enable();
-        sAction.action.Enable();
-        undoAction.action.Enable();
         
-        InitGame();
-        CheckGameCleared();
-    }
-
-    private void OnDisable()
-    {
-        camera1Action.action.performed -= CameraRotation1InputWrapper;
-        camera2Action.action.performed -= CameraRotation2InputWrapper;
-        camera3Action.action.performed -= CameraRotation3InputWrapper;
-        camera4Action.action.performed -= CameraRotation4InputWrapper;
-        camera5Action.action.performed -= CameraRotation5InputWrapper;
-        camera6Action.action.performed -= CameraRotation6InputWrapper;
-        undoAction.action.performed -= UndoInputWrapper;
-        camera1Action.action.Disable();
-        camera2Action.action.Disable();
-        camera3Action.action.Disable();
-        camera4Action.action.Disable();
-        camera5Action.action.Disable();
-        camera6Action.action.Disable();
-        qAction.action.Disable();
-        dAction.action.Disable();
-        aAction.action.Disable();
-        eAction.action.Disable();
-        wAction.action.Disable();
-        sAction.action.Disable();
-        undoAction.action.Disable();
-        
-        pivot.position = _initialCameraPosition;
-        pivot.rotation = _initialCameraRotation;
-        currentUp = Vector3.up;
-        currentRight = Vector3.right;
-        currentLeft = Vector3.back;
-    }
-
-    #region GameSystem
-
-    private void InitGame()
-    {
         _tiles = new PuzzleTile[CubeSize, CubeSize, CubeSize];
 
         int x = 0;
@@ -156,19 +96,80 @@ public class PuzzlePlayer : MonoBehaviour
 
             x++;
         }
+    }
+
+    private void OnEnable()
+    {
+        camera1Action.action.performed += CameraRotation1InputWrapper;
+        camera2Action.action.performed += CameraRotation2InputWrapper;
+        camera3Action.action.performed += CameraRotation3InputWrapper;
+        camera4Action.action.performed += CameraRotation4InputWrapper;
+        camera5Action.action.performed += CameraRotation5InputWrapper;
+        camera6Action.action.performed += CameraRotation6InputWrapper;
+        undoAction.action.performed += UndoInputWrapper;
+        resetAction.action.performed += RestartInputWrapper;
+        camera1Action.action.Enable();
+        camera2Action.action.Enable();
+        camera3Action.action.Enable();
+        camera4Action.action.Enable();
+        camera5Action.action.Enable();
+        camera6Action.action.Enable();
+        qAction.action.Enable();
+        dAction.action.Enable();
+        aAction.action.Enable();
+        eAction.action.Enable();
+        wAction.action.Enable();
+        sAction.action.Enable();
+        undoAction.action.Enable();
+        resetAction.action.Enable();
         
+        InitGame();
+        CheckGameCleared();
+    }
+
+    private void OnDisable()
+    {
+        camera1Action.action.performed -= CameraRotation1InputWrapper;
+        camera2Action.action.performed -= CameraRotation2InputWrapper;
+        camera3Action.action.performed -= CameraRotation3InputWrapper;
+        camera4Action.action.performed -= CameraRotation4InputWrapper;
+        camera5Action.action.performed -= CameraRotation5InputWrapper;
+        camera6Action.action.performed -= CameraRotation6InputWrapper;
+        undoAction.action.performed -= UndoInputWrapper;
+        resetAction.action.performed -= RestartInputWrapper;
+        camera1Action.action.Disable();
+        camera2Action.action.Disable();
+        camera3Action.action.Disable();
+        camera4Action.action.Disable();
+        camera5Action.action.Disable();
+        camera6Action.action.Disable();
+        qAction.action.Disable();
+        dAction.action.Disable();
+        aAction.action.Disable();
+        eAction.action.Disable();
+        wAction.action.Disable();
+        sAction.action.Disable();
+        undoAction.action.Disable();
+        resetAction.action.Disable();
+    }
+
+    #region GameSystem
+
+    private void InitGame()
+    {
         // 렌더링을 하면서
         // 플레이어 시작점 파악
         // 남은 블럭 개수 파악
         _isCleared = false;
         _roadLeftCount = 0;
+        _map = (char[,,])_initialMap.Clone();
 
         for (var i = 0; i < CubeSize; ++i)
         for (var j = 0; j < CubeSize; ++j)
         for (var k = 0; k < CubeSize; ++k)
         {
             var c = _map[i, j, k];
-
+            _tiles[i, j, k].SimpleRender(c);
             switch (c)
             {
                 case (char)TileType.Empty:
@@ -180,17 +181,27 @@ public class PuzzlePlayer : MonoBehaviour
                     playerModel.position = new Vector3(i, j, k);
                     break;
             }
-
-            _tiles[i, j, k].SimpleRender(c);
         }
-
-        _answer = new();
-        _undoStack = new();
+        
+        if(_answer is not null)
+            _answer.Clear();
+        else
+            _answer = new();
+        if(_undoStack is not null)
+            _undoStack.Clear();
+        else
+            _undoStack = new();
+        pivot.position = _initialCameraPosition;
+        pivot.rotation = _initialCameraRotation;
+        currentUp = Vector3.up;
+        currentRight = Vector3.right;
+        currentLeft = Vector3.back;
     }
 
     public void SetMapData(char[,,] map, bool isTest = false)
     {
         _map = map;
+        _initialMap = (char[,,])map.Clone();
         _isTesting = isTest;
         CubeSize = map.GetLength(0);
     }
@@ -216,7 +227,7 @@ public class PuzzlePlayer : MonoBehaviour
         
         if (_isTesting)
         {
-            FindAnyObjectByType<MapEditor>(FindObjectsInactive.Include).SetValidated(true, _answer);
+            MapEditor.Instance.SetValidated(true, _answer);
             GameManager.Instance.GameClearedTest();
         }
         else
@@ -456,6 +467,8 @@ public class PuzzlePlayer : MonoBehaviour
             _isMoving = false;
         }
     }
+
+    public void RestartInputWrapper(InputAction.CallbackContext _) => InitGame();
     
     #endregion
 
