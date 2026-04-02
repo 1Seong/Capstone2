@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
@@ -61,6 +62,9 @@ public class PuzzlePlayer : MonoBehaviour
     private bool _isTesting;
     private bool _isCleared;
     private Stack<Vector3Int> _answer;
+    private Stopwatch _stopwatch = new();
+    private int _moves = 0;
+
 
     private struct MapState
     {
@@ -196,6 +200,8 @@ public class PuzzlePlayer : MonoBehaviour
         currentUp = Vector3.up;
         currentRight = Vector3.right;
         currentLeft = Vector3.back;
+        _moves = 0;
+        _stopwatch.Restart();
     }
 
     public void SetMapData(char[,,] map, bool isTest = false)
@@ -224,14 +230,15 @@ public class PuzzlePlayer : MonoBehaviour
         if (_roadLeftCount != 0) return;
 
         _isCleared = true;
+        _stopwatch.Stop();
         
         if (_isTesting)
         {
             MapEditor.Instance.SetValidated(true, _answer);
-            GameManager.Instance.GameClearedTest();
+            GameManager.Instance.GameClearedTest(_stopwatch.Elapsed, _moves);
         }
         else
-            GameManager.Instance.GameCleared();
+            GameManager.Instance.GameCleared(_stopwatch.Elapsed, _moves);
     }
 
     #endregion
@@ -263,6 +270,7 @@ public class PuzzlePlayer : MonoBehaviour
 
         SaveUndoState();
         _answer.Push(new Vector3Int(nLayer, nRow, nCol));
+        ++_moves;
 
         _map[(int)pos.x, (int)pos.y, (int)pos.z] = (char)TileType.Painted; // 현재 위치 페인트, 단 렌더링은 플레이어가 도달할 때 해주기때문에 이미 되어있다
 
@@ -305,6 +313,7 @@ public class PuzzlePlayer : MonoBehaviour
         playerModel.position = s.PlayerPos;
         _roadLeftCount = s.RoadLeftCount;
         _answer.Pop();
+        --_moves;
 
         if (doRender)
             Render();

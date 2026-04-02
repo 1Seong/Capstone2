@@ -1,3 +1,5 @@
+using System;
+using TMPro;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -6,6 +8,7 @@ public class GameManager : MonoBehaviour
     public bool isPlaying = true;
 
     [SerializeField] private GameObject testClearPanel;
+    [SerializeField] private TMP_Text testResultTMP;
 
     //[SerializeField] private GameObject playInstance;
     
@@ -40,13 +43,14 @@ public class GameManager : MonoBehaviour
         MapEditor.Instance.SetMapData(data);
     }
 
-    public void GameCleared()
+    public void GameCleared(TimeSpan ts, int moves)
     {
-        
+        // 싱글이냐 유저맵이냐에 따라 다름
     }
 
-    public void GameClearedTest()
+    public void GameClearedTest(TimeSpan ts, int moves)
     {
+        testResultTMP.text = $"클리어 시간: {ts.Minutes:D2}:{ts.Seconds:D2}\n움직임 수: {moves.ToString()}";
         testClearPanel.SetActive(true);
     }
 
