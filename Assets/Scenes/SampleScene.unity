@@ -13069,7 +13069,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SupabaseManager: {fileID: 1996033002}
-  LoggedInEmailAddress: {fileID: 903155656}
+  LoggedInEmailAddress: {fileID: 0}
 --- !u!1 &2005405395
 GameObject:
   m_ObjectHideFlags: 0

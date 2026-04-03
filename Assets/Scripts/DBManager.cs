@@ -16,7 +16,7 @@ using Client = Supabase.Client;
 public class Map : BaseModel
 {
     [PrimaryKey("id", shouldInsert: true)]
-    public long Id { get; set; } // identity
+    public long Id { get; set; }
 
     [Column("name")]
     public string Name { get; set; } = default!;
@@ -305,14 +305,26 @@ public class DBManager : MonoBehaviour
 
     #region Map_Creating
 
-    public async Task UpsertMapCreatingAsync(MapCreating map)
+    public async Task InsertMapCreatingAsync(MapCreating map)
     {
-        await _client.From<MapCreating>().Upsert(map); // upsert를 하지 않은 이유는 Trigger에 의해 자동 업데이트를 설정해놨기 때문
+        await _client.From<MapCreating>().Insert(map);
+    }
+    
+    public async Task UpdateMapCreatingAsync(MapCreating map)
+    {
+        await _client.From<MapCreating>().Update(map);
     }
 
     public async Task DeleteMapCreatingAsync(MapCreating map)
     {
         await _client.From<MapCreating>().Delete(map);
+    }
+
+    public async Task<List<MapCreating>> FetchMapCreatingAsync()
+    {
+        var response = await _client.From<MapCreating>().Get();
+
+        return response.Models;
     }
 
     #endregion
@@ -322,6 +334,13 @@ public class DBManager : MonoBehaviour
     public async Task UpsertStorySavesAsync(StorySaves save)
     {
         await _client.From<StorySaves>().Insert(save); // upsert를 하지 않은 이유는 Trigger에 의해 자동 업데이트를 설정해놨기 때문
+    }
+
+    public async Task<List<StorySaves>> FetchStorySavesAsync()
+    {
+        var response = await _client.From<StorySaves>().Get();
+
+        return response.Models;
     }
 
     #endregion

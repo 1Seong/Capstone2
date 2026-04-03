@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using com.example;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +12,7 @@ public class MapEditor : MonoBehaviour
 {
     [SerializeField] private int cubeSize = 10;
     private char[,,] _map;
+    private MapCreating _currentMapCreating;
     public static MapEditor Instance;
 
     [SerializeField] private char currentTile = (char)TileType.Road;
@@ -35,6 +37,8 @@ public class MapEditor : MonoBehaviour
     private EditTile _hoveredTile;
 
     private Stack<Vector3Int> _answer;
+
+    [SerializeField] private Camera thumbnailCamera;
     
     // TODO: 아이템별 material 지정
     
@@ -120,11 +124,7 @@ public class MapEditor : MonoBehaviour
             for (int j = 0; j != cubeSize; ++j)
             for (int k = 0; k != cubeSize; ++k)
                 _map[i, j, k] = (char)TileType.Empty;
-
-            return;
         }
-
-        Render();
     }
 
     private void OnDestroy()
@@ -150,6 +150,15 @@ public class MapEditor : MonoBehaviour
     public void SetMapData(char[,,] map)
     {
         _map = map;
+    }
+
+    public void Initialize(MapCreating mapCreating) // 외부에서 데이터 넣어주고 초기화
+    {
+        GameManager.Instance.OnScreenExitEvent += ExitEditor;
+        _currentMapCreating = mapCreating;
+        _map = StringHelper.DecodeCube(_currentMapCreating.Data);
+        
+        Render();
     }
 
     public void SetTile(int layer, int row, int col)
@@ -194,6 +203,9 @@ public class MapEditor : MonoBehaviour
             PopUpManager.Instance.Show("시작 위치를 찾을 수 없습니다.");
             return;
         }
+
+        GameManager.Instance.OnScreenExitEvent -= ExitEditor;
+        GameManager.Instance.OnScreenExitEvent += GameManager.Instance.ReturnToEditor;
         
         gameObject.SetActive(false);
         // 로딩 오래 걸리면 씬 전환 효과 넣기
@@ -239,11 +251,68 @@ public class MapEditor : MonoBehaviour
         currentTile = (char)TileType.Player;
         // 여기에서 현재 mat 지정
     }
+
+    public void ExitEditor()
+    {
+        if(!SupabaseManager.Instance.IsNetworkAvailable() || !SupabaseManager.Instance.IsLoggedIn())
+            PopUpManager.Instance.Show("네트워크에 연결되어 있지 않습니다!");
+        
+        SaveToDB();
+        _currentMapCreating = null;
+        // 제작 중 맵 목록 씬 로드
+    }
+    
+    public async void SaveToDB()
+    {
+        /*
+        string url;
+        // 스크린샷 + DB에 update
+        try
+        {
+            url = await CaptureThumbnailAsync();
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e.Message);
+            PopUpManager.Instance.Show("썸네일 캡쳐 실패");
+        }
+        // url 넣기
+        */
+        _currentMapCreating.Data = StringHelper.Encode(_map);
+
+        try
+        {
+            await DBManager.Instance.UpdateMapCreatingAsync(_currentMapCreating);
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e.Message);
+            PopUpManager.Instance.Show("저장 실패");
+        }
+    }
+    
+    public void EndShowAnswer()
+    {
+        GameManager.Instance.OnScreenExitEvent += ExitEditor;
+        GameManager.Instance.OnScreenExitEvent -= EndShowAnswer;
+        
+        _showAnswerCts?.Cancel();
+        _showAnswerCts?.Dispose();
+        _showAnswerCts = null;
+    
+        ghostPlayer.gameObject.SetActive(false);
+        tileIndicatorParent.SetActive(true);
+        rightSideButtonsParent.SetActive(true);
+        stopShowAnswerButton.SetActive(false);
+    }
     
     #endregion
 
     public async UniTaskVoid ShowAnswer()
     {
+        GameManager.Instance.OnScreenExitEvent -= ExitEditor;
+        GameManager.Instance.OnScreenExitEvent += EndShowAnswer;
+        
         _showAnswerCts?.Cancel();
         _showAnswerCts?.Dispose();
         _showAnswerCts = new CancellationTokenSource();
@@ -268,18 +337,6 @@ public class MapEditor : MonoBehaviour
             ghostPlayer.position = i;
             await UniTask.WaitForSeconds(showAnswerTimePerPos, cancellationToken: ct);
         }
-    }
-
-    public void EndShowAnswer()
-    {
-        _showAnswerCts?.Cancel();
-        _showAnswerCts?.Dispose();
-        _showAnswerCts = null;
-    
-        ghostPlayer.gameObject.SetActive(false);
-        tileIndicatorParent.SetActive(true);
-        rightSideButtonsParent.SetActive(true);
-        stopShowAnswerButton.SetActive(false);
     }
 
     private void Update()
@@ -318,5 +375,37 @@ public class MapEditor : MonoBehaviour
         
         if(answer is not null)
             _answer = new Stack<Vector3Int>(answer);
+    }
+    
+    public async Task<string> CaptureThumbnailAsync()
+    {
+        // 특정 카메라 시점에서 RenderTexture로 캡처
+        var renderTexture = new RenderTexture(512, 512, 24);
+        thumbnailCamera.targetTexture = renderTexture;
+        thumbnailCamera.gameObject.SetActive(true);
+        thumbnailCamera.Render();
+        thumbnailCamera.gameObject.SetActive(false);
+
+        RenderTexture.active = renderTexture;
+        var texture = new Texture2D(512, 512, TextureFormat.RGB24, false);
+        texture.ReadPixels(new Rect(0, 0, 512, 512), 0, 0);
+        texture.Apply();
+
+        RenderTexture.active = null;
+        thumbnailCamera.targetTexture = null;
+
+        var bytes = texture.EncodeToJPG(quality: 80);
+        Destroy(texture);
+        Destroy(renderTexture);
+
+        // Storage에 업로드
+        var path = $"{_currentMapCreating.MapId}.jpg";
+        await SupabaseManager.Instance.Supabase().Storage
+            .From("map-thumbnails")
+            .Upload(bytes, path, new Supabase.Storage.FileOptions{Upsert = true});
+
+        return SupabaseManager.Instance.Supabase().Storage
+            .From("map-thumbnails")
+            .GetPublicUrl(path);
     }
 }

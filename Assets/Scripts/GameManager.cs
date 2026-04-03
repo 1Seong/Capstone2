@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject testClearPanel;
     [SerializeField] private TMP_Text testResultTMP;
 
+    public event Action OnScreenExitEvent;
     //[SerializeField] private GameObject playInstance;
     
     private void Awake()
@@ -26,6 +27,7 @@ public class GameManager : MonoBehaviour
     public void EnterGame(char[,,] data)
     {
         // 플레이 씬 로드
+        // 이전 씬 로드하는 함수 등록
         PlayGame(data);
     }
 
@@ -37,10 +39,10 @@ public class GameManager : MonoBehaviour
         o.gameObject.SetActive(true);
     }
 
-    public void EnterEditor(char[,,] data)
+    public void EnterEditor(MapCreating mapCreating)
     {
-        //에디터 씬 로드
-        MapEditor.Instance.SetMapData(data);
+        // 에디터 씬 로드
+        MapEditor.Instance.Initialize(mapCreating);
     }
 
     public void GameCleared(TimeSpan ts, int moves)
@@ -56,10 +58,18 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToEditor()
     {
+        OnScreenExitEvent += MapEditor.Instance.ExitEditor;
+        OnScreenExitEvent -= ReturnToEditor;
+        
         testClearPanel.SetActive(false);
         var player = FindAnyObjectByType<PuzzlePlayer>();
         
         MapEditor.Instance.gameObject.SetActive(true);
         player.gameObject.SetActive(false);
+    }
+
+    public void ExitToMenuButton()
+    {
+        OnScreenExitEvent?.Invoke();
     }
 }

@@ -1,5 +1,7 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using Supabase;
 using Supabase.Gotrue;
 using Supabase.Gotrue.Interfaces;
@@ -11,6 +13,8 @@ namespace com.example
 {
 	public class SupabaseManager : MonoBehaviour
 	{
+		private NetworkReachability _lastReachability;
+		private CancellationTokenSource _cts;
 
 		// Public Unity references
 		public SessionListener SessionListener = null!;
@@ -75,7 +79,7 @@ namespace com.example
 			// email verification flow before you can use the session.
 			client.Auth.Options.AllowUnconfirmedUserSessions = false;
 			client.Auth.Options.AutoRefreshToken = true;
-
+			
 			// We check the network status to see if we are online or offline using a request to fetch
 			// the server settings from our project. Here's how we build that URL.
 			string url = $"{SupabaseSettings.SupabaseURL}/auth/v1/settings?apikey={SupabaseSettings.SupabaseAnonKey}";
@@ -98,61 +102,99 @@ namespace com.example
 
 				client.Auth.Online = false;
 			}
+			
+			_client = client;
+			
 			if (client.Auth.Online)
 			{
-				/*
-				Debug.Log($"CurrentSession: {client.Auth.CurrentSession != null}");
-				Debug.Log($"CurrentSession Expired: {client.Auth.CurrentSession?.Expired()}");
-				Debug.Log($"RefreshToken: {client.Auth.CurrentSession?.RefreshToken}");
-				*/
-				if (client.Auth.CurrentSession != null)
-				{
-					try
-					{
-						await client.Auth.RefreshSession();
-						Debug.Log("세션 갱신 성공");
-						_isLoggedIn = true;
-					}
-					catch (Exception e)
-					{
-						Debug.LogWarning($"세션 갱신 실패: {e.Message}");
-						_isLoggedIn = false;
-					}
-				}
-				
-				// Now we start up the client, which will in turn start up the background thread.
-				// This will attempt to refresh the session token, which in turn may send a second
-				// user login event to the UnityAuthListener.
+				//await TryRestoreSessionAsync();
 				await client.InitializeAsync();
-				/*
-				if (client.Auth.CurrentSession == null)
-				{
-					try
-					{
-						await client.Auth.RefreshSession();
-						Debug.Log("세션 갱신 성공");
-						_isLoggedIn = true;
-					}
-					catch (Exception e)
-					{
-						Debug.LogWarning($"세션 갱신 실패: {e.Message}");
-						_isLoggedIn = false;
-					}
-				}
-				*/
-				Debug.Log($"Online: {client.Auth.Online}");
-				Debug.Log($"CurrentSession: {client.Auth.CurrentSession != null}");
-				Debug.Log($"CurrentSession Expired: {client.Auth.CurrentSession?.Expired()}");
-				Debug.Log($"Created at: {client.Auth.CurrentSession?.CreatedAt}");
-				Debug.Log($"Expired at: {client.Auth.CurrentSession?.ExpiresAt()}");
-				Debug.Log($"RefreshToken: {client.Auth.CurrentSession?.RefreshToken}");
-				Debug.Log($"CurrentUser: {client.Auth.CurrentUser?.Email}");
-
-				// Here we fetch the server settings and log them to the console
-				Settings serverConfiguration = (await client.Auth.Settings())!;
-				Debug.Log($"Auto-confirm emails on this server: {serverConfiguration.MailerAutoConfirm}");
+				
 			}
-			_client = client;
+			else
+			{
+				await client.Auth.RetrieveSessionAsync(); // 디스크에서 세션 읽어서 메모리에 올림
+				Debug.Log("오프라인으로 시작 — 네트워크 재연결 대기");
+			}
+
+			// 네트워크 상태 모니터링 시작
+			_cts = new CancellationTokenSource();
+			MonitorNetworkAsync(_cts.Token).Forget();
+		}
+        
+        /*
+		private async Task TryRestoreSessionAsync()
+		{
+			if (_client.Auth.CurrentSession != null)
+			{
+				try
+				{
+					await _client.Auth.RefreshSession();
+					Debug.Log("세션 갱신 성공");
+					_isLoggedIn = true;
+				}
+				catch (Exception e)
+				{
+					Debug.LogWarning($"세션 갱신 실패: {e.Message}");
+					_isLoggedIn = false;
+				}
+			}
+
+			Debug.Log($"Online: {_client.Auth.Online}");
+			Debug.Log($"CurrentSession: {_client.Auth.CurrentSession != null}");
+			Debug.Log($"CurrentSession Expired: {_client.Auth.CurrentSession?.Expired()}");
+			Debug.Log($"CurrentUser: {_client.Auth.CurrentUser?.Email}");
+			Debug.Log($"Created at: {_client.Auth.CurrentSession?.CreatedAt}");
+			Debug.Log($"Expired at: {_client.Auth.CurrentSession?.ExpiresAt()}");
+			Debug.Log($"RefreshToken: {_client.Auth.CurrentSession?.RefreshToken}");
+			Debug.Log($"CurrentUser: {_client.Auth.CurrentUser?.Email}");
+
+			Settings serverConfiguration = (await _client.Auth.Settings())!;
+			Debug.Log($"Auto-confirm emails: {serverConfiguration.MailerAutoConfirm}");
+		}
+		*/
+		
+        // n초마다 네트워크 연결 상태 확인
+		private async UniTaskVoid MonitorNetworkAsync(CancellationToken ct)
+		{
+			var lastReachability = Application.internetReachability;
+
+			while (!ct.IsCancellationRequested)
+			{
+				await UniTask.Delay(3000, cancellationToken: ct); // 3초에 한 번씩 확인
+
+				var current = Application.internetReachability;
+				if (current == lastReachability) continue;
+
+				lastReachability = current;
+				bool isOnline = current != NetworkReachability.NotReachable;
+				_client.Auth.Online = isOnline;
+
+				if (isOnline)
+				{
+					Debug.Log("네트워크 재연결됨");
+					if (_client.Auth.CurrentSession != null)
+					{
+						try
+						{
+							await _client.Auth.RefreshSession();
+							Debug.Log("세션 갱신 성공");
+							_isLoggedIn = true;
+						}
+						catch (Exception e)
+						{
+							Debug.LogWarning($"세션 갱신 실패: {e.Message}");
+							_isLoggedIn = false;
+						}
+					}
+					//await TryRestoreSessionAsync();
+				}
+				else
+				{
+					Debug.Log("네트워크 끊김");
+					_isLoggedIn = false;
+				}
+			}
 		}
 
 		private void DebugListener(string message, Exception e)
@@ -183,6 +225,9 @@ namespace com.example
 
         private void Cleanup()
         {
+	        _cts?.Cancel();
+	        _cts?.Dispose();
+	        
 	        if (_client == null) return;
 	        _client?.Auth.Shutdown();
 	        _client = null;
