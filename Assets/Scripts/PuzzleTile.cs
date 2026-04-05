@@ -1,9 +1,12 @@
+using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class PuzzleTile : MonoBehaviour
 {
-    private char _tileCache = '0';
+    private char _tileCache = 'a';
+
+    private readonly int _initialChildNum = (int)TileType.Count - 'a';
     // 이펙트나 애니메이션 없이 단순 렌더링
     // 초기화나 undo 할때 사용
     public void SimpleRender(char tile)
@@ -11,20 +14,26 @@ public class PuzzleTile : MonoBehaviour
         if (tile == _tileCache) return;
         _tileCache = tile;
 
-        foreach (Transform child in transform)
-            child.gameObject.SetActive(false);
+        if (tile == (char)TileType.PortalIn)
+        {
+            for (var i = 0; i != _initialChildNum; ++i)
+            {
+                transform.GetChild(i).gameObject.SetActive(false);
+            }
+        }
+        else
+            foreach (Transform child in transform)
+                child.gameObject.SetActive(false);
 
         switch (tile)
         {
             case (char)TileType.Empty:
-                return;
             case (char)TileType.Player:
-            case (char)TileType.Painted:
-                transform .GetChild(0).gameObject.SetActive(true); // paint
-                break;
+                return;
             default:
-                var id = tile - '0';
-                transform.GetChild(id - 2).gameObject.SetActive(true);
+                var id = tile - 'a';
+                //Debug.Log(tile.ToString() + " " + id.ToString());
+                transform.GetChild(id).gameObject.SetActive(true);
                 break;
         }
     }

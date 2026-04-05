@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -24,18 +25,18 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void EnterGame(char[,,] data)
+    public void EnterGame(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null)
     {
         // 플레이 씬 로드
         // 이전 씬 로드하는 함수 등록
         PlayGame(data);
     }
 
-    public void PlayGame(char[,,] data, bool isTest = false)
+    public void PlayGame(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, bool isTest = false)
     {
         var o = FindAnyObjectByType<PuzzlePlayer>(FindObjectsInactive.Include);
         
-        o.SetMapData(data, isTest);
+        o.SetMapData(data, portalPairDic, isTest);
         o.gameObject.SetActive(true);
     }
 

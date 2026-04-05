@@ -16,13 +16,44 @@ public class MapEditor : MonoBehaviour
     public static MapEditor Instance;
 
     [SerializeField] private char currentTile = (char)TileType.Road;
-    public char CurrentTile() => currentTile;
-    
+
+    public char CurrentTile
+    {
+        get => currentTile;
+        set
+        {
+            if (currentTile == (char)TileType.PortalOut && value !=  (char)TileType.PortalIn)
+            {
+                _tiles[_previousPortalInPos.x, _previousPortalInPos.y, _previousPortalInPos.z].SimpleRender((char)TileType.Empty);
+                PortalEditing = false;
+            }
+            currentTile = value;
+        }
+    }
+
+    private Vector3Int _previousPortalInPos;
+    private bool _portalEditing = false;
+    public bool PortalEditing
+    {
+        get => _portalEditing;
+        set
+        {
+            if (value)
+                camera.cullingMask &= ~(1 << LayerMask.NameToLayer("UI"));
+            else
+                camera.cullingMask |= (1 << LayerMask.NameToLayer("UI"));
+            _portalEditing = value;
+        }
+    }
+
     [SerializeField] private Transform playerModel;
     [SerializeField] private Transform  cubeParent;
     [SerializeField] private GameObject tileIndicatorParent;
     [SerializeField] private GameObject rightSideButtonsParent;
     [SerializeField] private Button exportButton;
+    [SerializeField] private GameObject linePrefab;
+    public LineRenderer currentLine;
+    [SerializeField] private Camera camera;
     
     private PuzzleTile[,,] _tiles;
 
@@ -34,11 +65,14 @@ public class MapEditor : MonoBehaviour
     [SerializeField] private float showAnswerTimePerPos = 0.5f;
     private CancellationTokenSource _showAnswerCts;
     
-    private EditTile _hoveredTile;
+    //private EditTile _hoveredTile;
 
     private Stack<Vector3Int> _answer;
 
     [SerializeField] private Camera thumbnailCamera;
+
+    //private List<PortalPair> _portalPairList;
+    private Dictionary<Vector3Int, Vector3Int> _portalPairDict = new();
     
     // TODO: 아이템별 material 지정
     
@@ -68,6 +102,10 @@ public class MapEditor : MonoBehaviour
         _map = s.Map;
         playerModel.position = s.PlayerPos;
         playerModel.gameObject.SetActive(s.PlayerActive);
+        PortalEditing = false;
+        
+        if(CurrentTile == (char)TileType.PortalOut)
+            CurrentTile = (char)TileType.PortalIn;
 
         if (doRender)
             Render();
@@ -108,10 +146,8 @@ public class MapEditor : MonoBehaviour
                     _tiles[x, y, z] = cell.GetComponent<PuzzleTile>();
                     z++;
                 }
-
                 y++;
             }
-
             x++;
         }
         
@@ -143,6 +179,8 @@ public class MapEditor : MonoBehaviour
         for (int j = 0; j != cubeSize; ++j)
         for (int k = 0; k != cubeSize; ++k)
             _map[i, j, k] = (char)TileType.Empty;
+
+        _portalPairDict = new();
         
         Render();
     }
@@ -157,41 +195,89 @@ public class MapEditor : MonoBehaviour
         GameManager.Instance.OnScreenExitEvent += ExitEditor;
         _currentMapCreating = mapCreating;
         _map = StringHelper.DecodeCube(_currentMapCreating.Data);
+        var portalPairList = PortalPairHelper.Decode(_currentMapCreating.PortalPairs);
+        _portalPairDict = PortalPairHelper.ToDict(portalPairList);
+
+        foreach (var i in portalPairList)
+        {
+            var l = Instantiate(linePrefab, _tiles[i.InPos.x, i.InPos.y, i.InPos.z].transform)
+                .GetComponent<LineRenderer>();
+            l.SetPosition(0, i.InPos);
+            l.SetPosition(1, i.OutPos);
+        }
         
         Render();
     }
 
     public void SetTile(int layer, int row, int col)
     {
-        SaveUndoState();
+        if(CurrentTile != (char)TileType.PortalOut)
+            SaveUndoState();
         //Debug.Log(layer + " " + row + " " + col);
         SetValidated(false);
         _map[layer, row, col] = currentTile;
 
-        if (currentTile == (char)TileType.Player)
+        switch (currentTile)
         {
-            if (!playerModel.gameObject.activeSelf)
-            {
-                playerModel.gameObject.SetActive(true);
-            }
-            else
-            {
-                var pos = playerModel.position;
-                _map[(int)pos.x, (int)pos.y, (int)pos.z] = (char)TileType.Empty;
-            }
+            case (char)TileType.Player:
+                if (!playerModel.gameObject.activeSelf)
+                {
+                    playerModel.gameObject.SetActive(true);
+                }
+                else
+                {
+                    var pos = playerModel.position;
+                    _map[(int)pos.x, (int)pos.y, (int)pos.z] = (char)TileType.Empty;
+                }
             
-            playerModel.position = new Vector3(layer, row, col);
-            _tiles[layer, row, col].SimpleRender((char)TileType.Empty);
-            return;
+                playerModel.position = new Vector3(layer, row, col);
+                _tiles[layer, row, col].SimpleRender((char)TileType.Empty);
+                return;
+            
+            case (char)TileType.Empty:
+                if(playerModel.position == new Vector3(layer, row, col))
+                {
+                    playerModel.gameObject.SetActive(false);
+                }
+                else if (_portalPairDict.ContainsKey(new Vector3Int(layer, row, col)))
+                {
+                    var key = new Vector3Int(layer, row, col);
+                    var val = _portalPairDict[key];
+                    _portalPairDict.Remove(key);
+                    _portalPairDict.Remove(val);
+                    _map[val.x, val.y, val.z] = (char)TileType.Empty;
+                    _tiles[val.x, val.y, val.z].SimpleRender((char)TileType.Empty);
+                }
+                break;
+            
+            case (char)TileType.PortalIn:
+                _previousPortalInPos = new Vector3Int(layer, row, col);
+                currentLine = _tiles[layer, row, col].GetComponentInChildren<LineRenderer>(true);
+                if (currentLine == null)
+                {
+                    currentLine = Instantiate(linePrefab, _tiles[layer, row, col].transform).GetComponent<LineRenderer>();
+                }
+                currentLine.gameObject.SetActive(true);
+                currentLine.SetPosition(0, new Vector3(layer, row, col));
+                currentLine.SetPosition(1,  new Vector3(layer, row, col));
+                PortalEditing = true;
+                break;
+            
+            case (char)TileType.PortalOut:
+                var outPos = new Vector3Int(layer, row, col);
+                //_portalPairList.Add(PortalPairHelper.CreatePair(_previousPortalInPos, outPos));
+                _portalPairDict[_previousPortalInPos] = outPos;
+                _portalPairDict[outPos] = _previousPortalInPos;
+                currentLine.SetPosition(1,  outPos);
+                PortalEditing = false;
+                break;
         }
-        if (currentTile == (char)TileType.Empty)
-        {
-            if(playerModel.position == new Vector3(layer, row, col))
-            {
-                playerModel.gameObject.SetActive(false);
-            }
-        }
+
         _tiles[layer, row, col].SimpleRender(currentTile);
+        if(currentTile == (char)TileType.PortalIn)
+            CurrentTile = (char)TileType.PortalOut;
+        else if(currentTile == (char)TileType.PortalOut)
+            CurrentTile = (char)TileType.PortalIn;
     }
     
     #region Button
@@ -209,12 +295,12 @@ public class MapEditor : MonoBehaviour
         
         gameObject.SetActive(false);
         // 로딩 오래 걸리면 씬 전환 효과 넣기
-        GameManager.Instance.PlayGame((char[,,])_map.Clone(), true);
+        GameManager.Instance.PlayGame((char[,,])_map.Clone(), _portalPairDict,true);
     }
 
     public void AutoTest()
     {
-        var res = PuzzleSolver.Solve(_map);
+        var res = PuzzleSolver.Solve(_map, _portalPairDict);
 
         if (!res.IsSolvable)
         {
@@ -234,21 +320,47 @@ public class MapEditor : MonoBehaviour
         ExportToFileDownloads();
     }
 
+    public void OnPortalLineToggleChanged(bool b)
+    {
+        if(b)
+            ShowPortalLines();
+        else
+        {
+            HidePortalLines();
+        }
+    }
+    
+    public void ShowPortalLines()
+    {
+        camera.cullingMask |= (1 << LayerMask.NameToLayer("PortalLine"));
+    }
+
+    public void HidePortalLines()
+    {
+        camera.cullingMask &= ~(1 << LayerMask.NameToLayer("PortalLine"));
+    }
+
     public void SetCurrentTileToRoad()
     {
-        currentTile = (char)TileType.Road;
+        CurrentTile = (char)TileType.Road;
         // 여기에서 현재 mat 지정
     }
     
     public void SetCurrentTileToEraser()
     {
-        currentTile = (char)TileType.Empty;
+        CurrentTile = (char)TileType.Empty;
         // 여기에서 현재 mat 지정
     }
     
     public void SetCurrentTileToPlayer()
     {
-        currentTile = (char)TileType.Player;
+        CurrentTile = (char)TileType.Player;
+        // 여기에서 현재 mat 지정
+    }
+    
+    public void SetCurrentTileToPortal()
+    {
+        CurrentTile = (char)TileType.PortalIn;
         // 여기에서 현재 mat 지정
     }
 
@@ -278,7 +390,9 @@ public class MapEditor : MonoBehaviour
         }
         // url 넣기
         */
+        // 이름이랑 설명도 수정?
         _currentMapCreating.Data = StringHelper.Encode(_map);
+        _currentMapCreating.PortalPairs = PortalPairHelper.Encode(PortalPairHelper.ToList(_portalPairDict));
 
         try
         {
@@ -345,6 +459,8 @@ public class MapEditor : MonoBehaviour
         {
             Undo();
         }
+        
+        if (PortalEditing) return;
 
         if (Input.GetKeyDown(KeyCode.R))
         {

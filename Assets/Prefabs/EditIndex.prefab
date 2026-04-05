@@ -157,6 +157,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cellIndicateMeshRenderer: {fileID: 4880953412969707708}
+  lineRenderer: {fileID: 0}
 --- !u!23 &4880953412969707708
 MeshRenderer:
   m_ObjectHideFlags: 0

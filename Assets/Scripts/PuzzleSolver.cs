@@ -26,7 +26,7 @@ public static class PuzzleSolver
     /// 퍼즐이 클리어 가능한지 검사하고, 가능하다면 정답 경로를 함께 반환합니다.
     /// </summary>
     /// <param name="map">원본 맵 데이터 (변경되지 않습니다)</param>
-    public static SolveResult Solve(char[,,] map)
+    public static SolveResult Solve(char[,,] map, Dictionary<Vector3Int, Vector3Int> portalPairDic)
     {
         var cubeSize = map.GetLength(0);
  
@@ -59,6 +59,8 @@ public static class PuzzleSolver
                     foundStart = true;
                     break;
                 case (char)TileType.Road:
+                case (char)TileType.PortalIn:
+                case (char)TileType.PortalOut:
                     ++totalPaintable;
                     //Debug.Log(x + " " + y + " " + z);
                     break;
@@ -84,7 +86,7 @@ public static class PuzzleSolver
             workMap, startPos,
             cubeSize,
             totalPaintable, ref paintedCount,
-            path
+            path, portalPairDic
         );
  
         return new SolveResult
@@ -103,7 +105,7 @@ public static class PuzzleSolver
         Vector3Int current,
         int size,
         int totalPaintable, ref int paintedCount,
-        Stack<Vector3Int> path)
+        Stack<Vector3Int> path, Dictionary<Vector3Int, Vector3Int> portalPairDict)
     {
         // 모든 색칠 가능 공간을 칠했으면 클리어
         if (paintedCount == totalPaintable)
@@ -124,29 +126,46 @@ public static class PuzzleSolver
             
             // '3'(이미 칠해진 칸)은 재통과 불가
             // TODO: 아이템 효과로 지나갈 수 있음 처리
-            if (map[nx, ny, nz] is (char)TileType.Empty or (char)TileType.Painted)
+            if (map[nx, ny, nz] is (char)TileType.Empty || TileHelper.IsPainted(map[nx, ny, nz]))
                 continue;
  
             var next = new Vector3Int(nx, ny, nz);
  
             // ── 전진 ──
             var before = map[nx, ny, nz];
-            if (before != (char)TileType.Painted)
+            if (!TileHelper.IsPainted(before))
             {
-                map[nx, ny, nz] = (char)TileType.Painted;
+                map[nx, ny, nz] = TileHelper.PaintTable[before];
                 ++paintedCount;
             }
-
             path.Push(next);
             
-            // TODO: 아이템 처리
+            // 아이템 처리
+            switch (before)
+            {
+                case (char)TileType.PortalIn:
+                    next = portalPairDict[next];
+                    map[next.x, next.y, next.z] = (char)TileType.PortalOutPainted;
+                    ++paintedCount;
+                    path.Push(next);
+                    break;
+            }
  
-            if (DFS(map, next, size, totalPaintable, ref paintedCount, path))
+            if (DFS(map, next, size, totalPaintable, ref paintedCount, path, portalPairDict))
                 return true;
  
-            // ── 백트래킹 ──
+            // ── 백트래킹 ── 맵 원상복구
+            switch (before)
+            {
+                case (char)TileType.PortalIn:
+                    path.Pop();
+                    --paintedCount;
+                    map[next.x, next.y, next.z] = (char)TileType.PortalOut;
+                    next = portalPairDict[next];
+                    break;
+            }
             path.Pop();
-            if(before != (char)TileType.Painted)
+            if(!TileHelper.IsPainted(before))
                 --paintedCount;
             map[nx, ny, nz] = before;
         }

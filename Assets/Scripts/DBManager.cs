@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using com.example;
+using Newtonsoft.Json;
 using Postgrest;
 using Postgrest.Models;
 using Postgrest.Attributes;
@@ -47,6 +48,10 @@ public class Map : BaseModel
 
     [Column("best_time",  ignoreOnInsert: true, ignoreOnUpdate: true)]
     public short? BestTime { get; set; } // NULL 기본값
+    
+    [JsonProperty("portal_pairs")]
+    [Column("portal_pairs")]
+    public string PortalPairs { get; set; }
 }
 
 [Table("map_clears")]
@@ -82,6 +87,10 @@ public class MapCreating : BaseModel
 
     [Column("name")] 
     public string Name { get; set; } = "my map";
+    
+    [JsonProperty("portal_pairs")]
+    [Column("portal_pairs")]
+    public string PortalPairs { get; set; }
 }
 
 [Table("map_likes")]

@@ -1,4 +1,4 @@
-using System;
+
 using System.Collections.Generic;
 using System.Diagnostics;
 using Cysharp.Threading.Tasks;
@@ -8,10 +8,28 @@ using UnityEngine.InputSystem;
 
 public enum TileType
 {
-    Empty = '0',
-    Painted = '1',
-    Player = '2',
-    Road = '3'
+    Empty = 'a', Painted = 'b', Player = 'c', Road = 'd',
+    PortalIn = 'e', PortalOut = 'f', PortalInPainted = 'g', PortalOutPainted = 'h',
+    Count
+}
+
+public static class TileHelper
+{
+    public static bool IsPainted(char tile)
+    {
+        return tile is (char)TileType.Painted or (char)TileType.PortalInPainted or (char)TileType.PortalOutPainted;
+    }
+
+    public static readonly Dictionary<char, char> PaintTable = new()
+    {
+        {(char)TileType.Player, (char)TileType.Painted}, // 초기화에 사용
+        {(char)TileType.Painted, (char)TileType.Road},
+        {(char)TileType.Road, (char)TileType.Painted},
+        {(char)TileType.PortalInPainted, (char)TileType.PortalIn},
+        {(char)TileType.PortalIn, (char)TileType.PortalInPainted},
+        {(char)TileType.PortalOutPainted, (char)TileType.PortalOut},
+        {(char)TileType.PortalOut, (char)TileType.PortalOutPainted}
+    };
 }
 
 public class PuzzlePlayer : MonoBehaviour
@@ -19,13 +37,14 @@ public class PuzzlePlayer : MonoBehaviour
     [Header("GamePlay")]
     // ReSharper disable once InconsistentNaming
     private int CubeSize;
-
+    
     [SerializeField] private Transform cubeParent;
     private PuzzleTile[,,] _tiles;
 
     private char[,,] _map;
     private char[,,] _initialMap;
     private int _roadLeftCount; // 캐시데이터 - 연동 주의
+    private Dictionary<Vector3Int, Vector3Int> _portalPairDic;
 
     [SerializeField] private Transform playerModel;
     [SerializeField] private float playerMoveDuration = 0.5f;
@@ -94,10 +113,8 @@ public class PuzzlePlayer : MonoBehaviour
                     _tiles[x, y, z] = cell.GetComponent<PuzzleTile>();
                     z++;
                 }
-
                 y++;
             }
-
             x++;
         }
     }
@@ -174,15 +191,19 @@ public class PuzzlePlayer : MonoBehaviour
         {
             var c = _map[i, j, k];
             _tiles[i, j, k].SimpleRender(c);
+            
             switch (c)
             {
                 case (char)TileType.Empty:
                     continue;
-                case (char)TileType.Road:
-                    ++_roadLeftCount;
-                    break;
                 case (char)TileType.Player:
                     playerModel.position = new Vector3(i, j, k);
+                    PaintWithRender(i, j, k, true);
+                    break;
+                case (char)TileType.Road:
+                case (char) TileType.PortalIn:
+                case (char) TileType.PortalOut:
+                    ++_roadLeftCount;
                     break;
             }
         }
@@ -204,9 +225,10 @@ public class PuzzlePlayer : MonoBehaviour
         _stopwatch.Restart();
     }
 
-    public void SetMapData(char[,,] map, bool isTest = false)
+    public void SetMapData(char[,,] map, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, bool isTest = false)
     {
         _map = map;
+        _portalPairDic =  portalPairDic;
         _initialMap = (char[,,])map.Clone();
         _isTesting = isTest;
         CubeSize = map.GetLength(0);
@@ -253,43 +275,61 @@ public class PuzzlePlayer : MonoBehaviour
         var nLayer = (int)nPos.x;
         var nRow = (int)nPos.y;
         var nCol = (int)nPos.z;
-
-        if ((int)nPos.x == -1 || (int)nPos.x == 10 || (int)nPos.y == -1 || (int)nPos.y == 10 || (int)nPos.z == -1 ||
-            (int)nPos.z == 10
-            || _map[nLayer, nRow, nCol] == (char)TileType.Empty || _map[nLayer, nRow, nCol] == (char)TileType.Painted)
+        
+        if ((int)nPos.x == -1 || (int)nPos.x == CubeSize || (int)nPos.y == -1 || (int)nPos.y == CubeSize || (int)nPos.z == -1 ||
+            (int)nPos.z == CubeSize
+            || _map[nLayer, nRow, nCol] == (char)TileType.Empty ||TileHelper.IsPainted(_map[nLayer, nRow, nCol]))// TODO : 통과 아이템 효과
         {
-            // TODO : 통과 아이템 효과
             // 이동 불가 애니메이션
             if (doRender)
             {
                 await playerModel.DOShakePosition(0.2f, 0.2f, 20).AsyncWaitForCompletion().AsUniTask();
             }
-
             return;
         }
+        var before = _map[nLayer, nRow, nCol];
 
         SaveUndoState();
         _answer.Push(new Vector3Int(nLayer, nRow, nCol));
         ++_moves;
 
-        _map[(int)pos.x, (int)pos.y, (int)pos.z] = (char)TileType.Painted; // 현재 위치 페인트, 단 렌더링은 플레이어가 도달할 때 해주기때문에 이미 되어있다
-
-        if (_map[nLayer, nRow, nCol] is not (char)TileType.Painted)
+        if (!TileHelper.IsPainted(before))
             --_roadLeftCount;
 
         if (doRender)
         {
             // 플레이어 움직임 애니메이션 기다리고 - 회전 시 수행 x
             await playerModel.DOMove(nPos, playerMoveDuration).SetEase(playerMoveEase).AsyncWaitForCompletion().AsUniTask();
-            // 새 타일 칠하기 및 아이템 발동
-            await SetTileWithRender(nLayer, nRow, nCol, (char)TileType.Player, true, true); // 일단 simpleRender 사용
+            // 새 타일로 이동 및 아이템 사용
+            await PaintWithRender(nLayer, nRow, nCol, true); // 일단 simpleRender 사용
         }
         else
         {
-            SetTile(nLayer, nRow, nCol, (char)TileType.Player);
+            if (before == (char)TileType.Empty || TileHelper.IsPainted(before)) return;
+        
+            var after = TileHelper.PaintTable[before];
+            _map[nLayer, nRow, nCol] = after;
         }
-
+        
+        await ApplyItem(nLayer, nRow, nCol, before); // 아이템 사용
         CheckGameCleared();
+    }
+
+    private async UniTask ApplyItem(int x, int y, int z, char before)
+    {
+        switch (before)
+        {
+            case (char)TileType.PortalIn:
+                await playerModel.DOScale(Vector3.zero, playerMoveDuration).SetEase(Ease.InOutSine)
+                    .AsyncWaitForCompletion().AsUniTask();
+                playerModel.position = _portalPairDic[new Vector3Int(x, y, z)];
+                _answer.Push(_portalPairDic[new Vector3Int(x, y, z)]);
+                await playerModel.DOScale(Vector3.one, playerMoveDuration).SetEase(Ease.InOutSine)
+                    .AsyncWaitForCompletion().AsUniTask();
+                await PaintWithRender(x, y, z, true);
+                --_roadLeftCount;
+                return;
+        }
     }
 
     // 움직임이 확정된 뒤 저장
@@ -313,36 +353,24 @@ public class PuzzlePlayer : MonoBehaviour
         playerModel.position = s.PlayerPos;
         _roadLeftCount = s.RoadLeftCount;
         _answer.Pop();
+        if (_undoStack.Count < _answer.Count) 
+            _answer.Pop();
         --_moves;
 
         if (doRender)
             Render();
     }
 
-    // 랜더링 없는 타일 설정
-    public void SetTile(int layer, int row, int col, char tile, bool activateItem = true)
-    {
-        _map[layer, row, col] = tile;
-
-        // 템 발동
-        if (activateItem)
-        {
-
-        }
-    }
-
-    // 이동 및 아이템 사용할때 사용 -> 즉 타일이 '1'(페인트) 또는 '2'(플레이어)로만 바뀜
-    public async UniTask SetTileWithRender(int layer, int row, int col, char tile, bool activateItem = true,
+    // 이동 및 아이템 사용할때 사용 -> 즉 타일이 색칠
+    public async UniTask PaintWithRender(int layer, int row, int col,
         bool useSimpleRender = false, bool wait = true)
     {
-        var c = _map[layer, row, col];
-        var alreadyPainted = false;
-        if (c == (char)TileType.Painted) alreadyPainted = true;
-
+        var before = _map[layer, row, col];
+        if (before == (char)TileType.Empty || TileHelper.IsPainted(before)) return;
+        
+        var tile = TileHelper.PaintTable[before];
         _map[layer, row, col] = tile;
-
-        if (alreadyPainted) return;
-
+        
         if (useSimpleRender)
         {
             _tiles[layer, row, col].SimpleRender(tile);
@@ -353,12 +381,6 @@ public class PuzzlePlayer : MonoBehaviour
             await _tiles[layer, row, col].Render(tile);
         else
             _ = _tiles[layer, row, col].Render(tile, false);
-
-        if (activateItem)
-        {
-
-        }
-        //템 발동
     }
 
     #endregion
