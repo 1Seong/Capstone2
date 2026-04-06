@@ -211,11 +211,30 @@ public class MapEditor : MonoBehaviour
 
     public void SetTile(int layer, int row, int col)
     {
-        if(CurrentTile != (char)TileType.PortalOut)
+        if (_portalEditing && _previousPortalInPos == new Vector3Int(layer, row, col))
+        {
+            PopUpManager.Instance.Show("다른 위치를 지정해주세요");
+            return;
+        }
+        
+        if(!_portalEditing)
             SaveUndoState();
         //Debug.Log(layer + " " + row + " " + col);
         SetValidated(false);
-        _map[layer, row, col] = currentTile;
+        
+        if(playerModel.position == new Vector3(layer, row, col))
+        {
+            playerModel.gameObject.SetActive(false);
+        }
+        else if (_portalPairDict.ContainsKey(new Vector3Int(layer, row, col)))
+        {
+            var key = new Vector3Int(layer, row, col);
+            var val = _portalPairDict[key];
+            _portalPairDict.Remove(key);
+            _portalPairDict.Remove(val);
+            _map[val.x, val.y, val.z] = (char)TileType.Empty;
+            _tiles[val.x, val.y, val.z].SimpleRender((char)TileType.Empty);
+        }
 
         switch (currentTile)
         {
@@ -224,7 +243,7 @@ public class MapEditor : MonoBehaviour
                 {
                     playerModel.gameObject.SetActive(true);
                 }
-                else
+                else // 이전 위치 받아와서 지움, 같은 위치 지정할 경우 주의
                 {
                     var pos = playerModel.position;
                     _map[(int)pos.x, (int)pos.y, (int)pos.z] = (char)TileType.Empty;
@@ -232,27 +251,11 @@ public class MapEditor : MonoBehaviour
             
                 playerModel.position = new Vector3(layer, row, col);
                 _tiles[layer, row, col].SimpleRender((char)TileType.Empty);
-                return;
-            
-            case (char)TileType.Empty:
-                if(playerModel.position == new Vector3(layer, row, col))
-                {
-                    playerModel.gameObject.SetActive(false);
-                }
-                else if (_portalPairDict.ContainsKey(new Vector3Int(layer, row, col)))
-                {
-                    var key = new Vector3Int(layer, row, col);
-                    var val = _portalPairDict[key];
-                    _portalPairDict.Remove(key);
-                    _portalPairDict.Remove(val);
-                    _map[val.x, val.y, val.z] = (char)TileType.Empty;
-                    _tiles[val.x, val.y, val.z].SimpleRender((char)TileType.Empty);
-                }
                 break;
-            
+   
             case (char)TileType.PortalIn:
                 _previousPortalInPos = new Vector3Int(layer, row, col);
-                currentLine = _tiles[layer, row, col].GetComponentInChildren<LineRenderer>(true);
+                currentLine = _tiles[layer, row, col].GetComponentInChildren<LineRenderer>(true); // 점선 초기화
                 if (currentLine == null)
                 {
                     currentLine = Instantiate(linePrefab, _tiles[layer, row, col].transform).GetComponent<LineRenderer>();
@@ -265,15 +268,15 @@ public class MapEditor : MonoBehaviour
             
             case (char)TileType.PortalOut:
                 var outPos = new Vector3Int(layer, row, col);
-                //_portalPairList.Add(PortalPairHelper.CreatePair(_previousPortalInPos, outPos));
                 _portalPairDict[_previousPortalInPos] = outPos;
-                _portalPairDict[outPos] = _previousPortalInPos;
-                currentLine.SetPosition(1,  outPos);
+                _portalPairDict[outPos] = _previousPortalInPos; // 딕셔너리에 쌍 등록
+                currentLine.SetPosition(1,  outPos); // 점선 잇기
                 PortalEditing = false;
                 break;
         }
-
+        _map[layer, row, col] = currentTile;
         _tiles[layer, row, col].SimpleRender(currentTile);
+        
         if(currentTile == (char)TileType.PortalIn)
             CurrentTile = (char)TileType.PortalOut;
         else if(currentTile == (char)TileType.PortalOut)
@@ -361,6 +364,12 @@ public class MapEditor : MonoBehaviour
     public void SetCurrentTileToPortal()
     {
         CurrentTile = (char)TileType.PortalIn;
+        // 여기에서 현재 mat 지정
+    }
+    
+    public void SetCurrentTileToGhostl()
+    {
+        CurrentTile = (char)TileType.Ghost;
         // 여기에서 현재 mat 지정
     }
 
@@ -460,7 +469,7 @@ public class MapEditor : MonoBehaviour
             Undo();
         }
         
-        if (PortalEditing) return;
+        if (_portalEditing) return;
 
         if (Input.GetKeyDown(KeyCode.R))
         {

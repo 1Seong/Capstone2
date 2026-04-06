@@ -46,14 +46,14 @@ public class GameManager : MonoBehaviour
         MapEditor.Instance.Initialize(mapCreating);
     }
 
-    public void GameCleared(TimeSpan ts, int moves)
+    public void GameCleared(int moves)
     {
         // 싱글이냐 유저맵이냐에 따라 다름
     }
 
-    public void GameClearedTest(TimeSpan ts, int moves)
+    public void GameClearedTest(int moves)
     {
-        testResultTMP.text = $"클리어 시간: {ts.Minutes:D2}:{ts.Seconds:D2}\n움직임 수: {moves.ToString()}";
+        testResultTMP.text = $"움직임 수: {moves.ToString()}";
         testClearPanel.SetActive(true);
     }
 

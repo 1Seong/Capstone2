@@ -45,9 +45,6 @@ public class Map : BaseModel
 
     [Column("best_moves",  ignoreOnInsert: true, ignoreOnUpdate: true)]
     public short? BestMoves { get; set; } // NULL 기본값
-
-    [Column("best_time",  ignoreOnInsert: true, ignoreOnUpdate: true)]
-    public short? BestTime { get; set; } // NULL 기본값
     
     [JsonProperty("portal_pairs")]
     [Column("portal_pairs")]
@@ -62,10 +59,7 @@ public class MapClears : BaseModel
 
     [PrimaryKey("map_id", shouldInsert: true)]
     public long MapId { get; set; }
-
-    [Column("clear_time")]
-    public short ClearTime { get; set; }
-
+    
     [Column("moves")]
     public short Moves { get; set; }
 }
@@ -111,10 +105,7 @@ public class StorySaves : BaseModel
 
     [PrimaryKey("map_id", shouldInsert: true)]
     public short MapId { get; set; }
-
-    [Column("clear_time")]
-    public short ClearTime { get; set; }
-
+    
     [Column("moves")]
     public short Moves { get; set; }
 }

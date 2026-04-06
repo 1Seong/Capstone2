@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,6 +11,7 @@ public enum TileType
 {
     Empty = 'a', Painted = 'b', Player = 'c', Road = 'd',
     PortalIn = 'e', PortalOut = 'f', PortalInPainted = 'g', PortalOutPainted = 'h',
+    Ghost = 'i',
     Count
 }
 
@@ -28,8 +30,11 @@ public static class TileHelper
         {(char)TileType.PortalInPainted, (char)TileType.PortalIn},
         {(char)TileType.PortalIn, (char)TileType.PortalInPainted},
         {(char)TileType.PortalOutPainted, (char)TileType.PortalOut},
-        {(char)TileType.PortalOut, (char)TileType.PortalOutPainted}
+        {(char)TileType.PortalOut, (char)TileType.PortalOutPainted},
+        {(char)TileType.Ghost, (char)TileType.Painted}
     };
+
+    public const int GhostCount = 5;
 }
 
 public class PuzzlePlayer : MonoBehaviour
@@ -51,7 +56,29 @@ public class PuzzlePlayer : MonoBehaviour
     [SerializeField] private Ease playerMoveEase = Ease.OutExpo;
 
     private bool _isMoving;
-
+    [SerializeField] private TMP_Text ghostText;
+    private int _currentGhostCount;
+    public int CurrentGhostCount
+    {
+        get => _currentGhostCount;
+        set
+        {
+            ghostText.text = value.ToString();
+            if (_currentGhostCount > 0 && value == 0) // 카운트가 꺼지는 경우
+            {
+                playerModel.GetComponent<MeshRenderer>().materials[0].DOFade(1f, 0.5f)
+                    .SetEase(Ease.InOutSine).OnComplete(()=>ghostText.gameObject.SetActive(false));
+            }
+            else if (_currentGhostCount == 0 && value > 0) // 켜지는 경우
+            {
+                ghostText.gameObject.SetActive(true);
+                playerModel.GetComponent<MeshRenderer>().materials[0].DOFade(0.45f, 0.5f)
+                    .SetEase(Ease.InOutSine);
+            }
+            _currentGhostCount = value;
+        }
+    }
+    
     [Header("Camera")]
     [SerializeField] private Camera cam;
     [SerializeField] private Transform pivot;
@@ -81,7 +108,6 @@ public class PuzzlePlayer : MonoBehaviour
     private bool _isTesting;
     private bool _isCleared;
     private Stack<Vector3Int> _answer;
-    private Stopwatch _stopwatch = new();
     private int _moves = 0;
 
 
@@ -90,6 +116,7 @@ public class PuzzlePlayer : MonoBehaviour
         public char[,,] Map;
         public Vector3 PlayerPos;
         public int RoadLeftCount;
+        public int CurrentGhostCount;
     }
 
     private Stack<MapState> _undoStack;
@@ -203,6 +230,7 @@ public class PuzzlePlayer : MonoBehaviour
                 case (char)TileType.Road:
                 case (char) TileType.PortalIn:
                 case (char) TileType.PortalOut:
+                case (char) TileType.Ghost:
                     ++_roadLeftCount;
                     break;
             }
@@ -222,7 +250,7 @@ public class PuzzlePlayer : MonoBehaviour
         currentRight = Vector3.right;
         currentLeft = Vector3.back;
         _moves = 0;
-        _stopwatch.Restart();
+        CurrentGhostCount = 0;
     }
 
     public void SetMapData(char[,,] map, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, bool isTest = false)
@@ -252,15 +280,14 @@ public class PuzzlePlayer : MonoBehaviour
         if (_roadLeftCount != 0) return;
 
         _isCleared = true;
-        _stopwatch.Stop();
         
         if (_isTesting)
         {
             MapEditor.Instance.SetValidated(true, _answer);
-            GameManager.Instance.GameClearedTest(_stopwatch.Elapsed, _moves);
+            GameManager.Instance.GameClearedTest(_moves);
         }
         else
-            GameManager.Instance.GameCleared(_stopwatch.Elapsed, _moves);
+            GameManager.Instance.GameCleared(_moves);
     }
 
     #endregion
@@ -278,7 +305,8 @@ public class PuzzlePlayer : MonoBehaviour
         
         if ((int)nPos.x == -1 || (int)nPos.x == CubeSize || (int)nPos.y == -1 || (int)nPos.y == CubeSize || (int)nPos.z == -1 ||
             (int)nPos.z == CubeSize
-            || _map[nLayer, nRow, nCol] == (char)TileType.Empty ||TileHelper.IsPainted(_map[nLayer, nRow, nCol]))// TODO : 통과 아이템 효과
+            || _map[nLayer, nRow, nCol] == (char)TileType.Empty 
+            || _currentGhostCount == 0 && TileHelper.IsPainted(_map[nLayer, nRow, nCol]))
         {
             // 이동 불가 애니메이션
             if (doRender)
@@ -287,13 +315,16 @@ public class PuzzlePlayer : MonoBehaviour
             }
             return;
         }
+        // ---- 전진 ----
         var before = _map[nLayer, nRow, nCol];
 
         SaveUndoState();
         _answer.Push(new Vector3Int(nLayer, nRow, nCol));
         ++_moves;
+        if (_currentGhostCount > 0)
+            --CurrentGhostCount;
 
-        if (!TileHelper.IsPainted(before))
+        if (_currentGhostCount == 0 && !TileHelper.IsPainted(before))
             --_roadLeftCount;
 
         if (doRender)
@@ -301,17 +332,20 @@ public class PuzzlePlayer : MonoBehaviour
             // 플레이어 움직임 애니메이션 기다리고 - 회전 시 수행 x
             await playerModel.DOMove(nPos, playerMoveDuration).SetEase(playerMoveEase).AsyncWaitForCompletion().AsUniTask();
             // 새 타일로 이동 및 아이템 사용
-            await PaintWithRender(nLayer, nRow, nCol, true); // 일단 simpleRender 사용
+            if(_currentGhostCount == 0)
+                await PaintWithRender(nLayer, nRow, nCol, true); // 일단 simpleRender 사용
         }
         else
         {
-            if (before == (char)TileType.Empty || TileHelper.IsPainted(before)) return;
+            if (_currentGhostCount > 0 || before == (char)TileType.Empty || TileHelper.IsPainted(before)) return;
         
             var after = TileHelper.PaintTable[before];
             _map[nLayer, nRow, nCol] = after;
         }
         
-        await ApplyItem(nLayer, nRow, nCol, before); // 아이템 사용
+        if(_currentGhostCount == 0)
+            await ApplyItem(nLayer, nRow, nCol, before); // 아이템 사용
+        
         CheckGameCleared();
     }
 
@@ -328,7 +362,10 @@ public class PuzzlePlayer : MonoBehaviour
                     .AsyncWaitForCompletion().AsUniTask();
                 await PaintWithRender(x, y, z, true);
                 --_roadLeftCount;
-                return;
+                break;
+            case (char)TileType.Ghost:
+                CurrentGhostCount = TileHelper.GhostCount;
+                break;
         }
     }
 
@@ -338,7 +375,7 @@ public class PuzzlePlayer : MonoBehaviour
         // 얕은 복사가 아닌 깊은 복사 필수
         var snapshot = (char[,,])_map.Clone();
         _undoStack.Push(new MapState()
-            { Map = snapshot, PlayerPos = playerModel.position, RoadLeftCount = _roadLeftCount });
+            { Map = snapshot, PlayerPos = playerModel.position, RoadLeftCount = _roadLeftCount, CurrentGhostCount = _currentGhostCount});
         var pos = playerModel.position;
     }
 
@@ -352,6 +389,8 @@ public class PuzzlePlayer : MonoBehaviour
         _map = s.Map;
         playerModel.position = s.PlayerPos;
         _roadLeftCount = s.RoadLeftCount;
+        CurrentGhostCount = s.CurrentGhostCount;
+        
         _answer.Pop();
         if (_undoStack.Count < _answer.Count) 
             _answer.Pop();

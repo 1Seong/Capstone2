@@ -36,6 +36,7 @@ public static class PuzzleSolver
         Vector3Int startPos = default;
         var totalPaintable = 0;
         var foundStart = false;
+        var currentGhostCount = 0;
  
         // 시작 위치 탐색 & 색칠 가능 칸 카운트
         for (var x = 0; x != cubeSize; ++x)
@@ -61,6 +62,7 @@ public static class PuzzleSolver
                 case (char)TileType.Road:
                 case (char)TileType.PortalIn:
                 case (char)TileType.PortalOut:
+                case (char)TileType.Ghost:
                     ++totalPaintable;
                     //Debug.Log(x + " " + y + " " + z);
                     break;
@@ -85,8 +87,8 @@ public static class PuzzleSolver
         var solved = DFS(
             workMap, startPos,
             cubeSize,
-            totalPaintable, ref paintedCount,
-            path, portalPairDic
+            totalPaintable, paintedCount,
+            path, portalPairDic, currentGhostCount
         );
  
         return new SolveResult
@@ -104,8 +106,9 @@ public static class PuzzleSolver
         char[,,] map,
         Vector3Int current,
         int size,
-        int totalPaintable, ref int paintedCount,
-        Stack<Vector3Int> path, Dictionary<Vector3Int, Vector3Int> portalPairDict)
+        int totalPaintable, int paintedCount,
+        Stack<Vector3Int> path, Dictionary<Vector3Int, Vector3Int> portalPairDict,
+        int currentGhostCount)
     {
         // 모든 색칠 가능 공간을 칠했으면 클리어
         if (paintedCount == totalPaintable)
@@ -117,6 +120,8 @@ public static class PuzzleSolver
             int nx = current.x + dir.x;
             int ny = current.y + dir.y;
             int nz = current.z + dir.z;
+            var gc = currentGhostCount;
+            var pc = paintedCount;
  
             // 범위 체크
             if ((uint)nx >= (uint)size ||
@@ -124,19 +129,20 @@ public static class PuzzleSolver
                 (uint)nz >= (uint)size)
                 continue;
             
-            // '3'(이미 칠해진 칸)은 재통과 불가
-            // TODO: 아이템 효과로 지나갈 수 있음 처리
-            if (map[nx, ny, nz] is (char)TileType.Empty || TileHelper.IsPainted(map[nx, ny, nz]))
+            // (이미 칠해진 칸)은 재통과 불가
+            if (map[nx, ny, nz] is (char)TileType.Empty || gc == 0 && TileHelper.IsPainted(map[nx, ny, nz]))
                 continue;
  
             var next = new Vector3Int(nx, ny, nz);
+            if (gc > 0)
+                --gc;
  
             // ── 전진 ──
             var before = map[nx, ny, nz];
-            if (!TileHelper.IsPainted(before))
+            if (gc == 0 && !TileHelper.IsPainted(before))
             {
                 map[nx, ny, nz] = TileHelper.PaintTable[before];
-                ++paintedCount;
+                ++pc;
             }
             path.Push(next);
             
@@ -146,27 +152,26 @@ public static class PuzzleSolver
                 case (char)TileType.PortalIn:
                     next = portalPairDict[next];
                     map[next.x, next.y, next.z] = (char)TileType.PortalOutPainted;
-                    ++paintedCount;
+                    ++pc;
                     path.Push(next);
+                    break;
+                case (char)TileType.Ghost:
+                    gc = TileHelper.GhostCount;
                     break;
             }
  
-            if (DFS(map, next, size, totalPaintable, ref paintedCount, path, portalPairDict))
+            if (DFS(map, next, size, totalPaintable, pc, path, portalPairDict, gc))
                 return true;
  
-            // ── 백트래킹 ── 맵 원상복구
+            // ── 백트래킹 ── map과 path 복구
             switch (before)
             {
                 case (char)TileType.PortalIn:
                     path.Pop();
-                    --paintedCount;
                     map[next.x, next.y, next.z] = (char)TileType.PortalOut;
-                    next = portalPairDict[next];
                     break;
             }
             path.Pop();
-            if(!TileHelper.IsPainted(before))
-                --paintedCount;
             map[nx, ny, nz] = before;
         }
  
