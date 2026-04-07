@@ -367,9 +367,15 @@ public class MapEditor : MonoBehaviour
         // 여기에서 현재 mat 지정
     }
     
-    public void SetCurrentTileToGhostl()
+    public void SetCurrentTileToGhost()
     {
         CurrentTile = (char)TileType.Ghost;
+        // 여기에서 현재 mat 지정
+    }
+    
+    public void SetCurrentTileToInv()
+    {
+        CurrentTile = (char)TileType.Inv;
         // 여기에서 현재 mat 지정
     }
 

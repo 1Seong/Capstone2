@@ -1,6 +1,5 @@
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
@@ -9,9 +8,10 @@ using UnityEngine.InputSystem;
 
 public enum TileType
 {
-    Empty = 'a', Painted = 'b', Player = 'c', Road = 'd',
-    PortalIn = 'e', PortalOut = 'f', PortalInPainted = 'g', PortalOutPainted = 'h',
-    Ghost = 'i',
+    Empty = 'a', Painted, Player, Road,
+    PortalIn, PortalOut, PortalInPainted, PortalOutPainted,
+    Ghost, GhostPainted,
+    Inv, InvPainted,
     Count
 }
 
@@ -19,19 +19,32 @@ public static class TileHelper
 {
     public static bool IsPainted(char tile)
     {
-        return tile is (char)TileType.Painted or (char)TileType.PortalInPainted or (char)TileType.PortalOutPainted;
+        return tile is (char)TileType.Painted or (char)TileType.PortalInPainted or (char)TileType.PortalOutPainted
+            or (char)TileType.GhostPainted or (char)TileType.InvPainted;
     }
 
     public static readonly Dictionary<char, char> PaintTable = new()
     {
         {(char)TileType.Player, (char)TileType.Painted}, // 초기화에 사용
-        {(char)TileType.Painted, (char)TileType.Road},
         {(char)TileType.Road, (char)TileType.Painted},
-        {(char)TileType.PortalInPainted, (char)TileType.PortalIn},
         {(char)TileType.PortalIn, (char)TileType.PortalInPainted},
-        {(char)TileType.PortalOutPainted, (char)TileType.PortalOut},
         {(char)TileType.PortalOut, (char)TileType.PortalOutPainted},
-        {(char)TileType.Ghost, (char)TileType.Painted}
+        {(char)TileType.Ghost, (char)TileType.Painted},
+        {(char)TileType.Inv, (char)TileType.Painted}
+    };
+    
+    public static readonly Dictionary<char, char> InvTable = new()
+    {
+        {(char)TileType.Road, (char)TileType.Painted},
+        {(char)TileType.Painted, (char)TileType.Road},
+        {(char)TileType.PortalIn, (char)TileType.PortalInPainted},
+        {(char)TileType.PortalOut, (char)TileType.PortalOutPainted},
+        {(char)TileType.PortalInPainted, (char)TileType.PortalIn},
+        {(char)TileType.PortalOutPainted, (char)TileType.PortalOut},
+        {(char)TileType.Ghost, (char)TileType.GhostPainted},
+        {(char)TileType.Inv, (char)TileType.InvPainted},
+        {(char)TileType.GhostPainted, (char)TileType.Ghost},
+        {(char)TileType.InvPainted, (char)TileType.Inv}
     };
 
     public const int GhostCount = 5;
@@ -48,7 +61,7 @@ public class PuzzlePlayer : MonoBehaviour
 
     private char[,,] _map;
     private char[,,] _initialMap;
-    private int _roadLeftCount; // 캐시데이터 - 연동 주의
+    private int _roadLeftCount;
     private Dictionary<Vector3Int, Vector3Int> _portalPairDic;
 
     [SerializeField] private Transform playerModel;
@@ -231,6 +244,7 @@ public class PuzzlePlayer : MonoBehaviour
                 case (char) TileType.PortalIn:
                 case (char) TileType.PortalOut:
                 case (char) TileType.Ghost:
+                case (char) TileType.Inv:
                     ++_roadLeftCount;
                     break;
             }
@@ -363,8 +377,26 @@ public class PuzzlePlayer : MonoBehaviour
                 await PaintWithRender(x, y, z, true);
                 --_roadLeftCount;
                 break;
+            
             case (char)TileType.Ghost:
                 CurrentGhostCount = TileHelper.GhostCount;
+                break;
+            
+            case (char)TileType.Inv:
+                _roadLeftCount = 0;
+                for (var i = 0; i != CubeSize; ++i)
+                for (var j = 0; j != CubeSize; ++j)
+                for (var k = 0; k != CubeSize; ++k)
+                {
+                    var beforeInv = _map[i, j, k];
+                    if(beforeInv == (char)TileType.Empty || i == x && j == y && k == z)
+                        continue;
+                    var afterInv = TileHelper.InvTable[beforeInv];
+                    _map[i, j, k] = afterInv;
+                    if (!TileHelper.IsPainted(afterInv))
+                        ++_roadLeftCount;
+                    _tiles[i, j, k].SimpleRender(afterInv); // TODO: 나중에 Render로 변경
+                }
                 break;
         }
     }
