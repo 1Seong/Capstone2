@@ -378,6 +378,12 @@ public class MapEditor : MonoBehaviour
         CurrentTile = (char)TileType.Inv;
         // 여기에서 현재 mat 지정
     }
+    
+    public void SetCurrentTileToLaser()
+    {
+        CurrentTile = (char)TileType.Laser;
+        // 여기에서 현재 mat 지정
+    }
 
     public void ExitEditor()
     {

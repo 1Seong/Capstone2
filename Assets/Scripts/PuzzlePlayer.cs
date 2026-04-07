@@ -12,6 +12,7 @@ public enum TileType
     PortalIn, PortalOut, PortalInPainted, PortalOutPainted,
     Ghost, GhostPainted,
     Inv, InvPainted,
+    Laser, LaserPainted,
     Count
 }
 
@@ -20,7 +21,7 @@ public static class TileHelper
     public static bool IsPainted(char tile)
     {
         return tile is (char)TileType.Painted or (char)TileType.PortalInPainted or (char)TileType.PortalOutPainted
-            or (char)TileType.GhostPainted or (char)TileType.InvPainted;
+            or (char)TileType.GhostPainted or (char)TileType.InvPainted or (char)TileType.LaserPainted;
     }
 
     public static readonly Dictionary<char, char> PaintTable = new()
@@ -30,7 +31,8 @@ public static class TileHelper
         {(char)TileType.PortalIn, (char)TileType.PortalInPainted},
         {(char)TileType.PortalOut, (char)TileType.PortalOutPainted},
         {(char)TileType.Ghost, (char)TileType.Painted},
-        {(char)TileType.Inv, (char)TileType.Painted}
+        {(char)TileType.Inv, (char)TileType.Painted},
+        {(char)TileType.Laser, (char)TileType.Painted}
     };
     
     public static readonly Dictionary<char, char> InvTable = new()
@@ -44,10 +46,21 @@ public static class TileHelper
         {(char)TileType.Ghost, (char)TileType.GhostPainted},
         {(char)TileType.Inv, (char)TileType.InvPainted},
         {(char)TileType.GhostPainted, (char)TileType.Ghost},
-        {(char)TileType.InvPainted, (char)TileType.Inv}
+        {(char)TileType.InvPainted, (char)TileType.Inv},
+        {(char)TileType.Laser, (char)TileType.LaserPainted},
+        {(char)TileType.LaserPainted, (char)TileType.Laser}
     };
 
     public const int GhostCount = 5;
+
+    public static readonly Vector3Int[] Dirs = {
+        new(1, 0, 0),
+        new(-1, 0, 0),
+        new(0, 1, 0),
+        new(0, -1, 0),
+        new(0, 0, 1),
+        new(0, 0, -1)
+    };
 }
 
 public class PuzzlePlayer : MonoBehaviour
@@ -67,11 +80,11 @@ public class PuzzlePlayer : MonoBehaviour
     [SerializeField] private Transform playerModel;
     [SerializeField] private float playerMoveDuration = 0.5f;
     [SerializeField] private Ease playerMoveEase = Ease.OutExpo;
-
     private bool _isMoving;
     [SerializeField] private TMP_Text ghostText;
+    private List<CellPulse> _highlightCells = new();
     private int _currentGhostCount;
-    public int CurrentGhostCount
+    private int CurrentGhostCount
     {
         get => _currentGhostCount;
         set
@@ -91,7 +104,107 @@ public class PuzzlePlayer : MonoBehaviour
             _currentGhostCount = value;
         }
     }
-    
+    private bool _hasLaser;
+
+    private bool HasLaser
+    {
+        get => _hasLaser;
+        set
+        {
+            if (!_hasLaser && value) // 켜짐
+            {
+                _highlightCells.Clear();
+                var p = playerModel.position;
+                int x = (int)p.x, y = (int)p.y, z = (int)p.z;
+                bool d1 = true, d2 = true, d3 = true, d4 = true, d5 = true, d6 = true;
+                var depth = 1;
+                var offset = 0.06f;
+                while (d1 || d2 || d3 || d4 || d5 || d6)
+                {
+                    if (d1)
+                    {
+                        var t = x + depth;
+                        if (CannotMove(t, y, z))
+                            d1 = false;
+                        else
+                        {
+                            var cell = _tiles[t, y, z].GetComponent<CellPulse>();
+                            _highlightCells.Add(cell);
+                            cell.StartPulse((depth-1) * offset);
+                        }
+                    }
+                    if (d2)
+                    {
+                        var t = x - depth;
+                        if (CannotMove(t, y, z))
+                            d2 = false;
+                        else
+                        {
+                            var cell = _tiles[t, y, z].GetComponent<CellPulse>();
+                            _highlightCells.Add(cell);
+                            cell.StartPulse((depth-1) * offset);
+                        }
+                    }
+                    if (d3)
+                    {
+                        var t = y + depth;
+                        if (CannotMove(x, t, z))
+                            d3 = false;
+                        else
+                        {
+                            var cell = _tiles[x, t, z].GetComponent<CellPulse>();
+                            _highlightCells.Add(cell);
+                            cell.StartPulse((depth-1) * offset);
+                        }
+                    }
+                    if (d4)
+                    {
+                        var t = y - depth;
+                        if (CannotMove(x, t, z))
+                            d4 = false;
+                        else
+                        {
+                            var cell = _tiles[x, t, z].GetComponent<CellPulse>();
+                            _highlightCells.Add(cell);
+                            cell.StartPulse((depth-1) * offset);
+                        }
+                    }
+                    if (d5)
+                    {
+                        var t = z + depth;
+                        if (CannotMove(x, y, t))
+                            d5 = false;
+                        else
+                        {
+                            var cell = _tiles[x, y, t].GetComponent<CellPulse>();
+                            _highlightCells.Add(cell);
+                            cell.StartPulse((depth-1) * offset);
+                        }
+                    }
+                    if (d6)
+                    {
+                        var t = z - depth;
+                        if (CannotMove(x, y, t))
+                            d6 = false;
+                        else
+                        {
+                            var cell = _tiles[x, y, t].GetComponent<CellPulse>();
+                            _highlightCells.Add(cell);
+                            cell.StartPulse((depth-1) * offset);
+                        }
+                    }
+                    ++depth;
+                }
+            }
+            else if (_hasLaser && !value) // 꺼짐
+            {
+                foreach (var cell in _highlightCells)
+                    cell.StopPulse();
+            }
+            _hasLaser = value;
+        }
+    }
+
     [Header("Camera")]
     [SerializeField] private Camera cam;
     [SerializeField] private Transform pivot;
@@ -130,6 +243,7 @@ public class PuzzlePlayer : MonoBehaviour
         public Vector3 PlayerPos;
         public int RoadLeftCount;
         public int CurrentGhostCount;
+        public bool HasLaser;
     }
 
     private Stack<MapState> _undoStack;
@@ -245,6 +359,7 @@ public class PuzzlePlayer : MonoBehaviour
                 case (char) TileType.PortalOut:
                 case (char) TileType.Ghost:
                 case (char) TileType.Inv:
+                case (char) TileType.Laser:
                     ++_roadLeftCount;
                     break;
             }
@@ -265,6 +380,7 @@ public class PuzzlePlayer : MonoBehaviour
         currentLeft = Vector3.back;
         _moves = 0;
         CurrentGhostCount = 0;
+        HasLaser = false;
     }
 
     public void SetMapData(char[,,] map, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, bool isTest = false)
@@ -308,8 +424,15 @@ public class PuzzlePlayer : MonoBehaviour
 
     #region Player
 
+    private bool CannotMove(int x, int y, int z)
+    {
+        return x == -1 || x == CubeSize || y == -1 || y == CubeSize || z == -1 || z == CubeSize
+               || _map[x, y, z] == (char)TileType.Empty
+               || _currentGhostCount == 0 && TileHelper.IsPainted(_map[x, y, z]);
+    }
+
     // 인덱스 계산
-    private async UniTask MovePlayer(Vector3 dir, bool doRender = true)
+    private async UniTask MovePlayer(Vector3 dir)
     {
         var pos = playerModel.position;
         var nPos = pos + dir;
@@ -317,49 +440,46 @@ public class PuzzlePlayer : MonoBehaviour
         var nRow = (int)nPos.y;
         var nCol = (int)nPos.z;
         
-        if ((int)nPos.x == -1 || (int)nPos.x == CubeSize || (int)nPos.y == -1 || (int)nPos.y == CubeSize || (int)nPos.z == -1 ||
-            (int)nPos.z == CubeSize
-            || _map[nLayer, nRow, nCol] == (char)TileType.Empty 
-            || _currentGhostCount == 0 && TileHelper.IsPainted(_map[nLayer, nRow, nCol]))
+        if (CannotMove(nLayer, nRow, nCol))
         {
             // 이동 불가 애니메이션
-            if (doRender)
-            {
-                await playerModel.DOShakePosition(0.2f, 0.2f, 20).AsyncWaitForCompletion().AsUniTask();
-            }
+            await playerModel.DOShakePosition(0.2f, 0.2f, 20).AsyncWaitForCompletion().AsUniTask();
             return;
         }
         // ---- 전진 ----
         var before = _map[nLayer, nRow, nCol];
-
         SaveUndoState();
         _answer.Push(new Vector3Int(nLayer, nRow, nCol));
         ++_moves;
         if (_currentGhostCount > 0)
             --CurrentGhostCount;
 
-        if (_currentGhostCount == 0 && !TileHelper.IsPainted(before))
-            --_roadLeftCount;
-
-        if (doRender)
+        if (_hasLaser)
         {
-            // 플레이어 움직임 애니메이션 기다리고 - 회전 시 수행 x
-            await playerModel.DOMove(nPos, playerMoveDuration).SetEase(playerMoveEase).AsyncWaitForCompletion().AsUniTask();
-            // 새 타일로 이동 및 아이템 사용
-            if(_currentGhostCount == 0)
-                await PaintWithRender(nLayer, nRow, nCol, true); // 일단 simpleRender 사용
+            HasLaser = false;
+            do
+            {
+                --_roadLeftCount;
+                await PaintWithRender((int)nPos.x, (int)nPos.y, (int)nPos.z, true);
+                await UniTask.WaitForSeconds(0.11f);
+                nPos += dir;
+            } while (!CannotMove((int)nPos.x, (int)nPos.y, (int)nPos.z));
         }
         else
         {
-            if (_currentGhostCount > 0 || before == (char)TileType.Empty || TileHelper.IsPainted(before)) return;
-        
-            var after = TileHelper.PaintTable[before];
-            _map[nLayer, nRow, nCol] = after;
+            // 플레이어 움직임 애니메이션 기다리고 - 회전 시 수행 x
+            await playerModel.DOMove(nPos, playerMoveDuration).SetEase(playerMoveEase).AsyncWaitForCompletion()
+                .AsUniTask();
+            // 색칠 및 아이템 사용
+            if (_currentGhostCount == 0)
+            {
+                if (!TileHelper.IsPainted(before))
+                    --_roadLeftCount;
+                await PaintWithRender(nLayer, nRow, nCol, true); // 일단 simpleRender 사용
+                await ApplyItem(nLayer, nRow, nCol, before); // 아이템 사용
+            }
         }
-        
-        if(_currentGhostCount == 0)
-            await ApplyItem(nLayer, nRow, nCol, before); // 아이템 사용
-        
+
         CheckGameCleared();
     }
 
@@ -398,6 +518,10 @@ public class PuzzlePlayer : MonoBehaviour
                     _tiles[i, j, k].SimpleRender(afterInv); // TODO: 나중에 Render로 변경
                 }
                 break;
+            
+            case (char)TileType.Laser:
+                HasLaser = true;
+                break;
         }
     }
 
@@ -407,7 +531,10 @@ public class PuzzlePlayer : MonoBehaviour
         // 얕은 복사가 아닌 깊은 복사 필수
         var snapshot = (char[,,])_map.Clone();
         _undoStack.Push(new MapState()
-            { Map = snapshot, PlayerPos = playerModel.position, RoadLeftCount = _roadLeftCount, CurrentGhostCount = _currentGhostCount});
+        {
+            Map = snapshot, PlayerPos = playerModel.position, RoadLeftCount = _roadLeftCount, CurrentGhostCount = _currentGhostCount,
+            HasLaser = _hasLaser
+        });
         var pos = playerModel.position;
     }
 
@@ -422,7 +549,7 @@ public class PuzzlePlayer : MonoBehaviour
         playerModel.position = s.PlayerPos;
         _roadLeftCount = s.RoadLeftCount;
         CurrentGhostCount = s.CurrentGhostCount;
-        
+
         _answer.Pop();
         if (_undoStack.Count < _answer.Count) 
             _answer.Pop();
@@ -430,6 +557,8 @@ public class PuzzlePlayer : MonoBehaviour
 
         if (doRender)
             Render();
+        
+        HasLaser = s.HasLaser;
     }
 
     // 이동 및 아이템 사용할때 사용 -> 즉 타일이 색칠
