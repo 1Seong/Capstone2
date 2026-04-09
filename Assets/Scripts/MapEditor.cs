@@ -153,7 +153,7 @@ public class MapEditor : MonoBehaviour
 
     private void LayerRender()
     {
-        for (int i = 0; i != cubeSize; ++i)
+        for (int i = 1; i != cubeSize-1; ++i)
                 innerCubes[_rotAxis].GetChild(i).GetChild(0).gameObject.SetActive(_canRotate[i]);
     }
 

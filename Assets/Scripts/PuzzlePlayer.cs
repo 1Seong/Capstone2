@@ -275,7 +275,6 @@ public class PuzzlePlayer : MonoBehaviour
     {
         _initialCameraPosition = pivot.position;
         _initialCameraRotation = pivot.rotation;
-        _canRotate = new bool[CubeSize];
         _tiles = new PuzzleTile[CubeSize, CubeSize, CubeSize];
 
         int x = 0;
@@ -293,15 +292,6 @@ public class PuzzlePlayer : MonoBehaviour
                 y++;
             }
             x++;
-        }
-        innerCubes[_rotAxis].SetActive(true);
-        _layers  = new Transform[CubeSize];
-        var t = innerCubes[_rotAxis].GetComponent<Transform>();
-        for (int i = 0; i != CubeSize; ++i)
-        {
-            _layers[i] = t.GetChild(i);
-            if (_canRotate[i])
-                _layers[i].GetChild(0).gameObject.SetActive(true);
         }
     }
     #region EnableDisable
@@ -420,6 +410,21 @@ public class PuzzlePlayer : MonoBehaviour
         _moves = 0;
         CurrentGhostCount = 0;
         HasLaser = false;
+        
+        innerCubes[_rotAxis].SetActive(true);
+        if (_rotAxis != 0)
+        {
+            _layers = new Transform[CubeSize];
+            var t = innerCubes[_rotAxis].GetComponent<Transform>();
+            for (int i = 1; i != CubeSize-1; ++i)
+            {
+                _layers[i] = t.GetChild(i);
+                if (_canRotate[i])
+                    _layers[i].GetChild(0).gameObject.SetActive(true);
+                else
+                    _layers[i].GetChild(0).gameObject.SetActive(false);
+            }
+        }
     }
 
     public void SetMapData(char[,,] map, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, 
@@ -623,6 +628,8 @@ public class PuzzlePlayer : MonoBehaviour
         for (int index = 0; index != CubeSize; ++index)
             temp[index] = new char[CubeSize];
         Vector3 targetAngle;
+        int playerX = (int)playerModel.position.x, playerY = (int)playerModel.position.y, playerZ = (int)playerModel.position.z;
+        Vector3 playerTarget = default;
 
         switch(_rotAxis)
         {
@@ -673,9 +680,15 @@ public class PuzzlePlayer : MonoBehaviour
                             break;
                     }
                     if (clockWise)
+                    {
                         _map[x, CubeSize - 1 - j, i] = temp[i][j];
+                        playerTarget = new Vector3(playerX, CubeSize - 1 - playerZ, playerY);
+                    }
                     else
+                    {
                         _map[x, j, CubeSize - 1 - i] = temp[i][j];
+                        playerTarget = new Vector3(playerX, playerZ, CubeSize-1-playerY);
+                    }
                     rotationObjects.Add(_tiles[x, i, j].gameObject);
                 }
                 targetAngle = clockWise ? new Vector3(90f, 0, 0) : new Vector3(-90f, 0, 0);
@@ -684,7 +697,7 @@ public class PuzzlePlayer : MonoBehaviour
                     List<UniTask> tasks = new();
                     bool b1 = true, b2 = true;
                     var depth = 1;
-                    tasks.Add(RotateTilesEffect(x, rotationObjects, targetAngle));
+                    tasks.Add(RotateTilesEffect(x, rotationObjects, targetAngle, true, playerTarget));
                     if (x - depth < 0 || !_canRotate[x - depth]) b1 = false;
                     if (x + depth >= CubeSize || !_canRotate[x + depth]) b2 = false;
                     while (b1 || b2)
@@ -705,7 +718,7 @@ public class PuzzlePlayer : MonoBehaviour
                     await UniTask.WhenAll(tasks);
                 }
                 else
-                    await RotateTilesEffect(x, rotationObjects, targetAngle);
+                    await RotateTilesEffect(x, rotationObjects, targetAngle, false);
                 break;
             case 2:
                 for (int i = 0; i != CubeSize; ++i)
@@ -754,9 +767,15 @@ public class PuzzlePlayer : MonoBehaviour
                             break;
                     }
                     if (clockWise)
-                        _map[j, y, CubeSize-1-i] = temp[i][j];
+                    {
+                        _map[j, y, CubeSize - 1 - i] = temp[i][j];
+                        playerTarget = new Vector3(playerZ, playerY, CubeSize-1-playerX);
+                    }
                     else
-                        _map[CubeSize-1-j, y, i] = temp[i][j];
+                    {
+                        _map[CubeSize - 1 - j, y, i] = temp[i][j];
+                        playerTarget = new Vector3(CubeSize-1-playerZ, playerY, playerX);
+                    }
                     rotationObjects.Add(_tiles[i, y, j].gameObject);
                 }
                 targetAngle = clockWise ? new Vector3(0, 90f, 0) : new Vector3(0, -90f, 0);
@@ -765,7 +784,7 @@ public class PuzzlePlayer : MonoBehaviour
                     List<UniTask> tasks = new();
                     bool b1 = true, b2 = true;
                     var depth = 1;
-                    tasks.Add(RotateTilesEffect(y, rotationObjects, targetAngle));
+                    tasks.Add(RotateTilesEffect(y, rotationObjects, targetAngle, true, playerTarget));
                     if (y - depth < 0 || !_canRotate[y - depth]) b1 = false;
                     if (y + depth >= CubeSize || !_canRotate[y + depth]) b2 = false;
                     while (b1 || b2)
@@ -786,7 +805,7 @@ public class PuzzlePlayer : MonoBehaviour
                     await UniTask.WhenAll(tasks);
                 }
                 else
-                    await RotateTilesEffect(y, rotationObjects, targetAngle);
+                    await RotateTilesEffect(y, rotationObjects, targetAngle, false);
                 break;
             case 3:
                 for (int i = 0; i != CubeSize; ++i)
@@ -835,9 +854,15 @@ public class PuzzlePlayer : MonoBehaviour
                             break;
                     }
                     if (clockWise)
-                        _map[CubeSize-1-j, i, z] = temp[i][j];
+                    {
+                        _map[CubeSize - 1 - j, i, z] = temp[i][j];
+                        playerTarget = new Vector3(CubeSize-1-playerY, playerX, playerZ);
+                    }
                     else
-                        _map[j, CubeSize-1-i, z] = temp[i][j];
+                    {
+                        _map[j, CubeSize - 1 - i, z] = temp[i][j];
+                        playerTarget = new Vector3(playerY, CubeSize - 1 - playerX, playerZ);
+                    }
                     rotationObjects.Add(_tiles[i, j, z].gameObject);
                 }
                 targetAngle = clockWise ? new Vector3(0, 0, 90f) : new Vector3(0, 0, -90f);
@@ -846,7 +871,7 @@ public class PuzzlePlayer : MonoBehaviour
                     List<UniTask> tasks = new();
                     bool b1 = true, b2 = true;
                     var depth = 1;
-                    tasks.Add(RotateTilesEffect(z, rotationObjects, targetAngle));
+                    tasks.Add(RotateTilesEffect(z, rotationObjects, targetAngle, true, playerTarget));
                     if (z - depth < 0 || !_canRotate[z - depth]) b1 = false;
                     if (z + depth >= CubeSize || !_canRotate[z + depth]) b2 = false;
                     while (b1 || b2)
@@ -866,11 +891,14 @@ public class PuzzlePlayer : MonoBehaviour
                     }
                     await UniTask.WhenAll(tasks);
                 }
+                else
+                    await RotateTilesEffect(z, rotationObjects, targetAngle, false);
                 break;
         }
     }
 
-    private async UniTask RotateTilesEffect(int index, List<GameObject> objectsToRotate, Vector3 targetAngle)
+    private async UniTask RotateTilesEffect(int index, List<GameObject> objectsToRotate, Vector3 targetAngle, bool includePlayer = true,
+        Vector3 playerPosition = default)
     {
         GameObject pivot = new GameObject("RotationPivot");
         pivot.transform.position = new Vector3((CubeSize - 1) / 2.0f, (CubeSize - 1) / 2.0f, (CubeSize - 1) / 2.0f);
@@ -879,9 +907,14 @@ public class PuzzlePlayer : MonoBehaviour
             obj: obj,
             parent: obj.transform.parent,
             siblingIndex: obj.transform.GetSiblingIndex(),
-            localPosition: obj.transform.localPosition,  // 원본 로컬 좌표 저장
-            localRotation: obj.transform.localRotation   // 원본 로컬 회전 저장
+            localPosition: obj.transform.localPosition // 원본 로컬 좌표 저장
         )).ToList();
+        Transform playerOriginParent = null;
+        if (includePlayer)
+        {
+            playerOriginParent = playerModel.parent;
+            playerModel.SetParent(pivot.transform);
+        }
 
         foreach (var data in originalData)
             data.obj.transform.SetParent(pivot.transform);
@@ -897,9 +930,15 @@ public class PuzzlePlayer : MonoBehaviour
 
                     // 부동소수점 오차 제거 — 원본 값으로 강제 스냅
                     data.obj.transform.localPosition = data.localPosition;
-                    data.obj.transform.localRotation = data.localRotation;
-                    int x = (int)data.localPosition.x, y = (int)data.localPosition.y,  z = (int)data.localPosition.z;
+                    data.obj.transform.localRotation = Quaternion.identity;
+                    int x = (int)data.obj.transform.position.x, y = (int)data.obj.transform.position.y,  z = (int)data.obj.transform.position.z;
                     _tiles[x, y, z].SimpleRender(_map[x, y, z]);
+                }
+                if (includePlayer)
+                {
+                    playerModel.SetParent(playerOriginParent);
+                    playerModel.position = playerPosition;
+                    playerModel.rotation = Quaternion.identity;
                 }
                 Destroy(pivot);
             }).AsyncWaitForCompletion().AsUniTask();
