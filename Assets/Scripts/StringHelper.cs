@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Newtonsoft.Json;
 using UnityEngine;
 
@@ -83,4 +84,20 @@ public static class PortalPairHelper
 
         return pairs;
     }
+}
+
+[Serializable]
+public struct RotateInfo
+{
+    [JsonProperty("Axis")] public int Axis;
+    [JsonProperty("Layers")] public bool[] Layers;
+}
+
+public static class RotateHelper
+{
+    public static string Encode(RotateInfo rotateInfo)
+        =>JsonConvert.SerializeObject(rotateInfo);
+
+    public static RotateInfo Decode(string json)
+        => JsonConvert.DeserializeObject<RotateInfo>(json);
 }

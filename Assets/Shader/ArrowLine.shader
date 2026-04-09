@@ -15,7 +15,7 @@ Shader "Custom/ArrowLine"
         Pass
         {
             Name "Arrow"
-            ZTest Always
+            ZTest LEqual
             ZWrite Off
             Blend SrcAlpha OneMinusSrcAlpha
             Cull Off

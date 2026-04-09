@@ -25,18 +25,19 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void EnterGame(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null)
+    public void EnterGame(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
     {
         // 플레이 씬 로드
         // 이전 씬 로드하는 함수 등록
-        PlayGame(data);
+        PlayGame(data, portalPairDic, rotateAxis, canRotate);
     }
 
-    public void PlayGame(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, bool isTest = false)
+    public void PlayGame(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null,
+        bool isTest = false)
     {
         var o = FindAnyObjectByType<PuzzlePlayer>(FindObjectsInactive.Include);
         
-        o.SetMapData(data, portalPairDic, isTest);
+        o.SetMapData(data, portalPairDic, rotateAxis, canRotate, isTest);
         o.gameObject.SetActive(true);
     }
 

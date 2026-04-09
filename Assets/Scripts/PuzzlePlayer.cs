@@ -1,18 +1,22 @@
 
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+#region TileHelpers
 public enum TileType
 {
-    Empty = 'a', Painted, Player, Road,
+    Empty = 'A', Painted, Player, Road,
     PortalIn, PortalOut, PortalInPainted, PortalOutPainted,
     Ghost, GhostPainted,
     Inv, InvPainted,
     Laser, LaserPainted,
+    DashXp, DashXm, DashYp, DashYm, DashZp, DashZm,
+    DashXpPainted, DashXmPainted, DashYpPainted, DashYmPainted, DashZpPainted, DashZmPainted,
     Count
 }
 
@@ -21,7 +25,9 @@ public static class TileHelper
     public static bool IsPainted(char tile)
     {
         return tile is (char)TileType.Painted or (char)TileType.PortalInPainted or (char)TileType.PortalOutPainted
-            or (char)TileType.GhostPainted or (char)TileType.InvPainted or (char)TileType.LaserPainted;
+            or (char)TileType.GhostPainted or (char)TileType.InvPainted or (char)TileType.LaserPainted
+            or (char)TileType.DashXmPainted or (char)TileType.DashXpPainted or (char)TileType.DashYmPainted
+            or (char)TileType.DashYpPainted or (char)TileType.DashZmPainted or (char)TileType.DashZpPainted;
     }
 
     public static readonly Dictionary<char, char> PaintTable = new()
@@ -32,7 +38,13 @@ public static class TileHelper
         {(char)TileType.PortalOut, (char)TileType.PortalOutPainted},
         {(char)TileType.Ghost, (char)TileType.Painted},
         {(char)TileType.Inv, (char)TileType.Painted},
-        {(char)TileType.Laser, (char)TileType.Painted}
+        {(char)TileType.Laser, (char)TileType.Painted},
+        {(char)TileType.DashXm, (char)TileType.DashXmPainted},
+        {(char)TileType.DashXp, (char)TileType.DashXpPainted},
+        {(char)TileType.DashYm, (char)TileType.DashYmPainted},
+        {(char)TileType.DashYp, (char)TileType.DashYpPainted},
+        {(char)TileType.DashZm, (char)TileType.DashZmPainted},
+        {(char)TileType.DashZp, (char)TileType.DashZpPainted}
     };
     
     public static readonly Dictionary<char, char> InvTable = new()
@@ -48,21 +60,24 @@ public static class TileHelper
         {(char)TileType.GhostPainted, (char)TileType.Ghost},
         {(char)TileType.InvPainted, (char)TileType.Inv},
         {(char)TileType.Laser, (char)TileType.LaserPainted},
-        {(char)TileType.LaserPainted, (char)TileType.Laser}
+        {(char)TileType.LaserPainted, (char)TileType.Laser},
+        {(char)TileType.DashXm, (char)TileType.DashXmPainted},
+        {(char)TileType.DashXp, (char)TileType.DashXpPainted},
+        {(char)TileType.DashYm, (char)TileType.DashYmPainted},
+        {(char)TileType.DashYp, (char)TileType.DashYpPainted},
+        {(char)TileType.DashZm, (char)TileType.DashZmPainted},
+        {(char)TileType.DashZp, (char)TileType.DashZpPainted},
+        {(char)TileType.DashXmPainted, (char)TileType.DashXm},
+        {(char)TileType.DashXpPainted, (char)TileType.DashXp},
+        {(char)TileType.DashYmPainted, (char)TileType.DashYm},
+        {(char)TileType.DashYpPainted, (char)TileType.DashYp},
+        {(char)TileType.DashZmPainted, (char)TileType.DashZm},
+        {(char)TileType.DashZpPainted, (char)TileType.DashZp}
     };
 
     public const int GhostCount = 5;
-
-    public static readonly Vector3Int[] Dirs = {
-        new(1, 0, 0),
-        new(-1, 0, 0),
-        new(0, 1, 0),
-        new(0, -1, 0),
-        new(0, 0, 1),
-        new(0, 0, -1)
-    };
 }
-
+#endregion
 public class PuzzlePlayer : MonoBehaviour
 {
     [Header("GamePlay")]
@@ -82,7 +97,9 @@ public class PuzzlePlayer : MonoBehaviour
     [SerializeField] private Ease playerMoveEase = Ease.OutExpo;
     private bool _isMoving;
     [SerializeField] private TMP_Text ghostText;
-    private List<CellPulse> _highlightCells = new();
+    private readonly List<CellPulse> _highlightCells = new();
+    
+    #region GhostProperty
     private int _currentGhostCount;
     private int CurrentGhostCount
     {
@@ -104,6 +121,8 @@ public class PuzzlePlayer : MonoBehaviour
             _currentGhostCount = value;
         }
     }
+    #endregion
+    #region LaserProperty
     private bool _hasLaser;
 
     private bool HasLaser
@@ -204,6 +223,7 @@ public class PuzzlePlayer : MonoBehaviour
             _hasLaser = value;
         }
     }
+    #endregion
 
     [Header("Camera")]
     [SerializeField] private Camera cam;
@@ -235,7 +255,10 @@ public class PuzzlePlayer : MonoBehaviour
     private bool _isCleared;
     private Stack<Vector3Int> _answer;
     private int _moves = 0;
-
+    [SerializeField] private GameObject[] innerCubes; // empty, x, y, z
+    private bool[] _canRotate;
+    private Transform[] _layers;
+    private int _rotAxis; // 0, x, y, z
 
     private struct MapState
     {
@@ -252,7 +275,7 @@ public class PuzzlePlayer : MonoBehaviour
     {
         _initialCameraPosition = pivot.position;
         _initialCameraRotation = pivot.rotation;
-        
+        _canRotate = new bool[CubeSize];
         _tiles = new PuzzleTile[CubeSize, CubeSize, CubeSize];
 
         int x = 0;
@@ -271,8 +294,17 @@ public class PuzzlePlayer : MonoBehaviour
             }
             x++;
         }
+        innerCubes[_rotAxis].SetActive(true);
+        _layers  = new Transform[CubeSize];
+        var t = innerCubes[_rotAxis].GetComponent<Transform>();
+        for (int i = 0; i != CubeSize; ++i)
+        {
+            _layers[i] = t.GetChild(i);
+            if (_canRotate[i])
+                _layers[i].GetChild(0).gameObject.SetActive(true);
+        }
     }
-
+    #region EnableDisable
     private void OnEnable()
     {
         camera1Action.action.performed += CameraRotation1InputWrapper;
@@ -327,6 +359,7 @@ public class PuzzlePlayer : MonoBehaviour
         undoAction.action.Disable();
         resetAction.action.Disable();
     }
+    #endregion
 
     #region GameSystem
 
@@ -360,6 +393,12 @@ public class PuzzlePlayer : MonoBehaviour
                 case (char) TileType.Ghost:
                 case (char) TileType.Inv:
                 case (char) TileType.Laser:
+                case (char) TileType.DashXp:
+                case (char) TileType.DashXm:
+                case (char) TileType.DashYp:
+                case (char) TileType.DashYm:
+                case (char) TileType.DashZp:
+                case (char) TileType.DashZm:
                     ++_roadLeftCount;
                     break;
             }
@@ -383,11 +422,14 @@ public class PuzzlePlayer : MonoBehaviour
         HasLaser = false;
     }
 
-    public void SetMapData(char[,,] map, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, bool isTest = false)
+    public void SetMapData(char[,,] map, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, 
+        bool[] canRotate = null, bool isTest = false)
     {
         _map = map;
         _portalPairDic =  portalPairDic;
         _initialMap = (char[,,])map.Clone();
+        _rotAxis = rotateAxis;
+        _canRotate = canRotate;
         _isTesting = isTest;
         CubeSize = map.GetLength(0);
     }
@@ -432,7 +474,7 @@ public class PuzzlePlayer : MonoBehaviour
     }
 
     // 인덱스 계산
-    private async UniTask MovePlayer(Vector3 dir)
+    private async UniTask MovePlayer(Vector3 dir, bool doSave = true)
     {
         var pos = playerModel.position;
         var nPos = pos + dir;
@@ -440,7 +482,8 @@ public class PuzzlePlayer : MonoBehaviour
         var nRow = (int)nPos.y;
         var nCol = (int)nPos.z;
         
-        if (CannotMove(nLayer, nRow, nCol))
+        if (!(_rotAxis == 1 && _canRotate[nLayer]) && !(_rotAxis == 2 && _canRotate[nRow]) && !(_rotAxis == 3 && _canRotate[nCol]) 
+            && CannotMove(nLayer, nRow, nCol))
         {
             // 이동 불가 애니메이션
             await playerModel.DOShakePosition(0.2f, 0.2f, 20).AsyncWaitForCompletion().AsUniTask();
@@ -448,9 +491,34 @@ public class PuzzlePlayer : MonoBehaviour
         }
         // ---- 전진 ----
         var before = _map[nLayer, nRow, nCol];
-        SaveUndoState();
+        if (doSave)
+        {
+            SaveUndoState();
+            ++_moves;
+        }
+
+        if (_currentGhostCount == 0 
+            && ((_rotAxis == 1 && _canRotate[nLayer]) || (_rotAxis == 2 && _canRotate[nRow]) || (_rotAxis == 3 && _canRotate[nCol])) 
+            && CannotMove(nLayer, nRow, nCol))
+        {
+            if ((_rotAxis == 1 && _canRotate[nLayer]) && (dir.z == 0 && dir.y > 0 || (int)dir.z == CubeSize - 1 &&  dir.y < 0 
+                    ||  dir.y == 0 && dir.z < 0 || (int)dir.y  == CubeSize - 1 && dir.z > 0)
+                || (_rotAxis == 2 && _canRotate[nRow]) && (dir.x == 0 && dir.z > 0 || (int)dir.x == CubeSize - 1 &&  dir.z < 0 
+                    ||  dir.z == 0 && dir.x < 0 || (int)dir.z  == CubeSize - 1 && dir.x > 0)
+                || (_rotAxis == 3 && _canRotate[nCol]) && (dir.x == 0 && dir.y < 0 || (int)dir.x == CubeSize - 1 &&  dir.y > 0 
+                    ||  dir.y == 0 && dir.x > 0 || (int)dir.y  == CubeSize - 1 && dir.x < 0))
+            {
+                await ApplyRotate(nLayer, nRow, nCol, true);
+            }
+            else
+            {
+                await ApplyRotate(nLayer, nRow, nCol, false);
+            }
+            return;
+        }
+
         _answer.Push(new Vector3Int(nLayer, nRow, nCol));
-        ++_moves;
+
         if (_currentGhostCount > 0)
             --CurrentGhostCount;
 
@@ -460,14 +528,16 @@ public class PuzzlePlayer : MonoBehaviour
             do
             {
                 --_roadLeftCount;
-                await PaintWithRender((int)nPos.x, (int)nPos.y, (int)nPos.z, true);
+                var afterInv = TileHelper.InvTable[_map[(int)nPos.x, (int)nPos.y, (int)nPos.z]];
+                _map[(int)nPos.x, (int)nPos.y, (int)nPos.z] = afterInv;
+                _tiles[(int)nPos.x, (int)nPos.y, (int)nPos.z].SimpleRender(afterInv); // TODO: 나중에 Render로 변경
                 await UniTask.WaitForSeconds(0.11f);
                 nPos += dir;
             } while (!CannotMove((int)nPos.x, (int)nPos.y, (int)nPos.z));
         }
         else
         {
-            // 플레이어 움직임 애니메이션 기다리고 - 회전 시 수행 x
+            // 플레이어 움직임 애니메이션 기다리고
             await playerModel.DOMove(nPos, playerMoveDuration).SetEase(playerMoveEase).AsyncWaitForCompletion()
                 .AsUniTask();
             // 색칠 및 아이템 사용
@@ -522,8 +592,327 @@ public class PuzzlePlayer : MonoBehaviour
             case (char)TileType.Laser:
                 HasLaser = true;
                 break;
+            
+            case (char)TileType.DashXp:
+                await MovePlayer(new Vector3(1, 0, 0), false);
+                break;
+            case (char)TileType.DashXm:
+                await MovePlayer(new Vector3(-1, 0, 0), false);
+                break;
+            case (char)TileType.DashYp:
+                await MovePlayer(new Vector3(0, 1, 0), false);
+                break;
+            case (char)TileType.DashYm:
+                await MovePlayer(new Vector3(0, -1, 0), false);
+                break;
+            case (char)TileType.DashZp:
+                await MovePlayer(new Vector3(0, 0, 1), false);
+                break;
+            case (char)TileType.DashZm:
+                await MovePlayer(new Vector3(0, 0, -1), false);
+                break;
         }
     }
+
+    #region Rotation
+    // TODO: 레이저 먹은 상태에서 밀면 하이라이트 다시 초기화
+    private async UniTask ApplyRotate(int x, int y, int z, bool clockWise, bool cascade = true)
+    {
+        char[][] temp = new char[CubeSize][];
+        List<GameObject> rotationObjects = new();
+        for (int index = 0; index != CubeSize; ++index)
+            temp[index] = new char[CubeSize];
+        Vector3 targetAngle;
+
+        switch(_rotAxis)
+        {
+            case 1:
+                for (int i = 0; i != CubeSize; ++i)
+                for (int j = 0; j != CubeSize; ++j)
+                    temp[i][j] = _map[x, i, j];
+                for (int i = 0; i != CubeSize; ++i)
+                for (int j = 0; j != CubeSize; ++j)
+                {
+                    var c = temp[i][j];
+                    switch(c)
+                    {
+                        case (char)TileType.PortalIn:
+                        case (char)TileType.PortalInPainted:
+                        case (char)TileType.PortalOut:
+                        case (char)TileType.PortalOutPainted:
+                            var original = new Vector3Int(x, i, j);
+                            var target = clockWise ? new Vector3Int(x, CubeSize-1-j, i) : new Vector3Int(x, j, CubeSize-1-i);
+                            var val = _portalPairDic[original];
+                            _portalPairDic.Remove(original);
+                            _portalPairDic[target] = val;
+                            _portalPairDic[val] = target;
+                            break;
+                        case (char)TileType.DashYp:
+                            temp[i][j] = clockWise ? (char)TileType.DashZp : (char)TileType.DashZm;
+                            break;
+                        case (char)TileType.DashYpPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashZpPainted : (char)TileType.DashZmPainted;
+                            break;
+                        case (char)TileType.DashYm:
+                            temp[i][j] = clockWise ? (char)TileType.DashZm : (char)TileType.DashZp;
+                            break;
+                        case (char)TileType.DashYmPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashZmPainted :  (char)TileType.DashZpPainted;
+                            break;
+                        case (char)TileType.DashZp:
+                            temp[i][j] = clockWise ? (char)TileType.DashYm : (char)TileType.DashYp;
+                            break;
+                        case (char)TileType.DashZpPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashYmPainted : (char)TileType.DashYpPainted;
+                            break;
+                        case (char)TileType.DashZm:
+                            temp[i][j] = clockWise ? (char)TileType.DashYp : (char)TileType.DashYm;
+                            break;
+                        case (char)TileType.DashZmPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashYpPainted : (char)TileType.DashYmPainted;
+                            break;
+                    }
+                    if (clockWise)
+                        _map[x, CubeSize - 1 - j, i] = temp[i][j];
+                    else
+                        _map[x, j, CubeSize - 1 - i] = temp[i][j];
+                    rotationObjects.Add(_tiles[x, i, j].gameObject);
+                }
+                targetAngle = clockWise ? new Vector3(90f, 0, 0) : new Vector3(-90f, 0, 0);
+                if (cascade)
+                {
+                    List<UniTask> tasks = new();
+                    bool b1 = true, b2 = true;
+                    var depth = 1;
+                    tasks.Add(RotateTilesEffect(x, rotationObjects, targetAngle));
+                    if (x - depth < 0 || !_canRotate[x - depth]) b1 = false;
+                    if (x + depth >= CubeSize || !_canRotate[x + depth]) b2 = false;
+                    while (b1 || b2)
+                    {
+                        await UniTask.WaitForSeconds(0.2f);
+                        if (b1)
+                        {
+                            if (x - (depth+1) < 0 || !_canRotate[x - (depth+1)]) b1 = false;
+                            tasks.Add(ApplyRotate(x-depth, y, z, clockWise, false));
+                        }
+                        if (b2)
+                        {
+                            if (x + (depth+1) >= CubeSize || !_canRotate[x + (depth+1)]) b2 = false;
+                            tasks.Add(ApplyRotate(x+depth, y, z, clockWise, false));
+                        }
+                        ++depth;
+                    }
+                    await UniTask.WhenAll(tasks);
+                }
+                else
+                    await RotateTilesEffect(x, rotationObjects, targetAngle);
+                break;
+            case 2:
+                for (int i = 0; i != CubeSize; ++i)
+                for (int j = 0; j != CubeSize; ++j)
+                    temp[i][j] = _map[i, y, j];
+                for (int i = 0; i != CubeSize; ++i)
+                for (int j = 0; j != CubeSize; ++j)
+                {
+                    var c = temp[i][j];
+                    switch(c)
+                    {
+                        case (char)TileType.PortalIn:
+                        case (char)TileType.PortalInPainted:
+                        case (char)TileType.PortalOut:
+                        case (char)TileType.PortalOutPainted:
+                            var original = new Vector3Int(i, y, j);
+                            var target = clockWise ? new Vector3Int(j, y, CubeSize-1-i) : new Vector3Int(CubeSize-1-j, y, i);
+                            var val = _portalPairDic[original];
+                            _portalPairDic.Remove(original);
+                            _portalPairDic[target] = val;
+                            _portalPairDic[val] = target;
+                            break;
+                        case (char)TileType.DashXp:
+                            temp[i][j] = clockWise ? (char)TileType.DashZm : (char)TileType.DashZp;
+                            break;
+                        case (char)TileType.DashXpPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashZmPainted : (char)TileType.DashZpPainted;
+                            break;
+                        case (char)TileType.DashXm:
+                            temp[i][j] = clockWise ? (char)TileType.DashZp : (char)TileType.DashZm;
+                            break;
+                        case (char)TileType.DashXmPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashZpPainted :  (char)TileType.DashZmPainted;
+                            break;
+                        case (char)TileType.DashZp:
+                            temp[i][j] = clockWise ? (char)TileType.DashXp : (char)TileType.DashXm;
+                            break;
+                        case (char)TileType.DashZpPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashXpPainted : (char)TileType.DashXmPainted;
+                            break;
+                        case (char)TileType.DashZm:
+                            temp[i][j] = clockWise ? (char)TileType.DashXm : (char)TileType.DashXp;
+                            break;
+                        case (char)TileType.DashZmPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashXmPainted : (char)TileType.DashXpPainted;
+                            break;
+                    }
+                    if (clockWise)
+                        _map[j, y, CubeSize-1-i] = temp[i][j];
+                    else
+                        _map[CubeSize-1-j, y, i] = temp[i][j];
+                    rotationObjects.Add(_tiles[i, y, j].gameObject);
+                }
+                targetAngle = clockWise ? new Vector3(0, 90f, 0) : new Vector3(0, -90f, 0);
+                if (cascade)
+                {
+                    List<UniTask> tasks = new();
+                    bool b1 = true, b2 = true;
+                    var depth = 1;
+                    tasks.Add(RotateTilesEffect(y, rotationObjects, targetAngle));
+                    if (y - depth < 0 || !_canRotate[y - depth]) b1 = false;
+                    if (y + depth >= CubeSize || !_canRotate[y + depth]) b2 = false;
+                    while (b1 || b2)
+                    {
+                        await UniTask.WaitForSeconds(0.2f);
+                        if (b1)
+                        {
+                            if (y - (depth+1) < 0 || !_canRotate[y - (depth+1)]) b1 = false;
+                            tasks.Add(ApplyRotate(x, y-depth, z, clockWise, false));
+                        }
+                        if (b2)
+                        {
+                            if (y + (depth+1) >= CubeSize || !_canRotate[y + (depth+1)]) b2 = false;
+                            tasks.Add(ApplyRotate(x, y+depth, z, clockWise, false));
+                        }
+                        ++depth;
+                    }
+                    await UniTask.WhenAll(tasks);
+                }
+                else
+                    await RotateTilesEffect(y, rotationObjects, targetAngle);
+                break;
+            case 3:
+                for (int i = 0; i != CubeSize; ++i)
+                for (int j = 0; j != CubeSize; ++j)
+                    temp[i][j] = _map[i, j, z];
+                for (int i = 0; i != CubeSize; ++i)
+                for (int j = 0; j != CubeSize; ++j)
+                {
+                    var c = temp[i][j];
+                    switch(c)
+                    {
+                        case (char)TileType.PortalIn:
+                        case (char)TileType.PortalInPainted:
+                        case (char)TileType.PortalOut:
+                        case (char)TileType.PortalOutPainted:
+                            var original = new Vector3Int(i, j, z);
+                            var target = clockWise ? new Vector3Int(CubeSize-1-j, i, z) : new Vector3Int(j, CubeSize-1-i, z);
+                            var val = _portalPairDic[original];
+                            _portalPairDic.Remove(original);
+                            _portalPairDic[target] = val;
+                            _portalPairDic[val] = target;
+                            break;
+                        case (char)TileType.DashYp:
+                            temp[i][j] = clockWise ? (char)TileType.DashXm : (char)TileType.DashXp;
+                            break;
+                        case (char)TileType.DashYpPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashXmPainted : (char)TileType.DashXpPainted;
+                            break;
+                        case (char)TileType.DashYm:
+                            temp[i][j] = clockWise ? (char)TileType.DashXp : (char)TileType.DashXm;
+                            break;
+                        case (char)TileType.DashYmPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashXpPainted :  (char)TileType.DashXmPainted;
+                            break;
+                        case (char)TileType.DashXp:
+                            temp[i][j] = clockWise ? (char)TileType.DashYp : (char)TileType.DashYm;
+                            break;
+                        case (char)TileType.DashXpPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashYpPainted : (char)TileType.DashYmPainted;
+                            break;
+                        case (char)TileType.DashXm:
+                            temp[i][j] = clockWise ? (char)TileType.DashYm : (char)TileType.DashYp;
+                            break;
+                        case (char)TileType.DashXmPainted:
+                            temp[i][j] = clockWise ? (char)TileType.DashYmPainted : (char)TileType.DashYpPainted;
+                            break;
+                    }
+                    if (clockWise)
+                        _map[CubeSize-1-j, i, z] = temp[i][j];
+                    else
+                        _map[j, CubeSize-1-i, z] = temp[i][j];
+                    rotationObjects.Add(_tiles[i, j, z].gameObject);
+                }
+                targetAngle = clockWise ? new Vector3(0, 0, 90f) : new Vector3(0, 0, -90f);
+                if (cascade)
+                {
+                    List<UniTask> tasks = new();
+                    bool b1 = true, b2 = true;
+                    var depth = 1;
+                    tasks.Add(RotateTilesEffect(z, rotationObjects, targetAngle));
+                    if (z - depth < 0 || !_canRotate[z - depth]) b1 = false;
+                    if (z + depth >= CubeSize || !_canRotate[z + depth]) b2 = false;
+                    while (b1 || b2)
+                    {
+                        await UniTask.WaitForSeconds(0.2f);
+                        if (b1)
+                        {
+                            if (z - (depth+1) < 0 || !_canRotate[z - (depth+1)]) b1 = false;
+                            tasks.Add(ApplyRotate(x, y, z-depth, clockWise, false));
+                        }
+                        if (b2)
+                        {
+                            if (z + (depth+1) >= CubeSize || !_canRotate[z + (depth+1)]) b2 = false;
+                            tasks.Add(ApplyRotate(x, y, z+depth, clockWise, false));
+                        }
+                        ++depth;
+                    }
+                    await UniTask.WhenAll(tasks);
+                }
+                break;
+        }
+    }
+
+    private async UniTask RotateTilesEffect(int index, List<GameObject> objectsToRotate, Vector3 targetAngle)
+    {
+        GameObject pivot = new GameObject("RotationPivot");
+        pivot.transform.position = new Vector3((CubeSize - 1) / 2.0f, (CubeSize - 1) / 2.0f, (CubeSize - 1) / 2.0f);
+        // 피벗에 붙이기 전 저장
+        var originalData = objectsToRotate.Select(obj => (
+            obj: obj,
+            parent: obj.transform.parent,
+            siblingIndex: obj.transform.GetSiblingIndex(),
+            localPosition: obj.transform.localPosition,  // 원본 로컬 좌표 저장
+            localRotation: obj.transform.localRotation   // 원본 로컬 회전 저장
+        )).ToList();
+
+        foreach (var data in originalData)
+            data.obj.transform.SetParent(pivot.transform);
+
+        var t1 = pivot.transform.DORotate(targetAngle, 0.5f)
+            .SetEase(Ease.InOutQuad)
+            .OnComplete(() =>
+            {
+                foreach (var data in originalData)
+                {
+                    data.obj.transform.SetParent(data.parent);
+                    data.obj.transform.SetSiblingIndex(data.siblingIndex);
+
+                    // 부동소수점 오차 제거 — 원본 값으로 강제 스냅
+                    data.obj.transform.localPosition = data.localPosition;
+                    data.obj.transform.localRotation = data.localRotation;
+                    int x = (int)data.localPosition.x, y = (int)data.localPosition.y,  z = (int)data.localPosition.z;
+                    _tiles[x, y, z].SimpleRender(_map[x, y, z]);
+                }
+                Destroy(pivot);
+            }).AsyncWaitForCompletion().AsUniTask();
+        var t2 = _layers[index].DORotate(targetAngle, 0.5f)
+            .SetEase(Ease.InOutQuad)
+            .OnComplete(() =>
+            {
+                _layers[index].localRotation = Quaternion.identity;
+            }).AsyncWaitForCompletion().AsUniTask();
+        await UniTask.WhenAll(t1, t2);
+    }
+    
+    #endregion
 
     // 움직임이 확정된 뒤 저장
     private void SaveUndoState()
@@ -563,7 +952,7 @@ public class PuzzlePlayer : MonoBehaviour
 
     // 이동 및 아이템 사용할때 사용 -> 즉 타일이 색칠
     public async UniTask PaintWithRender(int layer, int row, int col,
-        bool useSimpleRender = false, bool wait = true)
+        bool useSimpleRender = false)
     {
         var before = _map[layer, row, col];
         if (before == (char)TileType.Empty || TileHelper.IsPainted(before)) return;
@@ -576,11 +965,8 @@ public class PuzzlePlayer : MonoBehaviour
             _tiles[layer, row, col].SimpleRender(tile);
             return;
         }
-
-        if (wait)
-            await _tiles[layer, row, col].Render(tile);
-        else
-            _ = _tiles[layer, row, col].Render(tile, false);
+        
+        await _tiles[layer, row, col].Render(tile);
     }
 
     #endregion

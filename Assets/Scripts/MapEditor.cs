@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using com.example;
@@ -10,13 +11,11 @@ using UnityEngine.UI;
 
 public class MapEditor : MonoBehaviour
 {
-    [SerializeField] private int cubeSize = 10;
+    public int cubeSize = 10;
     private char[,,] _map;
     private MapCreating _currentMapCreating;
     public static MapEditor Instance;
-
     [SerializeField] private char currentTile = (char)TileType.Road;
-
     public char CurrentTile
     {
         get => currentTile;
@@ -35,7 +34,6 @@ public class MapEditor : MonoBehaviour
     private bool _portalEditing = false;
     public bool PortalEditing
     {
-        get => _portalEditing;
         set
         {
             if (value)
@@ -45,18 +43,19 @@ public class MapEditor : MonoBehaviour
             _portalEditing = value;
         }
     }
+    private Dictionary<Vector3Int, Vector3Int> _portalPairDict = new();
 
     [SerializeField] private Transform playerModel;
     [SerializeField] private Transform  cubeParent;
     [SerializeField] private GameObject tileIndicatorParent;
+    [SerializeField] private GameObject[] indicators;
     [SerializeField] private GameObject rightSideButtonsParent;
     [SerializeField] private Button exportButton;
     [SerializeField] private GameObject linePrefab;
     public LineRenderer currentLine;
     [SerializeField] private Camera camera;
-    
+    [SerializeField] private Camera thumbnailCamera;
     private PuzzleTile[,,] _tiles;
-
     private bool _isValidated;
     
     [SerializeField] private Button showAnswerButton;
@@ -64,17 +63,47 @@ public class MapEditor : MonoBehaviour
     [SerializeField] private Transform ghostPlayer;
     [SerializeField] private float showAnswerTimePerPos = 0.5f;
     private CancellationTokenSource _showAnswerCts;
-    
-    //private EditTile _hoveredTile;
-
     private Stack<Vector3Int> _answer;
 
-    [SerializeField] private Camera thumbnailCamera;
-
-    //private List<PortalPair> _portalPairList;
-    private Dictionary<Vector3Int, Vector3Int> _portalPairDict = new();
-    
-    // TODO: 아이템별 material 지정
+    private int _selectedAxis = 0;
+    public int SelectedAxis // 툴에서 선택된 축
+    {
+        get => _selectedAxis;
+        set
+        {
+            foreach(var i in indicators)
+                i.SetActive(false);
+            if (value == 0) // 타일 모드이면 다시 툴셋 패널 활성화
+                leftPanel.SetActive(true);
+            else
+                leftPanel.SetActive(false);
+            indicators[value].SetActive(true);
+            _selectedAxis = value; 
+        }
+    }
+    private int _rotAxis = 0;
+    private int RotAxis
+    {
+        set
+        {
+            if (_rotAxis != value) // 다른 축으로 전환
+            {
+                if (_rotAxis != 0) // 이전에 있던 축이 빈 축이 아니면 정리
+                {
+                    for (int i = 0; i != cubeSize; ++i)
+                        _canRotate[i] = false;
+                    LayerRender();
+                }
+                foreach (var i in innerCubes)
+                    i.gameObject.SetActive(false);
+                innerCubes[value].gameObject.SetActive(true);
+            }
+            _rotAxis = value;
+        }
+    }
+    private bool[] _canRotate;
+    [SerializeField] private GameObject leftPanel;
+    [SerializeField] private Transform[] innerCubes;
     
     private struct MapState
     {
@@ -122,6 +151,12 @@ public class MapEditor : MonoBehaviour
         }
     }
 
+    private void LayerRender()
+    {
+        for (int i = 0; i != cubeSize; ++i)
+                innerCubes[_rotAxis].GetChild(i).GetChild(0).gameObject.SetActive(_canRotate[i]);
+    }
+
     private void Awake()
     {
         if(Instance != null && Instance != this)
@@ -150,6 +185,8 @@ public class MapEditor : MonoBehaviour
             }
             x++;
         }
+
+        _canRotate = new bool[cubeSize];
         
         SetValidated(false);
 
@@ -181,31 +218,36 @@ public class MapEditor : MonoBehaviour
             _map[i, j, k] = (char)TileType.Empty;
 
         _portalPairDict = new();
-        
+        RotAxis = 0;
         Render();
-    }
-    
-    public void SetMapData(char[,,] map)
-    {
-        _map = map;
     }
 
     public void Initialize(MapCreating mapCreating) // 외부에서 데이터 넣어주고 초기화
     {
         GameManager.Instance.OnScreenExitEvent += ExitEditor;
         _currentMapCreating = mapCreating;
-        _map = StringHelper.DecodeCube(_currentMapCreating.Data);
-        var portalPairList = PortalPairHelper.Decode(_currentMapCreating.PortalPairs);
-        _portalPairDict = PortalPairHelper.ToDict(portalPairList);
-
-        foreach (var i in portalPairList)
+        if(_currentMapCreating.Data != null)
+            _map = StringHelper.DecodeCube(_currentMapCreating.Data);
+        if (_currentMapCreating.PortalPairs != null)
         {
-            var l = Instantiate(linePrefab, _tiles[i.InPos.x, i.InPos.y, i.InPos.z].transform)
-                .GetComponent<LineRenderer>();
-            l.SetPosition(0, i.InPos);
-            l.SetPosition(1, i.OutPos);
+            var portalPairList = PortalPairHelper.Decode(_currentMapCreating.PortalPairs);
+            _portalPairDict = PortalPairHelper.ToDict(portalPairList);
+
+            foreach (var i in portalPairList)
+            {
+                var l = Instantiate(linePrefab, _tiles[i.InPos.x, i.InPos.y, i.InPos.z].transform)
+                    .GetComponent<LineRenderer>();
+                l.SetPosition(0, i.InPos);
+                l.SetPosition(1, i.OutPos);
+            }
         }
-        
+        if (_currentMapCreating.RotInfo != null)
+        {
+            var rotInfo = RotateHelper.Decode(_currentMapCreating.RotInfo);
+            RotAxis = rotInfo.Axis;
+            _canRotate = rotInfo.Layers;
+        }
+        LayerRender();
         Render();
     }
 
@@ -282,9 +324,17 @@ public class MapEditor : MonoBehaviour
         else if(currentTile == (char)TileType.PortalOut)
             CurrentTile = (char)TileType.PortalIn;
     }
-    
-    #region Button
 
+    public void SetLayer(int index)
+    {
+        RotAxis = _selectedAxis;
+        _canRotate[index] = !_canRotate[index];
+        innerCubes[_rotAxis].GetChild(index).GetChild(0).gameObject.SetActive(_canRotate[index]);
+        if (_canRotate.Any(i => i))
+            return;
+        RotAxis = 0;
+    }
+    
     public void PlayTest()
     {
         if (!playerModel.gameObject.activeSelf)
@@ -298,7 +348,7 @@ public class MapEditor : MonoBehaviour
         
         gameObject.SetActive(false);
         // 로딩 오래 걸리면 씬 전환 효과 넣기
-        GameManager.Instance.PlayGame((char[,,])_map.Clone(), _portalPairDict,true);
+        GameManager.Instance.PlayGame((char[,,])_map.Clone(), _portalPairDict, _rotAxis, _canRotate, true);
     }
 
     public void AutoTest()
@@ -323,6 +373,7 @@ public class MapEditor : MonoBehaviour
         ExportToFileDownloads();
     }
 
+    #region ToolSet
     public void OnPortalLineToggleChanged(bool b)
     {
         if(b)
@@ -384,7 +435,44 @@ public class MapEditor : MonoBehaviour
         CurrentTile = (char)TileType.Laser;
         // 여기에서 현재 mat 지정
     }
+    
+    public void SetCurrentTileToDashXp()
+    {
+        CurrentTile = (char)TileType.DashXp;
+        // 여기에서 현재 mat 지정
+    }
+    public void SetCurrentTileToDashXm()
+    {
+        CurrentTile = (char)TileType.DashXm;
+        // 여기에서 현재 mat 지정
+    }
+    public void SetCurrentTileToDashYp()
+    {
+        CurrentTile = (char)TileType.DashYp;
+        // 여기에서 현재 mat 지정
+    }
+    public void SetCurrentTileToDashYm()
+    {
+        CurrentTile = (char)TileType.DashYm;
+        // 여기에서 현재 mat 지정
+    }
+    public void SetCurrentTileToDashZp()
+    {
+        CurrentTile = (char)TileType.DashZp;
+        // 여기에서 현재 mat 지정
+    }
+    public void SetCurrentTileToDashZm()
+    {
+        CurrentTile = (char)TileType.DashZm;
+        // 여기에서 현재 mat 지정
+    }
 
+    public void SetCurrentAxis(int i)
+    {
+        SelectedAxis = i;
+    }
+    
+    #endregion
     public void ExitEditor()
     {
         if(!SupabaseManager.Instance.IsNetworkAvailable() || !SupabaseManager.Instance.IsLoggedIn())
@@ -414,6 +502,7 @@ public class MapEditor : MonoBehaviour
         // 이름이랑 설명도 수정?
         _currentMapCreating.Data = StringHelper.Encode(_map);
         _currentMapCreating.PortalPairs = PortalPairHelper.Encode(PortalPairHelper.ToList(_portalPairDict));
+        _currentMapCreating.RotInfo = RotateHelper.Encode(new RotateInfo{Axis =  _rotAxis, Layers = _canRotate});
 
         try
         {
@@ -440,8 +529,6 @@ public class MapEditor : MonoBehaviour
         rightSideButtonsParent.SetActive(true);
         stopShowAnswerButton.SetActive(false);
     }
-    
-    #endregion
 
     public async UniTaskVoid ShowAnswer()
     {

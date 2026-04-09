@@ -49,6 +49,10 @@ public class Map : BaseModel
     [JsonProperty("portal_pairs")]
     [Column("portal_pairs")]
     public string PortalPairs { get; set; }
+    
+    [JsonProperty("rotation_info")]
+    [Column("rotation_info")]
+    public string RotInfo { get; set; }
 }
 
 [Table("map_clears")]
@@ -85,6 +89,10 @@ public class MapCreating : BaseModel
     [JsonProperty("portal_pairs")]
     [Column("portal_pairs")]
     public string PortalPairs { get; set; }
+    
+    [JsonProperty("rotation_info")]
+    [Column("rotation_info")]
+    public string RotInfo { get; set; }
 }
 
 [Table("map_likes")]
