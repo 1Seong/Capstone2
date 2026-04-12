@@ -1,11 +1,15 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Quaternion = UnityEngine.Quaternion;
+using Vector3 = UnityEngine.Vector3;
 
 #region TileHelpers
 public enum TileType
@@ -91,6 +95,7 @@ public class PuzzlePlayer : MonoBehaviour
     private char[,,] _initialMap;
     private int _roadLeftCount;
     private Dictionary<Vector3Int, Vector3Int> _portalPairDic;
+    private Dictionary<Vector3Int, Vector3Int> _initialPortalPairDic;
 
     [SerializeField] private Transform playerModel;
     [SerializeField] private float playerMoveDuration = 0.5f;
@@ -267,6 +272,7 @@ public class PuzzlePlayer : MonoBehaviour
         public int RoadLeftCount;
         public int CurrentGhostCount;
         public bool HasLaser;
+        public Dictionary<Vector3Int, Vector3Int> PortalDic;
     }
 
     private Stack<MapState> _undoStack;
@@ -361,6 +367,7 @@ public class PuzzlePlayer : MonoBehaviour
         _isCleared = false;
         _roadLeftCount = 0;
         _map = (char[,,])_initialMap.Clone();
+        _portalPairDic = new Dictionary<Vector3Int, Vector3Int>(_initialPortalPairDic);
 
         for (var i = 0; i < CubeSize; ++i)
         for (var j = 0; j < CubeSize; ++j)
@@ -411,6 +418,8 @@ public class PuzzlePlayer : MonoBehaviour
         CurrentGhostCount = 0;
         HasLaser = false;
         
+        foreach(var i in innerCubes)
+            i.gameObject.SetActive(false);
         innerCubes[_rotAxis].SetActive(true);
         if (_rotAxis != 0)
         {
@@ -431,7 +440,7 @@ public class PuzzlePlayer : MonoBehaviour
         bool[] canRotate = null, bool isTest = false)
     {
         _map = map;
-        _portalPairDic =  portalPairDic;
+        _initialPortalPairDic = portalPairDic;
         _initialMap = (char[,,])map.Clone();
         _rotAxis = rotateAxis;
         _canRotate = canRotate;
@@ -471,24 +480,37 @@ public class PuzzlePlayer : MonoBehaviour
 
     #region Player
 
-    private bool CannotMove(int x, int y, int z)
+    private bool CannotMove(int x, int y, int z) // 회전 고려 x
     {
         return x == -1 || x == CubeSize || y == -1 || y == CubeSize || z == -1 || z == CubeSize
                || _map[x, y, z] == (char)TileType.Empty
                || _currentGhostCount == 0 && TileHelper.IsPainted(_map[x, y, z]);
     }
 
+    private bool IsOutOfBoundary(int x, int y, int z)
+    {
+        return x == -1 ||  x == CubeSize || y == -1 || y == CubeSize || z == -1 || z == CubeSize
+            || x > 0 && x < CubeSize-1 && y > 0  && y < CubeSize-1 && z > 0 && z < CubeSize-1;
+    }
+
     // 인덱스 계산
     private async UniTask MovePlayer(Vector3 dir, bool doSave = true)
     {
         var pos = playerModel.position;
+        var cx = (int)pos.x;
+        var cy = (int)pos.y;
+        var cz = (int)pos.z;
         var nPos = pos + dir;
         var nLayer = (int)nPos.x;
         var nRow = (int)nPos.y;
         var nCol = (int)nPos.z;
         
-        if (!(_rotAxis == 1 && _canRotate[nLayer]) && !(_rotAxis == 2 && _canRotate[nRow]) && !(_rotAxis == 3 && _canRotate[nCol]) 
-            && CannotMove(nLayer, nRow, nCol))
+        if (IsOutOfBoundary(nLayer, nRow, nCol) // 바운더리를 벗어난 경우 무조건 이동 안됨
+            || ((_map[nLayer, nRow, nCol] == (char)TileType.Empty || _currentGhostCount == 0 && TileHelper.IsPainted(_map[nLayer, nRow, nCol]))
+                && (_currentGhostCount > 0 || _rotAxis == 0
+                    || _rotAxis == 1 && (!_canRotate[cx] || dir.x != 0)
+                    || _rotAxis == 2 && (!_canRotate[cy] || dir.y != 0)
+                    || _rotAxis == 3 && (!_canRotate[cz] || dir.z != 0))))
         {
             // 이동 불가 애니메이션
             await playerModel.DOShakePosition(0.2f, 0.2f, 20).AsyncWaitForCompletion().AsUniTask();
@@ -502,28 +524,26 @@ public class PuzzlePlayer : MonoBehaviour
             ++_moves;
         }
 
-        if (_currentGhostCount == 0 
-            && ((_rotAxis == 1 && _canRotate[nLayer]) || (_rotAxis == 2 && _canRotate[nRow]) || (_rotAxis == 3 && _canRotate[nCol])) 
-            && CannotMove(nLayer, nRow, nCol))
+        if (_currentGhostCount == 0 && _rotAxis != 0 
+                &&(_map[nLayer, nRow, nCol] == (char)TileType.Empty || TileHelper.IsPainted(_map[nLayer, nRow, nCol]))) // 회전
         {
-            if ((_rotAxis == 1 && _canRotate[nLayer]) && (dir.z == 0 && dir.y > 0 || (int)dir.z == CubeSize - 1 &&  dir.y < 0 
-                    ||  dir.y == 0 && dir.z < 0 || (int)dir.y  == CubeSize - 1 && dir.z > 0)
-                || (_rotAxis == 2 && _canRotate[nRow]) && (dir.x == 0 && dir.z > 0 || (int)dir.x == CubeSize - 1 &&  dir.z < 0 
-                    ||  dir.z == 0 && dir.x < 0 || (int)dir.z  == CubeSize - 1 && dir.x > 0)
-                || (_rotAxis == 3 && _canRotate[nCol]) && (dir.x == 0 && dir.y < 0 || (int)dir.x == CubeSize - 1 &&  dir.y > 0 
-                    ||  dir.y == 0 && dir.x > 0 || (int)dir.y  == CubeSize - 1 && dir.x < 0))
+            if (_rotAxis == 1 && (cz == 0 && dir.y > 0 || cz == CubeSize - 1 && dir.y < 0 
+                    || cy == 0 && dir.z < 0 || cy == CubeSize - 1 && dir.z > 0)
+                || _rotAxis == 2 && (cx == 0 && dir.z > 0 || cx == CubeSize - 1 && dir.z < 0 
+                    || cz == 0 && dir.x < 0 || cz == CubeSize - 1 && dir.x > 0)
+                || _rotAxis == 3 && (cx == 0 && dir.y < 0 || cx == CubeSize - 1 && dir.y > 0 
+                    || cy == 0 && dir.x > 0 || cy == CubeSize - 1 && dir.x < 0))
             {
-                await ApplyRotate(nLayer, nRow, nCol, true);
+                await ApplyRotate(nLayer, nRow, nCol, true); // 시계방향
             }
             else
             {
-                await ApplyRotate(nLayer, nRow, nCol, false);
+                await ApplyRotate(nLayer, nRow, nCol, false); // 반시계
             }
             return;
         }
-
         _answer.Push(new Vector3Int(nLayer, nRow, nCol));
-
+        
         if (_currentGhostCount > 0)
             --CurrentGhostCount;
 
@@ -571,6 +591,7 @@ public class PuzzlePlayer : MonoBehaviour
                     .AsyncWaitForCompletion().AsUniTask();
                 await PaintWithRender(x, y, z, true);
                 --_roadLeftCount;
+                RepositionCamera(playerModel.position);
                 break;
             
             case (char)TileType.Ghost:
@@ -620,7 +641,6 @@ public class PuzzlePlayer : MonoBehaviour
     }
 
     #region Rotation
-    // TODO: 레이저 먹은 상태에서 밀면 하이라이트 다시 초기화
     private async UniTask ApplyRotate(int x, int y, int z, bool clockWise, bool cascade = true)
     {
         char[][] temp = new char[CubeSize][];
@@ -630,6 +650,8 @@ public class PuzzlePlayer : MonoBehaviour
         Vector3 targetAngle;
         int playerX = (int)playerModel.position.x, playerY = (int)playerModel.position.y, playerZ = (int)playerModel.position.z;
         Vector3 playerTarget = default;
+        var hadLaser = _hasLaser;
+        HasLaser = false;
 
         switch(_rotAxis)
         {
@@ -702,7 +724,7 @@ public class PuzzlePlayer : MonoBehaviour
                     if (x + depth >= CubeSize || !_canRotate[x + depth]) b2 = false;
                     while (b1 || b2)
                     {
-                        await UniTask.WaitForSeconds(0.2f);
+                        await UniTask.WaitForSeconds(0.13f);
                         if (b1)
                         {
                             if (x - (depth+1) < 0 || !_canRotate[x - (depth+1)]) b1 = false;
@@ -789,7 +811,7 @@ public class PuzzlePlayer : MonoBehaviour
                     if (y + depth >= CubeSize || !_canRotate[y + depth]) b2 = false;
                     while (b1 || b2)
                     {
-                        await UniTask.WaitForSeconds(0.2f);
+                        await UniTask.WaitForSeconds(0.13f);
                         if (b1)
                         {
                             if (y - (depth+1) < 0 || !_canRotate[y - (depth+1)]) b1 = false;
@@ -876,7 +898,7 @@ public class PuzzlePlayer : MonoBehaviour
                     if (z + depth >= CubeSize || !_canRotate[z + depth]) b2 = false;
                     while (b1 || b2)
                     {
-                        await UniTask.WaitForSeconds(0.2f);
+                        await UniTask.WaitForSeconds(0.13f);
                         if (b1)
                         {
                             if (z - (depth+1) < 0 || !_canRotate[z - (depth+1)]) b1 = false;
@@ -895,6 +917,10 @@ public class PuzzlePlayer : MonoBehaviour
                     await RotateTilesEffect(z, rotationObjects, targetAngle, false);
                 break;
         }
+        _answer.Push(new Vector3Int((int)playerTarget.x, (int)playerTarget.y, (int)playerTarget.z));
+        if (hadLaser)
+            HasLaser = true;
+        RepositionCamera(playerModel.position);
     }
 
     private async UniTask RotateTilesEffect(int index, List<GameObject> objectsToRotate, Vector3 targetAngle, bool includePlayer = true,
@@ -919,8 +945,8 @@ public class PuzzlePlayer : MonoBehaviour
         foreach (var data in originalData)
             data.obj.transform.SetParent(pivot.transform);
 
-        var t1 = pivot.transform.DORotate(targetAngle, 0.5f)
-            .SetEase(Ease.InOutQuad)
+        var t1 = pivot.transform.DORotate(targetAngle, 0.96f)
+            .SetEase(Ease.OutBack)
             .OnComplete(() =>
             {
                 foreach (var data in originalData)
@@ -942,8 +968,8 @@ public class PuzzlePlayer : MonoBehaviour
                 }
                 Destroy(pivot);
             }).AsyncWaitForCompletion().AsUniTask();
-        var t2 = _layers[index].DORotate(targetAngle, 0.5f)
-            .SetEase(Ease.InOutQuad)
+        var t2 = _layers[index].DORotate(targetAngle, 0.96f)
+            .SetEase(Ease.OutBack)
             .OnComplete(() =>
             {
                 _layers[index].localRotation = Quaternion.identity;
@@ -961,9 +987,8 @@ public class PuzzlePlayer : MonoBehaviour
         _undoStack.Push(new MapState()
         {
             Map = snapshot, PlayerPos = playerModel.position, RoadLeftCount = _roadLeftCount, CurrentGhostCount = _currentGhostCount,
-            HasLaser = _hasLaser
+            HasLaser = _hasLaser, PortalDic = new Dictionary<Vector3Int, Vector3Int>(_portalPairDic)
         });
-        var pos = playerModel.position;
     }
 
     public void UndoInputWrapper(InputAction.CallbackContext _) => Undo();
@@ -974,9 +999,11 @@ public class PuzzlePlayer : MonoBehaviour
 
         var s = _undoStack.Pop();
         _map = s.Map;
+        HasLaser = false;
         playerModel.position = s.PlayerPos;
         _roadLeftCount = s.RoadLeftCount;
         CurrentGhostCount = s.CurrentGhostCount;
+        _portalPairDic = s.PortalDic;
 
         _answer.Pop();
         if (_undoStack.Count < _answer.Count) 
@@ -987,6 +1014,7 @@ public class PuzzlePlayer : MonoBehaviour
             Render();
         
         HasLaser = s.HasLaser;
+        RepositionCamera(playerModel.position, false);
     }
 
     // 이동 및 아이템 사용할때 사용 -> 즉 타일이 색칠
@@ -1130,11 +1158,41 @@ public class PuzzlePlayer : MonoBehaviour
 
     #region CameraMove
 
-    private void TransitionTo(Vector3 corner, Vector3 up)
+    private void RepositionCamera(Vector3 pos, bool byPassIsMoving = true)
+    {
+        var v = pos + Vector3.one;
+        var rv = (int)Vector3.Dot(currentRight, v);
+        var lv = (int)Vector3.Dot(currentLeft, v);
+        var uv = (int)Vector3.Dot(currentUp, v);
+        var rOpposite = rv == 1 || rv == -CubeSize;
+        var rForward = rv == -1 || rv == CubeSize;
+        var lOpposite = lv == 1 || lv == -CubeSize;
+        var lForward = lv == -1 || lv == CubeSize;
+        var uOpposite = uv == 1 || uv == -CubeSize;
+        var uForward = uv == -1 || uv == CubeSize;
+        if (rOpposite && !lForward && !uForward)
+        {
+            CameraRotation6(byPassIsMoving);
+        }
+        else if (lOpposite && !rForward && !uForward)
+        {
+            CameraRotation2(byPassIsMoving);
+        }
+        else if (uOpposite && !lForward && !rForward)
+        {
+            CameraRotation4(byPassIsMoving);
+        }
+    }
+
+    private void TransitionTo(Vector3 corner, Vector3 up, bool byPassIsMoving = false)
     {
         var target = Quaternion.LookRotation(-corner, up);
         // Pivot 회전만 바꾸면 카메라는 자동으로 따라옴
-        pivot.DORotateQuaternion(target, camMoveDuration).SetEase(camMoveEase).OnComplete(() => _isMoving = false);
+        pivot.DORotateQuaternion(target, camMoveDuration).SetEase(camMoveEase).OnComplete(() => 
+        {
+            if(!byPassIsMoving)
+                _isMoving = false;
+        });
     }
 
     public void CameraRotation1InputWrapper(InputAction.CallbackContext _) => CameraRotation1();
@@ -1143,9 +1201,9 @@ public class PuzzlePlayer : MonoBehaviour
     public void CameraRotation4InputWrapper(InputAction.CallbackContext _) => CameraRotation4();
     public void CameraRotation5InputWrapper(InputAction.CallbackContext _) => CameraRotation5();
     public void CameraRotation6InputWrapper(InputAction.CallbackContext _) => CameraRotation6();
-    public void CameraRotation1()
+    public void CameraRotation1(bool byPassIsMoving = false)
     {
-        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        if (!byPassIsMoving && _isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
         _isMoving = true;
 
         var left = currentLeft;
@@ -1154,12 +1212,12 @@ public class PuzzlePlayer : MonoBehaviour
         currentLeft = -left;
         currentRight = -right;
         
-        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp, byPassIsMoving);
     }
 
-    public void CameraRotation2()
+    public void CameraRotation2(bool byPassIsMoving = false)
     {
-        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        if (!byPassIsMoving && _isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
         _isMoving = true;
         
         var left = currentLeft;
@@ -1168,12 +1226,12 @@ public class PuzzlePlayer : MonoBehaviour
         currentLeft = right;
         currentRight = -left;
         
-        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp, byPassIsMoving);
     }
 
-    public void CameraRotation3()
+    public void CameraRotation3(bool byPassIsMoving = false)
     {
-        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        if (!byPassIsMoving && _isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
         _isMoving = true;
         
         var left = currentLeft;
@@ -1184,12 +1242,12 @@ public class PuzzlePlayer : MonoBehaviour
         currentRight = -left;
         currentUp = right;
         
-        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp, byPassIsMoving);
     }
 
-    public void CameraRotation4()
+    public void CameraRotation4(bool byPassIsMoving = false)
     {
-        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        if (!byPassIsMoving && _isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
         _isMoving = true;
         
         var left = currentLeft;
@@ -1200,12 +1258,12 @@ public class PuzzlePlayer : MonoBehaviour
         currentRight = left;
         currentUp = -up;
         
-        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp, byPassIsMoving);
     }
 
-    public void CameraRotation5()
+    public void CameraRotation5(bool byPassIsMoving = false)
     {
-        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        if (!byPassIsMoving && _isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
         _isMoving = true;
         
         var left = currentLeft;
@@ -1216,12 +1274,12 @@ public class PuzzlePlayer : MonoBehaviour
         currentRight = -up;
         currentUp = left;
         
-        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp, byPassIsMoving);
     }
 
-    public void CameraRotation6()
+    public void CameraRotation6(bool byPassIsMoving = false)
     {
-        if (_isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
+        if (!byPassIsMoving && _isMoving || _isCleared || !GameManager.Instance.isPlaying) return;
         _isMoving = true;
         
         var left = currentLeft;
@@ -1230,7 +1288,7 @@ public class PuzzlePlayer : MonoBehaviour
         currentLeft = -right;
         currentRight = left;
         
-        TransitionTo(currentLeft + currentRight + currentUp, currentUp);
+        TransitionTo(currentLeft + currentRight + currentUp, currentUp, byPassIsMoving);
     }
 
     #endregion
