@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using com.example;
 using TMPro;
 using UnityEngine;
 
@@ -73,5 +74,45 @@ public class GameManager : MonoBehaviour
     public void ExitToMenuButton()
     {
         OnScreenExitEvent?.Invoke();
+    }
+
+    public void Stop()
+    {
+        isPlaying = false;
+    }
+
+    public void Play()
+    {
+        isPlaying = true;
+    }
+
+    public bool CheckNetworkAndLogIn()
+    {
+        if (!SupabaseManager.Instance.IsNetworkAvailable())
+        {
+            Debug.LogWarning("오프라인");
+            PopUpManager.Instance.Show("네트워크에 연결 상태를 확인해주세요.");
+            return false;
+        }
+        if (!SupabaseManager.Instance.IsLoggedIn())
+        {
+            Debug.LogWarning("로그아웃 상태");
+            PopUpManager.Instance.Show("로그인 되어 있지 않습니다.");
+            return false;
+        }
+
+        return true;
+    }
+    
+    public bool CheckNetwork()
+    {
+        if (!SupabaseManager.Instance.IsNetworkAvailable())
+        {
+            Debug.LogWarning("오프라인");
+            PopUpManager.Instance.Show("네트워크에 연결 상태를 확인해주세요.");
+            return false;
+        }
+
+        return true;
     }
 }

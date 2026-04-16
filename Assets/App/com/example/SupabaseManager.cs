@@ -5,7 +5,6 @@ using Cysharp.Threading.Tasks;
 using Supabase;
 using Supabase.Gotrue;
 using Supabase.Gotrue.Interfaces;
-using TMPro;
 using UnityEngine;
 using Client = Supabase.Client;
 

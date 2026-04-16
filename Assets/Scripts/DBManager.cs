@@ -53,6 +53,9 @@ public class Map : BaseModel
     [JsonProperty("rotation_info")]
     [Column("rotation_info")]
     public string RotInfo { get; set; }
+    
+    [Column("thumbnail_url")]
+    public string ThumbnailUrl { get; set; }
 }
 
 [Table("map_clears")]
@@ -83,16 +86,22 @@ public class MapCreating : BaseModel
     [Column("data", ignoreOnInsert: true)] 
     public string Data { get; set; } = default!;
 
-    [Column("name")] 
+    [Column("name", ignoreOnInsert: true)] 
     public string Name { get; set; } = "my map";
     
+    [Column("desc", ignoreOnInsert: true)]
+    public string Desc { get; set; } // NULL 가능
+    
     [JsonProperty("portal_pairs")]
-    [Column("portal_pairs")]
+    [Column("portal_pairs", ignoreOnInsert: true)]
     public string PortalPairs { get; set; }
     
     [JsonProperty("rotation_info")]
-    [Column("rotation_info")]
+    [Column("rotation_info", ignoreOnInsert: true)]
     public string RotInfo { get; set; }
+    
+    [Column("thumbnail_url", ignoreOnInsert: true)]
+    public string ThumbnailUrl { get; set; }
 }
 
 [Table("map_likes")]
@@ -304,9 +313,9 @@ public class DBManager : MonoBehaviour
     
     #region Map_Clears
 
-    public async Task UpsertMapClearsAsync(MapClears clear)
+    public async Task UpsertMapClearsAsync(long mapId, short moves)
     {
-        await _client.From<MapClears>().Insert(clear); // upsert를 하지 않은 이유는 Trigger에 의해 자동 업데이트를 설정해놨기 때문
+        await _client.From<MapClears>().Insert(new MapClears{MapId = mapId, Moves = moves}); // upsert를 하지 않은 이유는 Trigger에 의해 자동 업데이트를 설정해놨기 때문
     }
     
     #endregion
@@ -323,16 +332,27 @@ public class DBManager : MonoBehaviour
         await _client.From<MapCreating>().Update(map);
     }
 
-    public async Task DeleteMapCreatingAsync(MapCreating map)
+    public async Task DeleteMapCreatingAsync(long id)
     {
-        await _client.From<MapCreating>().Delete(map);
+        await _client.From<MapCreating>()
+            .Where(x => x.MapId == id)
+            .Delete();
     }
 
     public async Task<List<MapCreating>> FetchMapCreatingAsync()
     {
         var response = await _client.From<MapCreating>().Get();
-
         return response.Models;
+    }
+
+    public async Task<MapCreating> FetchRecentMapCreatingSingleAsync()
+    {
+        var response = await _client
+            .From<MapCreating>()
+            .Order("created_at", Constants.Ordering.Descending)
+            .Limit(1)
+            .Get();
+        return response.Models.FirstOrDefault();
     }
 
     #endregion

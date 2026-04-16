@@ -48,6 +48,13 @@ public class ToggleButtonGroup : MonoBehaviour
     }
 
     public int SelectedIndex => _selectedIndex;
+    
+    public Button GetSelectedButton() =>  _buttons[_selectedIndex];
+
+    public void DeleteSelectedButton()
+    {
+        _buttons[_selectedIndex].gameObject.SetActive(false);
+    }
 
     private void SetButtonColor(Button button, Color color)
     {

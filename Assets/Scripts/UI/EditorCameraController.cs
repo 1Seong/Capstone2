@@ -3,7 +3,8 @@ using UnityEngine;
 
 public class EditorCameraController : MonoBehaviour
 {
-    [Header("Rotation")]
+    [Header("Rotation")] 
+    [SerializeField] private bool useRotate = true;
     [SerializeField] private float rotationSpeed = 5f;
 
     [Header("Zoom")]
@@ -23,7 +24,8 @@ public class EditorCameraController : MonoBehaviour
 
     private void Update()
     {
-        HandleRotation();
+        if(useRotate)
+            HandleRotation();
         HandleZoom();
     }
 

@@ -473,20 +473,22 @@ public class MapEditor : MonoBehaviour
     }
     
     #endregion
-    public void ExitEditor()
+    public async void ExitEditor()
     {
+        /*
         if(!SupabaseManager.Instance.IsNetworkAvailable() || !SupabaseManager.Instance.IsLoggedIn())
             PopUpManager.Instance.Show("네트워크에 연결되어 있지 않습니다!");
-        
-        SaveToDB();
+        */
+        // TODO : 네트워크에 연결되어 있지 않으면 진행 상황을 잃을 수 있다는 창 표시
+        var b = await SaveToDB();
+        if (!b) return;
         _currentMapCreating = null;
         // 제작 중 맵 목록 씬 로드
     }
     
-    public async void SaveToDB()
+    public async UniTask<bool> SaveToDB()
     {
-        /*
-        string url;
+        string url = null;
         // 스크린샷 + DB에 update
         try
         {
@@ -495,11 +497,10 @@ public class MapEditor : MonoBehaviour
         catch (Exception e)
         {
             Debug.Log(e.Message);
-            PopUpManager.Instance.Show("썸네일 캡쳐 실패");
         }
-        // url 넣기
-        */
-        // 이름이랑 설명도 수정?
+        
+        // 정보 넣기
+        _currentMapCreating.ThumbnailUrl = url;
         _currentMapCreating.Data = StringHelper.Encode(_map);
         _currentMapCreating.PortalPairs = PortalPairHelper.Encode(PortalPairHelper.ToList(_portalPairDict));
         _currentMapCreating.RotInfo = RotateHelper.Encode(new RotateInfo{Axis =  _rotAxis, Layers = _canRotate});
@@ -512,7 +513,10 @@ public class MapEditor : MonoBehaviour
         {
             Debug.Log(e.Message);
             PopUpManager.Instance.Show("저장 실패");
+            return false;
         }
+
+        return true;
     }
     
     public void EndShowAnswer()
@@ -604,15 +608,15 @@ public class MapEditor : MonoBehaviour
     public async Task<string> CaptureThumbnailAsync()
     {
         // 특정 카메라 시점에서 RenderTexture로 캡처
-        var renderTexture = new RenderTexture(512, 512, 24);
+        var renderTexture = new RenderTexture(256, 256, 24);
         thumbnailCamera.targetTexture = renderTexture;
         thumbnailCamera.gameObject.SetActive(true);
         thumbnailCamera.Render();
         thumbnailCamera.gameObject.SetActive(false);
 
         RenderTexture.active = renderTexture;
-        var texture = new Texture2D(512, 512, TextureFormat.RGB24, false);
-        texture.ReadPixels(new Rect(0, 0, 512, 512), 0, 0);
+        var texture = new Texture2D(256, 256, TextureFormat.RGB24, false);
+        texture.ReadPixels(new Rect(0, 0, 256, 256), 0, 0);
         texture.Apply();
 
         RenderTexture.active = null;
