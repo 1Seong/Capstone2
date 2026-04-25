@@ -264,6 +264,7 @@ public class PuzzlePlayer : MonoBehaviour
     private bool[] _canRotate;
     private Transform[] _layers;
     private int _rotAxis; // 0, x, y, z
+    [SerializeField] EdgeCubeInitializer _edgeCubeInitializer;
 
     private struct MapState
     {
@@ -354,6 +355,8 @@ public class PuzzlePlayer : MonoBehaviour
         sAction.action.Disable();
         undoAction.action.Disable();
         resetAction.action.Disable();
+        
+        _edgeCubeInitializer.Clear();
     }
     #endregion
 
@@ -425,15 +428,21 @@ public class PuzzlePlayer : MonoBehaviour
         {
             _layers = new Transform[CubeSize];
             var t = innerCubes[_rotAxis].GetComponent<Transform>();
+            GameObject p;
             for (int i = 1; i != CubeSize-1; ++i)
             {
                 _layers[i] = t.GetChild(i);
                 if (_canRotate[i])
+                {
                     _layers[i].GetChild(0).gameObject.SetActive(true);
+                }
                 else
+                {
                     _layers[i].GetChild(0).gameObject.SetActive(false);
+                }
             }
         }
+        _edgeCubeInitializer.Initialize(_canRotate, _rotAxis, CubeSize);
     }
 
     public void SetMapData(char[,,] map, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, 
@@ -945,7 +954,7 @@ public class PuzzlePlayer : MonoBehaviour
         foreach (var data in originalData)
             data.obj.transform.SetParent(pivot.transform);
 
-        var t1 = pivot.transform.DORotate(targetAngle, 0.96f)
+        var t1 = pivot.transform.DORotate(targetAngle, 1.1f)
             .SetEase(Ease.OutBack)
             .OnComplete(() =>
             {
@@ -968,7 +977,7 @@ public class PuzzlePlayer : MonoBehaviour
                 }
                 Destroy(pivot);
             }).AsyncWaitForCompletion().AsUniTask();
-        var t2 = _layers[index].DORotate(targetAngle, 0.96f)
+        var t2 = _layers[index].DORotate(targetAngle, 1.1f)
             .SetEase(Ease.OutBack)
             .OnComplete(() =>
             {

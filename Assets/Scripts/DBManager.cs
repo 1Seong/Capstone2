@@ -135,7 +135,6 @@ public class MapDetailResult
     public Map Map       { get; set; }
     public bool IsLiked  { get; set; }
     public bool IsCleared { get; set; }
-    public bool IsOwner { get; set; }
 }
 
 public enum SortOrder { Ascending, Descending }
@@ -167,6 +166,7 @@ public class DBManager : MonoBehaviour
     #region Map
     
     // 유저맵 가져오기 함수들 (RLS에 의해 public과, 본인의 private 맵들을 조회)
+    // TODO : 문자열 검색은 맵 이름, id, 그리고 닉네임을 동시에 찾아봄
     private async Task<List<Map>> FetchPageAsync(
         int page,
         string sortColumn = "created_at",
@@ -207,6 +207,7 @@ public class DBManager : MonoBehaviour
     }
     
     // 내 좋아요 여부, 내 클리어 여부, 내 맵 여부까지 조회해서 가져옴
+    // TODO : 닉네임도 함께 조회
     public async Task<List<MapDetailResult>> FetchPageWithDetailsAsync(int page, string sortColumn = "created_at", 
         SortOrder sortOrder = SortOrder.Descending,
         string nameSearch = null, string idSearch = null)
@@ -233,15 +234,12 @@ public class DBManager : MonoBehaviour
         var likedMapIds   = likedTask.Result.Models.Select(x => x.MapId).ToHashSet();
         var clearedMapIds = clearedTask.Result.Models.Select(x => x.MapId).ToHashSet();
 
-        var currentUid = _client.Auth.CurrentUser.Id;
-
         // 4. 조합
         return maps.Select(map => new MapDetailResult
         {
             Map       = map,
             IsLiked   = likedMapIds.Contains(map.Id),
             IsCleared = clearedMapIds.Contains(map.Id),
-            IsOwner   = map.UserId.ToString() == currentUid
         }).ToList();
     }
     

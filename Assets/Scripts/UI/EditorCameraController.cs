@@ -6,6 +6,7 @@ public class EditorCameraController : MonoBehaviour
     [Header("Rotation")] 
     [SerializeField] private bool useRotate = true;
     [SerializeField] private float rotationSpeed = 5f;
+    public void SetRotationSpeed(float v) => rotationSpeed = v;
 
     [Header("Zoom")]
     [SerializeField] private float zoomSpeed = 5f;

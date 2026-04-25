@@ -74,6 +74,7 @@ public class LevelListController : MonoBehaviour
         if (request.result != UnityWebRequest.Result.Success)
         {
             Debug.LogError($"썸네일 로드 실패: {request.error}");
+            PopUpManager.Instance.Show("썸네일 로드 실패");
             return;
         }
         
