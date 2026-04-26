@@ -2,6 +2,20 @@ using UnityEngine;
 
 public class AxisBeam : MonoBehaviour
 {
+    [SerializeField] private Transform xpParent;
+    [SerializeField] private Transform xmParent;
+    [SerializeField] private Transform ypParent;
+    [SerializeField] private Transform ymParent;
+    [SerializeField] private Transform zpParent;
+    [SerializeField] private Transform zmParent;
+    [SerializeField] private AuroraPointerHovering xpHovering;
+    [SerializeField] private AuroraPointerHovering xmHovering;
+    [SerializeField] private AuroraPointerHovering ypHovering;
+    [SerializeField] private AuroraPointerHovering ymHovering;
+    [SerializeField] private AuroraPointerHovering zpHovering;
+    [SerializeField] private AuroraPointerHovering zmHovering;
+    [SerializeField] private bool isEditior = false;
+    
     [Header("큐브 설정")]
     public float cubeSize = 10f;
     public float spawnMultiplier = 1.3f;  // 큐브 크기 대비 분포 범위
@@ -29,8 +43,11 @@ public class AxisBeam : MonoBehaviour
     void Start()
     {
         SpawnAxis(Vector3.right,   colorX);
+        SpawnAxis(Vector3.left,   colorX);
         SpawnAxis(Vector3.up,      colorY);
+        SpawnAxis(Vector3.down,      colorY);
         SpawnAxis(Vector3.forward, colorZ);
+        SpawnAxis(Vector3.back, colorZ);
     }
 
     void SpawnAxis(Vector3 axis, Color color)
@@ -47,6 +64,38 @@ public class AxisBeam : MonoBehaviour
         mat.SetFloat("_CubeSize", cubeSize);
         mat.SetFloat("_CubeFadeMargin", cubeFadeMargin);
 
+        if (!isEditior)
+        {
+            if (axis.x != 0)
+            {
+                if (axis.x == 1)
+                    xpHovering.mat = mat;
+                else
+                    xmHovering.mat = mat;
+            }
+            else if (axis.y != 0)
+            {
+                if (axis.y == 1)
+                    ypHovering.mat = mat;
+                else
+                    ymHovering.mat = mat;
+            }
+            else if (axis.z != 0)
+            {
+                if (axis.z == 1)
+                    zpHovering.mat = mat;
+                else
+                    zmHovering.mat = mat;
+            }
+
+            xpHovering.originalOpacity = opacity;
+            xmHovering.originalOpacity = opacity;
+            zpHovering.originalOpacity = opacity;
+            zmHovering.originalOpacity = opacity;
+            ypHovering.originalOpacity = opacity;
+            ymHovering.originalOpacity = opacity;
+        }
+
         // 축에 수직인 두 방향
         Vector3 perp1 = Vector3.Cross(axis, Vector3.up).normalized;
         if (perp1.sqrMagnitude < 0.01f)
@@ -60,17 +109,28 @@ public class AxisBeam : MonoBehaviour
             // 큐브 범위 내외 랜덤 분포
             float u = Random.Range(-spawnRange, spawnRange);
             float v = Random.Range(-spawnRange, spawnRange);
-            Vector3 offset = perp1 * u + perp2 * v;
+            Vector3 offset = perp1 * u + perp2 * v + axis * beamLength / 4.0f;
 
             GameObject go = new GameObject($"Beam_{axis}_{i}");
-            go.transform.SetParent(transform);
+            if (axis.x != 0)
+            {
+                go.transform.SetParent(axis.x == 1 ? xpParent : xmParent);
+            }
+            else if (axis.y != 0)
+            {
+                go.transform.SetParent(axis.y == 1 ? ypParent : ymParent);
+            }
+            else if (axis.z != 0)
+            {
+                go.transform.SetParent(axis.z == 1 ? zpParent : zmParent);
+            }
 
             // 빔 중심은 큐브 중심, 축 방향으로 정렬
             go.transform.position = transform.position + offset;
             go.transform.rotation = Quaternion.identity;
             
             BilboardBeam bb = go.AddComponent<BilboardBeam>();
-            bb.axis = axis;
+            bb.axis = new Vector3(Mathf.Abs(axis.x), Mathf.Abs(axis.y), Mathf.Abs(axis.z));
 
             MeshFilter   mf = go.AddComponent<MeshFilter>();
             MeshRenderer mr = go.AddComponent<MeshRenderer>();
@@ -78,7 +138,7 @@ public class AxisBeam : MonoBehaviour
             mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             mr.receiveShadows    = false;
 
-            mf.mesh = CreateBeamMesh(beamLength, beamWidth);
+            mf.mesh = CreateBeamMesh(beamLength / 2.0f, beamWidth);
         }
     }
 

@@ -247,6 +247,19 @@ public class MapEditor : MonoBehaviour
             RotAxis = rotInfo.Axis;
             _canRotate = rotInfo.Layers;
         }
+        for (var i = 0; i < cubeSize; ++i)
+        for (var j = 0; j < cubeSize; ++j)
+        for (var k = 0; k < cubeSize; ++k)
+        {
+            var c = _map[i, j, k];
+            switch (c)
+            {
+                case (char)TileType.Player:
+                    playerModel.gameObject.SetActive(true);
+                    playerModel.position = new Vector3(i, j, k);
+                    break;
+            }
+        }
         LayerRender();
         Render();
     }
@@ -475,13 +488,16 @@ public class MapEditor : MonoBehaviour
     #endregion
     public async void ExitEditor()
     {
+        _showAnswerCts?.Cancel();
+        _showAnswerCts?.Dispose();
+        _showAnswerCts = null;
+        
         /*
         if(!SupabaseManager.Instance.IsNetworkAvailable() || !SupabaseManager.Instance.IsLoggedIn())
             PopUpManager.Instance.Show("네트워크에 연결되어 있지 않습니다!");
         */
         // TODO : 네트워크에 연결되어 있지 않으면 진행 상황을 잃을 수 있다는 창 표시
-        var b = await SaveToDB();
-        if (!b) return;
+        await SaveToDB();
         _currentMapCreating = null;
         // 제작 중 맵 목록 씬 로드
     }
@@ -496,7 +512,7 @@ public class MapEditor : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.Log(e.Message);
+            Debug.LogWarning(e.Message);
         }
         
         // 정보 넣기
@@ -511,7 +527,7 @@ public class MapEditor : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.Log(e.Message);
+            Debug.LogWarning(e.Message);
             PopUpManager.Instance.Show("저장 실패");
             return false;
         }
@@ -521,9 +537,6 @@ public class MapEditor : MonoBehaviour
     
     public void EndShowAnswer()
     {
-        GameManager.Instance.OnScreenExitEvent += ExitEditor;
-        GameManager.Instance.OnScreenExitEvent -= EndShowAnswer;
-        
         _showAnswerCts?.Cancel();
         _showAnswerCts?.Dispose();
         _showAnswerCts = null;
@@ -536,9 +549,6 @@ public class MapEditor : MonoBehaviour
 
     public async UniTaskVoid ShowAnswer()
     {
-        GameManager.Instance.OnScreenExitEvent -= ExitEditor;
-        GameManager.Instance.OnScreenExitEvent += EndShowAnswer;
-        
         _showAnswerCts?.Cancel();
         _showAnswerCts?.Dispose();
         _showAnswerCts = new CancellationTokenSource();
