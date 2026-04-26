@@ -85,9 +85,9 @@ public class LevelListController : MonoBehaviour
     }
     
     // 온라인 체크 + 예외처리 필요
-    private async void CreateMap()
+    public async void CreateMap()
     {
-        if (!GameManager.Instance.CheckNetwork())
+        if (!GameManager.Instance.CheckNetworkAndLogIn())
             return;
         
         try
@@ -118,9 +118,9 @@ public class LevelListController : MonoBehaviour
     }
     
     // 온라인 체크 + 예외처리 필요
-    private async void DeleteMap()
+    public async void DeleteMap()
     {
-        if (!GameManager.Instance.CheckNetwork())
+        if (!GameManager.Instance.CheckNetworkAndLogIn())
             return;
         try
         {
@@ -140,15 +140,15 @@ public class LevelListController : MonoBehaviour
         rightPageObject.SetActive(false);
     }
     
-    private void EditMap()
+    public void EditMap()
     {
         GameManager.Instance.EnterEditor(_selectedMapCreating.Item1);
     }
     
     // 온라인 체크 + 예외처리 필요
-    private async void UpdateMap()
+    public async void UpdateMap()
     {
-        if (!GameManager.Instance.CheckNetwork())
+        if (!GameManager.Instance.CheckNetworkAndLogIn())
             return;
 
         var originalName = _selectedMapCreating.Item1.Name;
@@ -177,5 +177,13 @@ public class LevelListController : MonoBehaviour
         rightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = newDesc;
         var b = _selectedMapCreating.Item3;
         b.GetComponent<TextMeshProUGUI>().text = newName;
+    }
+
+    public void CancelEdit()
+    {
+        rightPageName.text = _selectedMapCreating.Item1.Name;
+        rightPageName.placeholder.GetComponent<TextMeshProUGUI>().text = _selectedMapCreating.Item1.Name;
+        rightPageDescription.text = _selectedMapCreating.Item1.Desc;
+        rightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = _selectedMapCreating.Item1.Desc;
     }
 }

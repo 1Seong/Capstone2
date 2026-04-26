@@ -11,7 +11,7 @@ namespace com.example
 	public class SignInWithEmailPassword : MonoBehaviour
 	{
 		// Public Unity References
-		public SupabaseManager SupabaseManager = null!;
+		//public SupabaseManager SupabaseManager = null!;
 
         [Header("SignIn")]
         public GameObject SigninPanel;
@@ -70,7 +70,7 @@ namespace com.example
 		// Unity does not allow async UI events, so we set a flag and use Update() to do the async work
 		public void SignIn()
 		{
-			if (!SupabaseManager.IsNetworkAvailable())
+			if (!SupabaseManager.Instance.IsNetworkAvailable())
 			{
 				ErrorText.text = "네트워크 연결을 확인해주세요.";
 				return;
@@ -93,7 +93,7 @@ namespace com.example
 		// Unity does not allow async UI events, so we set a flag and use Update() to do the async work
 		public void SignOut()
 		{
-			if (!SupabaseManager.IsNetworkAvailable())
+			if (!SupabaseManager.Instance.IsNetworkAvailable())
 			{
 				SignOutText.text = "네트워크 연결을 확인해주세요.";
 				return;
@@ -104,7 +104,7 @@ namespace com.example
 
 		public void SignUp()
 		{
-			if (!SupabaseManager.IsNetworkAvailable())
+			if (!SupabaseManager.Instance.IsNetworkAvailable())
 			{
 				SignOutText.text = "네트워크 연결을 확인해주세요.";
 				return;
@@ -138,7 +138,7 @@ namespace com.example
 		
 		public void Recovery()
 		{
-			if (!SupabaseManager.IsNetworkAvailable())
+			if (!SupabaseManager.Instance.IsNetworkAvailable())
 			{
 				RecoveryText.text = "네트워크 연결을 확인해주세요.";
 				return;
@@ -154,7 +154,7 @@ namespace com.example
 		
 		public void ChangePw()
 		{
-			if (!SupabaseManager.IsNetworkAvailable())
+			if (!SupabaseManager.Instance.IsNetworkAvailable())
 			{
 				ChangePwText.text = "네트워크 연결을 확인해주세요.";
 				return;
@@ -188,7 +188,7 @@ namespace com.example
 
         public void GoogleSignIn()
         {
-	        if (!SupabaseManager.IsNetworkAvailable())
+	        if (!SupabaseManager.Instance.IsNetworkAvailable())
 	        {
 		        ErrorText.text = "네트워크 연결을 확인해주세요.";
 		        return;
@@ -199,7 +199,7 @@ namespace com.example
         
         public void DiscordSignIn()
         {
-	        if (!SupabaseManager.IsNetworkAvailable())
+	        if (!SupabaseManager.Instance.IsNetworkAvailable())
 	        {
 		        ErrorText.text = "네트워크 연결을 확인해주세요.";
 		        return;
@@ -211,7 +211,7 @@ namespace com.example
 
         public void OpenAccount()
         {
-	        if(SupabaseManager.IsLoggedIn())
+	        if(SupabaseManager.Instance.IsLoggedIn())
 		        SignoutPanel.SetActive(true);
 	        else
 		        SigninPanel.SetActive(true);
@@ -383,7 +383,7 @@ namespace com.example
 		{
 			try
 			{
-                var session = (await SupabaseManager.Supabase()!.Auth.SignIn(EmailInput.text, PasswordInput.text))!;
+                var session = (await SupabaseManager.Instance.Supabase()!.Auth.SignIn(EmailInput.text, PasswordInput.text))!;
                 //ErrorText.text = $"Success! Signed In as {session.User?.Email}";
 
                 if (session?.AccessToken != null)
@@ -481,7 +481,7 @@ namespace com.example
         {
             try
             {
-                await SupabaseManager.Supabase()!.Auth.SignOut();
+                await SupabaseManager.Instance.Supabase()!.Auth.SignOut();
                 //SignOutText.text = $"Signed out";
                 SignoutPanel.SetActive(false);
                 SigninPanel.SetActive(true);
@@ -509,7 +509,7 @@ namespace com.example
         {
             try
             {
-                var response = await SupabaseManager.Supabase()!.Auth.SignUp(SignUpEmailInput.text, SignUpPasswordInput.text, new SignUpOptions { 
+                var response = await SupabaseManager.Instance.Supabase()!.Auth.SignUp(SignUpEmailInput.text, SignUpPasswordInput.text, new SignUpOptions { 
                     RedirectTo = "https://1seong.github.io/3dcubepainting.github.io/" });
 
                 if (response?.AccessToken == null)
@@ -550,7 +550,7 @@ namespace com.example
         {
 	        try
 	        {
-		        var response = await SupabaseManager.Supabase()!.Auth.ResetPasswordForEmail(RecoveryEmailInput.text);
+		        var response = await SupabaseManager.Instance.Supabase()!.Auth.ResetPasswordForEmail(RecoveryEmailInput.text);
 
 		        if (response)
 		        {
@@ -588,7 +588,7 @@ namespace com.example
         {
 	        try
 	        {
-		        var response = await SupabaseManager.Supabase()!.Auth.Update(new UserAttributes()
+		        var response = await SupabaseManager.Instance.Supabase()!.Auth.Update(new UserAttributes()
 			        { Password = ChangePwPasswordInput.text });
 
 		        if (response != null)

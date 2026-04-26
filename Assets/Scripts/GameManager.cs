@@ -11,8 +11,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private GameObject testClearPanel;
     [SerializeField] private TMP_Text testResultTMP;
-
-    public event Action OnScreenExitEvent;
+    
     //[SerializeField] private GameObject playInstance;
     
     private void Awake()
@@ -26,10 +25,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void EnterGame(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
+    public void EnterGameSingle(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
     {
         // 플레이 씬 로드
-        // 이전 씬 로드하는 함수 등록
+        PlayGame(data, portalPairDic, rotateAxis, canRotate);
+    }
+    
+    public void EnterGameUser(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
+    {
+        // 플레이 씬 로드
         PlayGame(data, portalPairDic, rotateAxis, canRotate);
     }
 
@@ -44,11 +48,16 @@ public class GameManager : MonoBehaviour
 
     public void EnterEditor(MapCreating mapCreating)
     {
-        // 에디터 씬 로드
+        SceneChange.Instance.LoadScene("PuzzleEdit");
         MapEditor.Instance.Initialize(mapCreating);
     }
 
-    public void GameCleared(int moves)
+    public void GameClearedSingle(int moves)
+    {
+        // 싱글이냐 유저맵이냐에 따라 다름
+    }
+    
+    public void GameClearedUser(int moves)
     {
         // 싱글이냐 유저맵이냐에 따라 다름
     }
@@ -61,21 +70,14 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToEditor()
     {
-        OnScreenExitEvent += MapEditor.Instance.ExitEditor;
-        OnScreenExitEvent -= ReturnToEditor;
-        
         testClearPanel.SetActive(false);
         var player = FindAnyObjectByType<PuzzlePlayer>();
         
         MapEditor.Instance.gameObject.SetActive(true);
+        MapEditor.Instance.IsTesting = false;
         player.gameObject.SetActive(false);
     }
-
-    public void ExitToMenuButton()
-    {
-        OnScreenExitEvent?.Invoke();
-    }
-
+    
     public void Stop()
     {
         isPlaying = false;

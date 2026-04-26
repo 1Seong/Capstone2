@@ -257,6 +257,8 @@ public class PuzzlePlayer : MonoBehaviour
     [SerializeField] private InputActionReference undoAction;
     [SerializeField] private InputActionReference resetAction;
     private bool _isTesting;
+    private bool _isSingle;
+    private bool _isUser;
     private bool _isCleared;
     private Stack<Vector3Int> _answer;
     private int _moves = 0;
@@ -446,7 +448,7 @@ public class PuzzlePlayer : MonoBehaviour
     }
 
     public void SetMapData(char[,,] map, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, 
-        bool[] canRotate = null, bool isTest = false)
+        bool[] canRotate = null, bool isTest = false, bool isSingle = false, bool isUser = false)
     {
         _map = map;
         _initialPortalPairDic = portalPairDic;
@@ -454,6 +456,8 @@ public class PuzzlePlayer : MonoBehaviour
         _rotAxis = rotateAxis;
         _canRotate = canRotate;
         _isTesting = isTest;
+        _isSingle = isSingle;
+        _isUser = isUser;
         CubeSize = map.GetLength(0);
     }
 
@@ -482,7 +486,7 @@ public class PuzzlePlayer : MonoBehaviour
             GameManager.Instance.GameClearedTest(_moves);
         }
         else
-            GameManager.Instance.GameCleared(_moves);
+            GameManager.Instance.GameClearedSingle(_moves);
     }
 
     #endregion

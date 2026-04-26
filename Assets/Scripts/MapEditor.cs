@@ -64,6 +64,11 @@ public class MapEditor : MonoBehaviour
     [SerializeField] private float showAnswerTimePerPos = 0.5f;
     private CancellationTokenSource _showAnswerCts;
     private Stack<Vector3Int> _answer;
+    private bool _isShowingAnswer = false;
+    [SerializeField] private GameObject escPanel;
+    [SerializeField] private GameObject resetPanel;
+    [SerializeField] private GameObject resetCheckPanel;
+    public bool IsTesting = false;
 
     private int _selectedAxis = 0;
     public int SelectedAxis // 툴에서 선택된 축
@@ -224,7 +229,6 @@ public class MapEditor : MonoBehaviour
 
     public void Initialize(MapCreating mapCreating) // 외부에서 데이터 넣어주고 초기화
     {
-        GameManager.Instance.OnScreenExitEvent += ExitEditor;
         _currentMapCreating = mapCreating;
         if(_currentMapCreating.Data != null)
             _map = StringHelper.DecodeCube(_currentMapCreating.Data);
@@ -355,11 +359,9 @@ public class MapEditor : MonoBehaviour
             PopUpManager.Instance.Show("시작 위치를 찾을 수 없습니다.");
             return;
         }
-
-        GameManager.Instance.OnScreenExitEvent -= ExitEditor;
-        GameManager.Instance.OnScreenExitEvent += GameManager.Instance.ReturnToEditor;
         
         gameObject.SetActive(false);
+        IsTesting = true;
         // 로딩 오래 걸리면 씬 전환 효과 넣기
         GameManager.Instance.PlayGame((char[,,])_map.Clone(), _portalPairDict, _rotAxis, _canRotate, true);
     }
@@ -499,7 +501,7 @@ public class MapEditor : MonoBehaviour
         // TODO : 네트워크에 연결되어 있지 않으면 진행 상황을 잃을 수 있다는 창 표시
         await SaveToDB();
         _currentMapCreating = null;
-        // 제작 중 맵 목록 씬 로드
+        SceneChange.Instance.LoadScene("EditorMenu");
     }
     
     public async UniTask<bool> SaveToDB()
@@ -540,6 +542,7 @@ public class MapEditor : MonoBehaviour
         _showAnswerCts?.Cancel();
         _showAnswerCts?.Dispose();
         _showAnswerCts = null;
+        _isShowingAnswer = false;
     
         ghostPlayer.gameObject.SetActive(false);
         tileIndicatorParent.SetActive(true);
@@ -552,6 +555,7 @@ public class MapEditor : MonoBehaviour
         _showAnswerCts?.Cancel();
         _showAnswerCts?.Dispose();
         _showAnswerCts = new CancellationTokenSource();
+        _isShowingAnswer = true;
         
         rightSideButtonsParent.SetActive(false);
         tileIndicatorParent.SetActive(false);
@@ -586,7 +590,19 @@ public class MapEditor : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            ResetEditor();
+            resetPanel.SetActive(true);
+        }
+        
+        if (Input.GetKeyDown(KeyCode.Escape) && !_isShowingAnswer)
+        {
+            if (resetCheckPanel.activeSelf)
+            {
+                resetCheckPanel.SetActive(false);
+                escPanel.SetActive(true);
+                return;
+            }
+            
+            escPanel.SetActive(!escPanel.activeSelf);
         }
     }
     
