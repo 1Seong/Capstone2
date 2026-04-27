@@ -135,7 +135,7 @@ public class LevelListController : MonoBehaviour
         }
         
         Destroy(_selectedMapCreating.Item2);
-        Destroy(_selectedMapCreating.Item3);
+        Destroy(_selectedMapCreating.Item3.gameObject);
         _selectedMapCreating = null;
         
         rightPageObject.SetActive(false);

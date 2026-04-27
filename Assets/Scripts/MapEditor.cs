@@ -268,7 +268,8 @@ public class MapEditor : MonoBehaviour
                     break;
             }
         }
-        LayerRender();
+        if(_rotAxis != 0)
+            LayerRender();
         Render();
     }
 
@@ -498,15 +499,22 @@ public class MapEditor : MonoBehaviour
         _showAnswerCts?.Dispose();
         _showAnswerCts = null;
         
-        /*
-        if(!SupabaseManager.Instance.IsNetworkAvailable() || !SupabaseManager.Instance.IsLoggedIn())
-            PopUpManager.Instance.Show("네트워크에 연결되어 있지 않습니다!");
-        */
-        // TODO : 네트워크에 연결되어 있지 않으면 진행 상황을 잃을 수 있다는 창 표시
         await SaveToDB();
         _currentMapCreating = null;
         SceneChange.Instance.LoadScene("EditorMenu");
     }
+
+    public void ExitEditorWithoutSave()
+    {
+        _showAnswerCts?.Cancel();
+        _showAnswerCts?.Dispose();
+        _showAnswerCts = null;
+        
+        _currentMapCreating = null;
+        SceneChange.Instance.LoadScene("EditorMenu");
+    }
+
+    public void OnClickSave() => SaveToDB().Forget();
     
     public async UniTask<bool> SaveToDB()
     {
@@ -666,4 +674,6 @@ public class MapEditor : MonoBehaviour
             .From("map-thumbnails")
             .GetPublicUrl(path);
     }
+    
+    // TODO : 맵 폴더에 썸네일 업로드 함수 추가
 }

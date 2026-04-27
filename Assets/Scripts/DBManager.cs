@@ -31,7 +31,7 @@ public class Map : BaseModel
     [Column("num_likes", ignoreOnInsert: true, ignoreOnUpdate: true)]
     public long NumLikes { get; set; } // 0 기본값
 
-    [Column("user_id")]
+    [PrimaryKey("id", shouldInsert: true)]
     public Guid UserId { get; set; }
 
     [Column("is_private", ignoreOnInsert: true, ignoreOnUpdate: true)]
@@ -66,6 +66,9 @@ public class MapClears : BaseModel
 
     [PrimaryKey("map_id", shouldInsert: true)]
     public long MapId { get; set; }
+    
+    [PrimaryKey("map_user_id", shouldInsert: true)]
+    public Guid MapUserId { get; set; }
     
     [Column("moves")]
     public short Moves { get; set; }
@@ -112,6 +115,9 @@ public class MapLikes : BaseModel
 
     [PrimaryKey("map_id", shouldInsert: true)]
     public long MapId { get; set; }
+    
+    [PrimaryKey("map_user_id", shouldInsert: true)]
+    public Guid MapUserId { get; set; }
 }
 
 [Table("story_saves")]
@@ -166,7 +172,7 @@ public class DBManager : MonoBehaviour
     #region Map
     
     // 유저맵 가져오기 함수들 (RLS에 의해 public과, 본인의 private 맵들을 조회)
-    // TODO : 문자열 검색은 맵 이름, id, 그리고 닉네임을 동시에 찾아봄
+    // TODO : 문자열 검색은 맵 이름, id, 그리고 닉네임을 동시에 찾아봄(or)
     private async Task<List<Map>> FetchPageAsync(
         int page,
         string sortColumn = "created_at",
@@ -302,6 +308,7 @@ public class DBManager : MonoBehaviour
     #region Map_Likes
     
     // 좋아요 삽입
+    // TODO: 트리거 함수 호출로 변경
     public async Task InsertMapLikesAsync(long mapId)
     {
         await _client.From<MapLikes>().Insert(new MapLikes{MapId = mapId});
@@ -311,9 +318,9 @@ public class DBManager : MonoBehaviour
     
     #region Map_Clears
 
-    public async Task UpsertMapClearsAsync(long mapId, short moves)
+    public async Task UpsertMapClearsAsync(MapClears mapClear)
     {
-        await _client.From<MapClears>().Insert(new MapClears{MapId = mapId, Moves = moves}); // upsert를 하지 않은 이유는 Trigger에 의해 자동 업데이트를 설정해놨기 때문
+        await _client.From<MapClears>().Insert(mapClear); // upsert를 하지 않은 이유는 Trigger에 의해 자동 업데이트를 설정해놨기 때문
     }
     
     #endregion
