@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private GameObject testClearPanel;
     [SerializeField] private TMP_Text testResultTMP;
+    private MapCreating _currentMapCreating;
     
     //[SerializeField] private GameObject playInstance;
     
@@ -48,8 +49,16 @@ public class GameManager : MonoBehaviour
 
     public void EnterEditor(MapCreating mapCreating)
     {
+        _currentMapCreating = mapCreating;
         SceneChange.Instance.LoadScene("PuzzleEdit");
-        MapEditor.Instance.Initialize(mapCreating);
+        //MapEditor.Instance.Initialize(mapCreating);
+    }
+
+    public MapCreating GetMapCreating()
+    {
+        var m = _currentMapCreating;
+        _currentMapCreating = null;
+        return m;
     }
 
     public void GameClearedSingle(int moves)

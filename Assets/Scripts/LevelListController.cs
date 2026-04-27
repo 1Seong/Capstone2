@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using com.example;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -92,7 +93,7 @@ public class LevelListController : MonoBehaviour
         
         try
         {
-            await DBManager.Instance.InsertMapCreatingAsync(new MapCreating());
+            await DBManager.Instance.InsertMapCreatingAsync(new MapCreating(){UserId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id)});
         }
         catch (Exception e)
         {
@@ -176,7 +177,7 @@ public class LevelListController : MonoBehaviour
         rightPageDescription.text = newDesc;
         rightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = newDesc;
         var b = _selectedMapCreating.Item3;
-        b.GetComponent<TextMeshProUGUI>().text = newName;
+        b.GetComponentInChildren<TextMeshProUGUI>().text = newName;
     }
 
     public void CancelEdit()

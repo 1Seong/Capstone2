@@ -31,10 +31,10 @@ public class Map : BaseModel
     [Column("num_likes", ignoreOnInsert: true, ignoreOnUpdate: true)]
     public long NumLikes { get; set; } // 0 기본값
 
-    [Column("user_id", ignoreOnInsert: true, ignoreOnUpdate: true)]
-    public Guid UserId { get; set; } // auth.uid 기본값
+    [Column("user_id")]
+    public Guid UserId { get; set; }
 
-    [Column("is_private")]
+    [Column("is_private", ignoreOnInsert: true, ignoreOnUpdate: true)]
     public bool IsPrivate { get; set; }
     
     [Column("desc")]
@@ -61,8 +61,8 @@ public class Map : BaseModel
 [Table("map_clears")]
 public class MapClears : BaseModel
 {
-    [PrimaryKey("user_id", shouldInsert: false)]
-    public Guid UserId { get; set; } // auth.id() 기본값
+    [PrimaryKey("user_id", shouldInsert: true)]
+    public Guid UserId { get; set; }
 
     [PrimaryKey("map_id", shouldInsert: true)]
     public long MapId { get; set; }
@@ -77,26 +77,26 @@ public class MapCreating : BaseModel
     [PrimaryKey("map_id", shouldInsert: false)]
     public long MapId { get; set; } // identity
     
-    [Column("user_id", ignoreOnInsert: true, ignoreOnUpdate: true)]
-    public Guid UserId { get; set; } // auth.id() 기본값
+    [Column("user_id")]
+    public Guid UserId { get; set; }
 
     [Column("created_at", ignoreOnInsert: true, ignoreOnUpdate: true)]
     public DateTimeOffset CreatedAt { get; set; } // 현재 시간 기본값
 
     [Column("data", ignoreOnInsert: true)] 
-    public string Data { get; set; } = default!;
+    public string Data { get; set; }
 
-    [Column("name", ignoreOnInsert: true)] 
-    public string Name { get; set; } = "my map";
+    [Column("name")] 
+    public string Name { get; set; } = "New Puzzle";
     
     [Column("desc", ignoreOnInsert: true)]
     public string Desc { get; set; } // NULL 가능
     
-    [JsonProperty("portal_pairs")]
+    [JsonProperty("portal_pairs", NullValueHandling = NullValueHandling.Ignore)]
     [Column("portal_pairs", ignoreOnInsert: true)]
     public string PortalPairs { get; set; }
     
-    [JsonProperty("rotation_info")]
+    [JsonProperty("rotation_info", NullValueHandling = NullValueHandling.Ignore)]
     [Column("rotation_info", ignoreOnInsert: true)]
     public string RotInfo { get; set; }
     
@@ -107,7 +107,7 @@ public class MapCreating : BaseModel
 [Table("map_likes")]
 public class MapLikes : BaseModel
 {
-    [PrimaryKey("user_id", shouldInsert: false)]
+    [PrimaryKey("user_id", shouldInsert: true)]
     public Guid UserId { get; set; } // auth.id() 기본값
 
     [PrimaryKey("map_id", shouldInsert: true)]
@@ -117,7 +117,7 @@ public class MapLikes : BaseModel
 [Table("story_saves")]
 public class StorySaves : BaseModel
 {
-    [PrimaryKey("user_id", shouldInsert: false)]
+    [PrimaryKey("user_id", shouldInsert: true)]
     public Guid UserId { get; set; } // auth.id() 기본값
 
     [PrimaryKey("map_id", shouldInsert: true)]

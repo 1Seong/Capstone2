@@ -15,7 +15,7 @@ public class CellPulse : MonoBehaviour
     // 외부에서 호출 — 딜레이로 물결 효과
     public void StartPulse(float delay = 0f)
     {
-        var activeRenderer = GetActiveChildRenderer();
+        var activeRenderer = GetComponent<MeshRenderer>();
         _pulseMaterial = activeRenderer.material;
         _pulseMaterial.EnableKeyword("_EMISSION");
         _originalColor = _pulseMaterial.GetColor(EmissionColor);
@@ -43,15 +43,5 @@ public class CellPulse : MonoBehaviour
         _isPulsing = false;
         _pulseMaterial.SetColor(EmissionColor, _originalColor);
         _pulseMaterial.DisableKeyword("_EMISSION");
-    }
-
-    private MeshRenderer GetActiveChildRenderer()
-    {
-        foreach (Transform child in transform)
-        {
-            if (child.gameObject.activeSelf)
-                return child.GetComponent<MeshRenderer>();
-        }
-        return null;
     }
 }

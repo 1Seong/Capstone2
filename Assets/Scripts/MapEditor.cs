@@ -203,6 +203,8 @@ public class MapEditor : MonoBehaviour
             for (int k = 0; k != cubeSize; ++k)
                 _map[i, j, k] = (char)TileType.Empty;
         }
+        
+        Initialize(GameManager.Instance.GetMapCreating());
     }
 
     private void OnDestroy()
@@ -229,6 +231,8 @@ public class MapEditor : MonoBehaviour
 
     public void Initialize(MapCreating mapCreating) // 외부에서 데이터 넣어주고 초기화
     {
+        if (mapCreating == null) return;
+        
         _currentMapCreating = mapCreating;
         if(_currentMapCreating.Data != null)
             _map = StringHelper.DecodeCube(_currentMapCreating.Data);

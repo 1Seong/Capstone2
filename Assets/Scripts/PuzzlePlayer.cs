@@ -430,7 +430,6 @@ public class PuzzlePlayer : MonoBehaviour
         {
             _layers = new Transform[CubeSize];
             var t = innerCubes[_rotAxis].GetComponent<Transform>();
-            GameObject p;
             for (int i = 1; i != CubeSize-1; ++i)
             {
                 _layers[i] = t.GetChild(i);

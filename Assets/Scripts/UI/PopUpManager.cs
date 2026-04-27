@@ -29,6 +29,7 @@ public class PopUpManager : MonoBehaviour
             return;
         }
         Instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     /// <summary>

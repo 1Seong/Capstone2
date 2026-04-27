@@ -5,8 +5,12 @@ using UnityEngine;
 public class PuzzleTile : MonoBehaviour
 {
     private char _tileCache = 'A';
+    
+    [SerializeField] private MeshRenderer meshRenderer;
+    [SerializeField] private MeshRenderer arrowRenderer;
+    [SerializeField] private Material[] mats;
+    [SerializeField] private Material[] arrowMats;
 
-    private readonly int _initialChildNum = (int)TileType.Count - (int)TileType.Empty;
     // 이펙트나 애니메이션 없이 단순 렌더링
     // 초기화나 undo 할때 사용
     public void SimpleRender(char tile)
@@ -14,26 +18,77 @@ public class PuzzleTile : MonoBehaviour
         if (tile == _tileCache) return;
         _tileCache = tile;
 
-        if (tile == (char)TileType.PortalIn)
+        meshRenderer.enabled = false;
+        arrowRenderer.gameObject.SetActive(false);
+        if (tile != (char)TileType.PortalIn && transform.childCount == 2)
         {
-            for (var i = 0; i != _initialChildNum; ++i)
-            {
-                transform.GetChild(i).gameObject.SetActive(false);
-            }
+            transform.GetChild(1).gameObject.SetActive(false);
         }
-        else
-            foreach (Transform child in transform)
-                child.gameObject.SetActive(false);
 
+        int id;
         switch (tile)
         {
             case (char)TileType.Empty:
             case (char)TileType.Player:
                 return;
+            case (char)TileType.DashXp:
+            case (char)TileType.DashXpPainted:
+                id = tile - (int)TileType.Empty;
+                meshRenderer.enabled = true;
+                meshRenderer.material = mats[id];
+                arrowRenderer.gameObject.SetActive(true);
+                arrowRenderer.material = arrowMats[tile-(int)TileType.DashXp];
+                arrowRenderer.transform.localRotation = Quaternion.Euler(0, 180, 0);
+                break;
+            case (char)TileType.DashXm:
+            case (char)TileType.DashXmPainted:
+                id = tile - (int)TileType.Empty;
+                meshRenderer.enabled = true;
+                meshRenderer.material = mats[id];
+                arrowRenderer.gameObject.SetActive(true);
+                arrowRenderer.material = arrowMats[tile-(int)TileType.DashXp];
+                arrowRenderer.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                break;
+            case (char)TileType.DashYp:
+            case (char)TileType.DashYpPainted:
+                id = tile - (int)TileType.Empty;
+                meshRenderer.enabled = true;
+                meshRenderer.material = mats[id];
+                arrowRenderer.gameObject.SetActive(true);
+                arrowRenderer.material = arrowMats[tile-(int)TileType.DashXp];
+                arrowRenderer.transform.localRotation = Quaternion.Euler(0, 0, -90);
+                break;
+            case (char)TileType.DashYm:
+            case (char)TileType.DashYmPainted:
+                id = tile - (int)TileType.Empty;
+                meshRenderer.enabled = true;
+                meshRenderer.material = mats[id];
+                arrowRenderer.gameObject.SetActive(true);
+                arrowRenderer.material = arrowMats[tile-(int)TileType.DashXp];
+                arrowRenderer.transform.localRotation = Quaternion.Euler(0, 0, 90);
+                break;
+            case (char)TileType.DashZp:
+            case (char)TileType.DashZpPainted:
+                id = tile - (int)TileType.Empty;
+                meshRenderer.enabled = true;
+                meshRenderer.material = mats[id];
+                arrowRenderer.gameObject.SetActive(true);
+                arrowRenderer.material = arrowMats[tile-(int)TileType.DashXp];
+                arrowRenderer.transform.localRotation = Quaternion.Euler(0, 90, 0);
+                break;
+            case (char)TileType.DashZm:
+            case (char)TileType.DashZmPainted:
+                id = tile - (int)TileType.Empty;
+                meshRenderer.enabled = true;
+                meshRenderer.material = mats[id];
+                arrowRenderer.gameObject.SetActive(true);
+                arrowRenderer.material = arrowMats[tile-(int)TileType.DashXp];
+                arrowRenderer.transform.localRotation = Quaternion.Euler(0, -90, 0);
+                break;
             default:
-                var id = tile - (int)TileType.Empty;
-                //Debug.Log(tile.ToString() + " " + id.ToString());
-                transform.GetChild(id).gameObject.SetActive(true);
+                id = tile - (int)TileType.Empty;
+                meshRenderer.enabled = true;
+                meshRenderer.material = mats[id];
                 break;
         }
     }
