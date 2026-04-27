@@ -293,6 +293,18 @@ public class DBManager : MonoBehaviour
     // 맵 id를 사용한 유저맵 삭제(RLS에 의해 본인 맵만 삭제 가능)
     public async Task DeleteMapAsync(long id)
     {
+        try
+        {
+            await _client.Storage
+                .From("uploaded-map-thumbnails")
+                .Remove(new List<string> { $"{SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id}/{id}.jpg" });
+        }
+        catch (Exception e)
+        {
+            // Storage 실패해도 DB 삭제는 진행
+            Debug.LogWarning($"썸네일 삭제 실패 (무시): {e.Message}");
+        }
+        
         await _client.From<Map>()
             .Where(x => x.Id == id)
             .Delete();
@@ -339,7 +351,22 @@ public class DBManager : MonoBehaviour
 
     public async Task DeleteMapCreatingAsync(long id)
     {
-        await _client.From<MapCreating>()
+        // 1. Storage 먼저
+        try
+        {
+            await _client.Storage
+                .From("map-thumbnails")
+                .Remove(new List<string> { $"{id}.jpg" });
+        }
+        catch (Exception e)
+        {
+            // Storage 실패해도 DB 삭제는 진행
+            Debug.LogWarning($"썸네일 삭제 실패 (무시): {e.Message}");
+        }
+
+        // 2. DB 삭제
+        await _client
+            .From<MapCreating>()
             .Where(x => x.MapId == id)
             .Delete();
     }
