@@ -79,10 +79,10 @@ public class LevelListController : MonoBehaviour
             PopUpManager.Instance.Show("썸네일 로드 실패");
             return;
         }
-        
+        /*
         if (rawImage.texture != null)
             Destroy(rawImage.texture);
-
+        */
         rawImage.texture = DownloadHandlerTexture.GetContent(request);
     }
     

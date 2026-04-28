@@ -547,7 +547,7 @@ public class MapEditor : MonoBehaviour
             PopUpManager.Instance.Show("저장 실패");
             return false;
         }
-
+        PopUpManager.Instance.Show("저장 완료");
         return true;
     }
     
@@ -676,6 +676,105 @@ public class MapEditor : MonoBehaviour
             .From("map-thumbnails")
             .GetPublicUrl(path);
     }
+
+    public async void UploadMap()
+    {
+        await SaveToDB();
+        Tuple<string, string> urls = null;
+        // 스크린샷 + DB에 update
+        try
+        {
+            urls = await CaptureThumbnailAsyncBoth();
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
+        }
+        
+        // 정보 넣기
+        var data = StringHelper.Encode(_map);
+        var portalPairs = PortalPairHelper.Encode(PortalPairHelper.ToList(_portalPairDict));
+        var rotInfo = RotateHelper.Encode(new RotateInfo{Axis =  _rotAxis, Layers = _canRotate});
+        _currentMapCreating.ThumbnailUrl = urls.Item1;
+        _currentMapCreating.Data = data;
+        _currentMapCreating.PortalPairs = portalPairs;
+        _currentMapCreating.RotInfo = rotInfo;
+
+        var uploadMap = new Map
+        {
+            MapId = _currentMapCreating.MapId,
+            Name = _currentMapCreating.Name,
+            Data = data,
+            UserId = _currentMapCreating.UserId,
+            Desc = _currentMapCreating.Desc,
+            PortalPairs = portalPairs,
+            RotInfo = rotInfo,
+            ThumbnailUrl = urls.Item2
+        };
+
+        try
+        {
+            await DBManager.Instance.UpdateMapCreatingAsync(_currentMapCreating);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
+            PopUpManager.Instance.Show("저장 실패");
+        }
+        
+        try
+        {
+            await DBManager.Instance.UpsertMapAsync(uploadMap);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
+            PopUpManager.Instance.Show("업로드 실패");
+            return;
+        }
+        PopUpManager.Instance.Show("업로드 성공");
+    }
     
-    // TODO : 맵 폴더에 썸네일 업로드 함수 추가
+    public async Task<Tuple<string, string>> CaptureThumbnailAsyncBoth()
+    {
+        // 특정 카메라 시점에서 RenderTexture로 캡처
+        var renderTexture = new RenderTexture(256, 256, 24);
+        thumbnailCamera.targetTexture = renderTexture;
+        thumbnailCamera.gameObject.SetActive(true);
+        thumbnailCamera.Render();
+        thumbnailCamera.gameObject.SetActive(false);
+
+        RenderTexture.active = renderTexture;
+        var texture = new Texture2D(256, 256, TextureFormat.RGB24, false);
+        texture.ReadPixels(new Rect(0, 0, 256, 256), 0, 0);
+        texture.Apply();
+
+        RenderTexture.active = null;
+        thumbnailCamera.targetTexture = null;
+
+        var bytes = texture.EncodeToJPG(quality: 80);
+        Destroy(texture);
+        Destroy(renderTexture);
+
+        // Storage에 업로드
+        var path1 = $"{_currentMapCreating.MapId}.jpg";
+        var path2 = $"{_currentMapCreating.UserId}/{_currentMapCreating.MapId}.jpg";
+        await SupabaseManager.Instance.Supabase().Storage
+            .From("map-thumbnails")
+            .Upload(bytes, path1, new Supabase.Storage.FileOptions{Upsert = true});
+        
+        await SupabaseManager.Instance.Supabase().Storage
+            .From("uploaded-map-thumbnails")
+            .Upload(bytes, path2, new Supabase.Storage.FileOptions{Upsert = true});
+        
+        var url1 = SupabaseManager.Instance.Supabase().Storage
+            .From("map-thumbnails")
+            .GetPublicUrl(path1);
+
+        var url2 = SupabaseManager.Instance.Supabase().Storage
+            .From("uploaded-map-thumbnails")
+            .GetPublicUrl(path2);
+        
+        return new Tuple<string, string>(url1, url2);
+    }
 }

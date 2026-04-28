@@ -16,8 +16,8 @@ using Client = Supabase.Client;
 [Table("map")]
 public class Map : BaseModel
 {
-    [PrimaryKey("id", shouldInsert: true)]
-    public long Id { get; set; }
+    [PrimaryKey("map_id", shouldInsert: true)]
+    public long MapId { get; set; }
 
     [Column("name")]
     public string Name { get; set; } = default!;
@@ -31,7 +31,7 @@ public class Map : BaseModel
     [Column("num_likes", ignoreOnInsert: true, ignoreOnUpdate: true)]
     public long NumLikes { get; set; } // 0 기본값
 
-    [PrimaryKey("id", shouldInsert: true)]
+    [PrimaryKey("user_id", shouldInsert: true)]
     public Guid UserId { get; set; }
 
     [Column("is_private", ignoreOnInsert: true, ignoreOnUpdate: true)]
@@ -39,10 +39,7 @@ public class Map : BaseModel
     
     [Column("desc")]
     public string Desc { get; set; } // NULL 가능
-
-    [Column("played_count", ignoreOnInsert: true, ignoreOnUpdate: true)]
-    public long PlayedCount { get; set; } // 0 기본값
-
+    
     [Column("best_moves",  ignoreOnInsert: true, ignoreOnUpdate: true)]
     public short? BestMoves { get; set; } // NULL 기본값
     
@@ -190,7 +187,7 @@ public class DBManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(idSearch))
         {
-            var m = await table.Where(x => x.Id.ToString().Contains(idSearch))
+            var m = await table.Where(x => x.MapId.ToString().Contains(idSearch))
                 .Single();
             
             var l = new List<Map>();
@@ -223,7 +220,7 @@ public class DBManager : MonoBehaviour
     
         if (maps.Count == 0) return new List<MapDetailResult>();
     
-        var mapIds = maps.Select(m => m.Id).ToList();
+        var mapIds = maps.Select(m => m.MapId).ToList();
 
         // 2. 좋아요/클리어를 map id 목록으로 한번에 조회 (쿼리 2개)
         var likedTask = _client.From<MapLikes>()
@@ -244,8 +241,8 @@ public class DBManager : MonoBehaviour
         return maps.Select(map => new MapDetailResult
         {
             Map       = map,
-            IsLiked   = likedMapIds.Contains(map.Id),
-            IsCleared = clearedMapIds.Contains(map.Id),
+            IsLiked   = likedMapIds.Contains(map.MapId),
+            IsCleared = clearedMapIds.Contains(map.MapId),
         }).ToList();
     }
     
@@ -306,7 +303,7 @@ public class DBManager : MonoBehaviour
         }
         
         await _client.From<Map>()
-            .Where(x => x.Id == id)
+            .Where(x => x.MapId == id)
             .Delete();
     }
 
