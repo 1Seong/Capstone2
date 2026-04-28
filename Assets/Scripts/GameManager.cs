@@ -38,12 +38,11 @@ public class GameManager : MonoBehaviour
         PlayGame(data, portalPairDic, rotateAxis, canRotate);
     }
 
-    public void PlayGame(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null,
-        bool isTest = false)
+    public void PlayGame(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
     {
         var o = FindAnyObjectByType<PuzzlePlayer>(FindObjectsInactive.Include);
         
-        o.SetMapData(data, portalPairDic, rotateAxis, canRotate, isTest);
+        o.SetMapData(data, portalPairDic, rotateAxis, canRotate);
         o.gameObject.SetActive(true);
     }
 

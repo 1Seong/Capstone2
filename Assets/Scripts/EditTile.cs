@@ -19,6 +19,8 @@ public class EditTile : MonoBehaviour
 
     private void OnMouseEnter()
     {
+        if (MapEditor.Instance.blockIndicator) return;
+        
         cellIndicateMeshRenderer.material.color = GrayColor;
         var tile = MapEditor.Instance.CurrentTile;
         var max = MapEditor.Instance.cubeSize - 1;
@@ -62,6 +64,8 @@ public class EditTile : MonoBehaviour
     
     private void OnMouseDown()
     {
+        if (MapEditor.Instance.blockIndicator) return;
+        
         var editor = MapEditor.Instance;
         var tile = editor.CurrentTile;
         var max = editor.cubeSize - 1;

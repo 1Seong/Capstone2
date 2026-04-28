@@ -15,6 +15,7 @@ public class MapEditor : MonoBehaviour
     private char[,,] _map;
     private MapCreating _currentMapCreating;
     public static MapEditor Instance;
+    public bool blockIndicator = false;
     [SerializeField] private char currentTile = (char)TileType.Road;
     public char CurrentTile
     {
@@ -66,6 +67,7 @@ public class MapEditor : MonoBehaviour
     private Stack<Vector3Int> _answer;
     private bool _isShowingAnswer = false;
     [SerializeField] private GameObject escPanel;
+    [SerializeField] private GameObject escMenuPanel;
     [SerializeField] private GameObject resetPanel;
     [SerializeField] private GameObject resetCheckPanel;
     public bool IsTesting = false;
@@ -368,7 +370,7 @@ public class MapEditor : MonoBehaviour
         gameObject.SetActive(false);
         IsTesting = true;
         // 로딩 오래 걸리면 씬 전환 효과 넣기
-        GameManager.Instance.PlayGame((char[,,])_map.Clone(), _portalPairDict, _rotAxis, _canRotate, true);
+        GameManager.Instance.PlayGame((char[,,])_map.Clone(), _portalPairDict, _rotAxis, _canRotate);
     }
 
     public void AutoTest()
@@ -610,7 +612,7 @@ public class MapEditor : MonoBehaviour
             if (resetCheckPanel.activeSelf)
             {
                 resetCheckPanel.SetActive(false);
-                escPanel.SetActive(true);
+                escMenuPanel.SetActive(true);
                 return;
             }
             

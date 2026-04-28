@@ -69,7 +69,8 @@ public class LevelListController : MonoBehaviour
     
     private async UniTask LoadThumbnailAsync(RawImage rawImage, string url)
     {
-        using var request = UnityWebRequestTexture.GetTexture(url);
+        var bustUrl = $"{url}?t={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+        using var request = UnityWebRequestTexture.GetTexture(bustUrl);
         await request.SendWebRequest();
 
         if (request.result != UnityWebRequest.Result.Success)

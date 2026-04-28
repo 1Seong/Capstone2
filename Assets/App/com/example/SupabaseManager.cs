@@ -228,6 +228,7 @@ namespace com.example
 	        _cts?.Dispose();
 	        
 	        if (_client == null) return;
+	        _client.Realtime?.Disconnect();
 	        _client?.Auth.Shutdown();
 	        _client = null;
         }
