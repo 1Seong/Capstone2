@@ -388,13 +388,6 @@ public class MapEditor : MonoBehaviour
         PopUpManager.Instance.Show("자동 테스트를 통과했습니다!");
     }
 
-    public void Export()
-    {
-        if (!_isValidated) return;
-        
-        ExportToFileDownloads();
-    }
-
     #region ToolSet
     public void OnPortalLineToggleChanged(bool b)
     {
@@ -503,23 +496,26 @@ public class MapEditor : MonoBehaviour
         
         await SaveToDB();
         _currentMapCreating = null;
-        SceneChange.Instance.LoadScene("EditorMenu");
+        await SceneChange.Instance.LoadScene("EditorMenu", false);
     }
 
-    public void ExitEditorWithoutSave()
+    public async void ExitEditorWithoutSave()
     {
         _showAnswerCts?.Cancel();
         _showAnswerCts?.Dispose();
         _showAnswerCts = null;
         
         _currentMapCreating = null;
-        SceneChange.Instance.LoadScene("EditorMenu");
+        await SceneChange.Instance.LoadScene("EditorMenu", false);
     }
 
     public void OnClickSave() => SaveToDB().Forget();
     
     public async UniTask<bool> SaveToDB()
     {
+        if (!GameManager.Instance.CheckNetworkAndLogIn())
+            return false;
+        
         string url = null;
         // 스크린샷 + DB에 update
         try
@@ -619,21 +615,6 @@ public class MapEditor : MonoBehaviour
             escPanel.SetActive(!escPanel.activeSelf);
         }
     }
-    
-    private void ExportToFileDownloads(string fileName = "puzzle_export.txt")
-    {
-        var content = StringHelper.Encode(_map);
-        
-        string downloadsPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), 
-            "Downloads", 
-            fileName
-        );
-    
-        File.WriteAllText(downloadsPath, content, System.Text.Encoding.UTF8);
-        PopUpManager.Instance.Show($"파일 저장됨: {downloadsPath}");
-        Debug.Log($"파일 저장됨: {downloadsPath}");
-    }
 
     public void SetValidated(bool validated, Stack<Vector3Int> answer = null)
     {
@@ -679,6 +660,9 @@ public class MapEditor : MonoBehaviour
 
     public async void UploadMap()
     {
+        if (!GameManager.Instance.CheckNetworkAndLogIn())
+            return;
+        
         await SaveToDB();
         Tuple<string, string> urls = null;
         // 스크린샷 + DB에 update

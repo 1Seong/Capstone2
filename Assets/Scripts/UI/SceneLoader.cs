@@ -2,16 +2,16 @@ using UnityEngine;
 
 public class SceneLoader : MonoBehaviour
 {
-    public void LoadScene(string name)
+    public async void LoadScene(string name)
     {
-        SceneChange.Instance.LoadScene(name);
+        await SceneChange.Instance.LoadScene(name);
     }
     
-    public void LoadSceneWithLoginCheck(string name)
+    public async void LoadSceneWithLoginCheck(string name)
     {
         if (!GameManager.Instance.CheckNetworkAndLogIn())
             return;
         
-        SceneChange.Instance.LoadScene(name);
+        await SceneChange.Instance.LoadScene(name, false);
     }
 }

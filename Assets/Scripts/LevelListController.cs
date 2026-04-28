@@ -41,19 +41,37 @@ public class LevelListController : MonoBehaviour
             return;
         }
         
-        for (int i = 0; i != maps.Count; ++i)
+        // 1. 버튼 오브젝트 먼저 다 생성
+        var entries = new List<Tuple<MapCreating, RawImage, Button>>();
+        for (int i = 0; i < maps.Count; i++)
         {
             var o = Instantiate(levelButtonPrefab, levelButtonParent);
-            var m = new Tuple<MapCreating, Texture, Button>(maps[i], null, o.GetComponent<Button>());
-            if (!string.IsNullOrEmpty(maps[i].ThumbnailUrl))
-            {
-                var ri = o.GetComponent<RawImage>();
-                await LoadThumbnailAsync(ri, maps[i].ThumbnailUrl);
-                m = new Tuple<MapCreating, Texture, Button>(maps[i], ri.texture, o.GetComponent<Button>());
-            }
-            m.Item3.onClick.AddListener(() => SelectedMapCreating = m);
             o.GetComponentInChildren<TextMeshProUGUI>().text = maps[i].Name;
+            entries.Add(new Tuple<MapCreating, RawImage, Button>(
+                maps[i],
+                o.GetComponent<RawImage>(),
+                o.GetComponent<Button>()
+            ));
         }
+
+        // 2. 썸네일 로딩 전부 동시에
+        await UniTask.WhenAll(entries.Select(e =>
+            string.IsNullOrEmpty(e.Item1.ThumbnailUrl)
+                ? UniTask.CompletedTask
+                : LoadThumbnailAsync(e.Item2, e.Item1.ThumbnailUrl)
+        ));
+
+        // 3. 버튼 이벤트 등록
+        foreach (var e in entries)
+        {
+            var map = e.Item1;
+            var tex = e.Item2.texture;
+            var btn = e.Item3;
+            var m = new Tuple<MapCreating, Texture, Button>(map, tex, btn);
+            btn.onClick.AddListener(() => SelectedMapCreating = m);
+        }
+
+        await SceneChange.Instance.ManualEndFade();
     }
 
     private void UpdateRightPage()

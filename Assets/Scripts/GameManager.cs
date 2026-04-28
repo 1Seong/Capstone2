@@ -46,10 +46,10 @@ public class GameManager : MonoBehaviour
         o.gameObject.SetActive(true);
     }
 
-    public void EnterEditor(MapCreating mapCreating)
+    public async void EnterEditor(MapCreating mapCreating)
     {
         _currentMapCreating = mapCreating;
-        SceneChange.Instance.LoadScene("PuzzleEdit");
+        await SceneChange.Instance.LoadScene("PuzzleEdit");
         //MapEditor.Instance.Initialize(mapCreating);
     }
 

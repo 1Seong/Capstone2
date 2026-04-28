@@ -1,10 +1,14 @@
 using System;
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class SceneChange : MonoBehaviour
 {
     public static SceneChange Instance;
+    [SerializeField] private Image background;
 
     private void Awake()
     {
@@ -18,16 +22,61 @@ public class SceneChange : MonoBehaviour
         }
     }
 
-    public void LoadScene(string sceneName)
+    public async UniTask LoadScene(string sceneName, bool autoEndFade = true)
     {
-        // TODO : Scene Effect
-        
-        SceneManager.LoadScene(sceneName);
+        // 암전
+        background.gameObject.SetActive(true);
+        await background.DOFade(1f, 0.5f).AsyncWaitForCompletion().AsUniTask();
+
+        // 씬 비동기 로드
+        var op = SceneManager.LoadSceneAsync(sceneName);
+        op.allowSceneActivation = false;
+
+        while (op.progress < 0.9f)
+            await UniTask.Yield();
+
+        op.allowSceneActivation = true;
+        await UniTask.WaitUntil(() => op.isDone);
+
+        for (int i = 0; i != 5; ++i)
+            await UniTask.WaitForEndOfFrame(this);
+
+        // 복귀
+        if (autoEndFade)
+        {
+            await background.DOFade(0f, 0.5f).AsyncWaitForCompletion().AsUniTask();
+            background.gameObject.SetActive(false);
+        }
     }
 
-    public void LoadSceneAddition(string sceneName)
+    public async UniTask ManualEndFade()
     {
-        // TODO : Scene Effect
-        SceneManager.LoadScene(sceneName,  LoadSceneMode.Additive);
+        background.gameObject.SetActive(true);
+        await background.DOFade(0f, 0.5f).AsyncWaitForCompletion().AsUniTask();
+        background.gameObject.SetActive(false);
+    }
+
+    public async UniTask LoadSceneAddition(string sceneName)
+    {
+        // 암전
+        background.gameObject.SetActive(true);
+        await background.DOFade(1f, 0.5f).AsyncWaitForCompletion().AsUniTask();
+
+        // 씬 비동기 로드
+        var op = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        op.allowSceneActivation = false;
+
+        while (op.progress < 0.9f)
+            await UniTask.Yield();
+
+        op.allowSceneActivation = true;
+        await UniTask.WaitUntil(() => op.isDone);
+
+        for (int i = 0; i != 5; ++i)
+            await UniTask.WaitForEndOfFrame(this);
+
+        // 복귀
+        await background.DOFade(0f, 0.5f).AsyncWaitForCompletion().AsUniTask();
+        background.gameObject.SetActive(false);
     }
 }
