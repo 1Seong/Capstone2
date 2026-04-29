@@ -1,4 +1,4 @@
-using System;
+
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
@@ -9,6 +9,7 @@ public class SceneChange : MonoBehaviour
 {
     public static SceneChange Instance;
     [SerializeField] private Image background;
+    [SerializeField] private GameObject lightLoadingBackground;
 
     private void Awake()
     {
@@ -78,5 +79,10 @@ public class SceneChange : MonoBehaviour
         // 복귀
         await background.DOFade(0f, 0.5f).AsyncWaitForCompletion().AsUniTask();
         background.gameObject.SetActive(false);
+    }
+
+    public void LightLoading(bool b)
+    {
+        lightLoadingBackground.SetActive(b);
     }
 }

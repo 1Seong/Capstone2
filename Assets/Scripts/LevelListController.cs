@@ -110,6 +110,7 @@ public class LevelListController : MonoBehaviour
         if (!GameManager.Instance.CheckNetworkAndLogIn())
             return;
         
+        SceneChange.Instance.LightLoading(true);
         try
         {
             await DBManager.Instance.InsertMapCreatingAsync(new MapCreating(){UserId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id)});
@@ -118,6 +119,7 @@ public class LevelListController : MonoBehaviour
         {
             Debug.LogWarning(e.Message);
             PopUpManager.Instance.Show("나중에 다시 시도해주세요.");
+            SceneChange.Instance.LightLoading(false);
             return;
         }
 
@@ -130,11 +132,13 @@ public class LevelListController : MonoBehaviour
         {
             Debug.LogWarning(e.Message);
             PopUpManager.Instance.Show("정보 가져오기 실패");
+            SceneChange.Instance.LightLoading(false);
             return;
         }
         var o = Instantiate(levelButtonPrefab, levelButtonParent);
         var newMap = new Tuple<MapCreating, Texture, Button>(recent, null, o.GetComponent<Button>());
         newMap.Item3.onClick.AddListener(() => SelectedMapCreating = newMap);
+        SceneChange.Instance.LightLoading(false);
     }
     
     // 온라인 체크 + 예외처리 필요
@@ -142,6 +146,8 @@ public class LevelListController : MonoBehaviour
     {
         if (!GameManager.Instance.CheckNetworkAndLogIn())
             return;
+        
+        SceneChange.Instance.LightLoading(true);
         try
         {
             await DBManager.Instance.DeleteMapCreatingAsync(_selectedMapCreating.Item1.MapId);
@@ -150,6 +156,7 @@ public class LevelListController : MonoBehaviour
         {
             Debug.LogWarning(e.Message);
             PopUpManager.Instance.Show("나중에 다시 시도해주세요.");
+            SceneChange.Instance.LightLoading(false);
             return;
         }
         
@@ -158,6 +165,7 @@ public class LevelListController : MonoBehaviour
         _selectedMapCreating = null;
         
         rightPageObject.SetActive(false);
+        SceneChange.Instance.LightLoading(false);
     }
     
     public void EditMap()
@@ -170,7 +178,8 @@ public class LevelListController : MonoBehaviour
     {
         if (!GameManager.Instance.CheckNetworkAndLogIn())
             return;
-
+        
+        SceneChange.Instance.LightLoading(true);
         var originalName = _selectedMapCreating.Item1.Name;
         var originalDesc = _selectedMapCreating.Item1.Desc;
         var newName = rightPageName.text;
@@ -188,6 +197,7 @@ public class LevelListController : MonoBehaviour
             PopUpManager.Instance.Show("나중에 다시 시도해주세요.");
             _selectedMapCreating.Item1.Name = originalName;
             _selectedMapCreating.Item1.Desc = originalDesc;
+            SceneChange.Instance.LightLoading(false);
             return;
         }
         
@@ -197,6 +207,7 @@ public class LevelListController : MonoBehaviour
         rightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = newDesc;
         var b = _selectedMapCreating.Item3;
         b.GetComponentInChildren<TextMeshProUGUI>().text = newName;
+        SceneChange.Instance.LightLoading(false);
     }
 
     public void CancelEdit()

@@ -19,7 +19,7 @@ public class EditTile : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        if (MapEditor.Instance.blockIndicator) return;
+        if (GameManager.Instance.blockIndicators) return;
         
         cellIndicateMeshRenderer.material.color = GrayColor;
         var tile = MapEditor.Instance.CurrentTile;
@@ -64,7 +64,7 @@ public class EditTile : MonoBehaviour
     
     private void OnMouseDown()
     {
-        if (MapEditor.Instance.blockIndicator) return;
+        if (GameManager.Instance.blockIndicators) return;
         
         var editor = MapEditor.Instance;
         var tile = editor.CurrentTile;

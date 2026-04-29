@@ -15,7 +15,6 @@ public class MapEditor : MonoBehaviour
     private char[,,] _map;
     private MapCreating _currentMapCreating;
     public static MapEditor Instance;
-    public bool blockIndicator = false;
     [SerializeField] private char currentTile = (char)TileType.Road;
     public char CurrentTile
     {
@@ -516,6 +515,7 @@ public class MapEditor : MonoBehaviour
         if (!GameManager.Instance.CheckNetworkAndLogIn())
             return false;
         
+        SceneChange.Instance.LightLoading(true);
         string url = null;
         // 스크린샷 + DB에 update
         try
@@ -541,9 +541,11 @@ public class MapEditor : MonoBehaviour
         {
             Debug.LogWarning(e.Message);
             PopUpManager.Instance.Show("저장 실패");
+            SceneChange.Instance.LightLoading(false);
             return false;
         }
         PopUpManager.Instance.Show("저장 완료");
+        SceneChange.Instance.LightLoading(false);
         return true;
     }
     
@@ -664,6 +666,7 @@ public class MapEditor : MonoBehaviour
             return;
         
         await SaveToDB();
+        SceneChange.Instance.LightLoading(true);
         Tuple<string, string> urls = null;
         // 스크린샷 + DB에 update
         try
@@ -714,9 +717,11 @@ public class MapEditor : MonoBehaviour
         {
             Debug.LogWarning(e.Message);
             PopUpManager.Instance.Show("업로드 실패");
+            SceneChange.Instance.LightLoading(false);
             return;
         }
         PopUpManager.Instance.Show("업로드 성공");
+        SceneChange.Instance.LightLoading(false);
     }
     
     public async Task<Tuple<string, string>> CaptureThumbnailAsyncBoth()

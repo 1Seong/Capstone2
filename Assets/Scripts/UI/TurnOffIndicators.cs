@@ -5,11 +5,11 @@ public class TurnOffIndicators : MonoBehaviour
 {
     private void OnEnable()
     {
-        MapEditor.Instance.blockIndicator = true;
+        GameManager.Instance.blockIndicators = true;
     }
 
     private void OnDisable()
     {
-        MapEditor.Instance.blockIndicator = false;
+        GameManager.Instance.blockIndicators = false;
     }
 }

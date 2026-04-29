@@ -1,4 +1,4 @@
-using System;
+
 using System.Collections.Generic;
 using com.example;
 using TMPro;
@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject testClearPanel;
     [SerializeField] private TMP_Text testResultTMP;
     private MapCreating _currentMapCreating;
+    public bool blockIndicators;
     
     //[SerializeField] private GameObject playInstance;
     
@@ -84,16 +85,6 @@ public class GameManager : MonoBehaviour
         MapEditor.Instance.gameObject.SetActive(true);
         MapEditor.Instance.IsTesting = false;
         player.gameObject.SetActive(false);
-    }
-    
-    public void Stop()
-    {
-        isPlaying = false;
-    }
-
-    public void Play()
-    {
-        isPlaying = true;
     }
 
     public bool CheckNetworkAndLogIn()

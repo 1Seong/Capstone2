@@ -10,6 +10,7 @@ public class AuroraPointerHovering : MonoBehaviour
 
     public void OnMouseEnter()
     {
+        if (GameManager.Instance.blockIndicators) return;
         mat.SetFloat("_Opacity", targetOpacity);
     }
 
