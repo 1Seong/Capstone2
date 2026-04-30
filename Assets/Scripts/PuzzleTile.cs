@@ -94,8 +94,9 @@ public class PuzzleTile : MonoBehaviour
     }
     
     // 이펙트나 애니메이션이 적용된 렌더링
+    // TODO: 이펙트 있는 렌더링 구현
     public async UniTask Render(char tile, bool wait = true)
     {
-        
+        await UniTask.Yield();
     }
 }

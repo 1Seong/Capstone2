@@ -37,9 +37,9 @@ public class MapEditor : MonoBehaviour
         set
         {
             if (value)
-                camera.cullingMask &= ~(1 << LayerMask.NameToLayer("UI"));
+                cam.cullingMask &= ~(1 << LayerMask.NameToLayer("UI"));
             else
-                camera.cullingMask |= (1 << LayerMask.NameToLayer("UI"));
+                cam.cullingMask |= (1 << LayerMask.NameToLayer("UI"));
             _portalEditing = value;
         }
     }
@@ -53,7 +53,7 @@ public class MapEditor : MonoBehaviour
     [SerializeField] private Button exportButton;
     [SerializeField] private GameObject linePrefab;
     public LineRenderer currentLine;
-    [SerializeField] private Camera camera;
+    [SerializeField] private Camera cam;
     [SerializeField] private Camera thumbnailCamera;
     private PuzzleTile[,,] _tiles;
     private bool _isValidated;
@@ -400,12 +400,12 @@ public class MapEditor : MonoBehaviour
     
     public void ShowPortalLines()
     {
-        camera.cullingMask |= (1 << LayerMask.NameToLayer("PortalLine"));
+        cam.cullingMask |= (1 << LayerMask.NameToLayer("PortalLine"));
     }
 
     public void HidePortalLines()
     {
-        camera.cullingMask &= ~(1 << LayerMask.NameToLayer("PortalLine"));
+        cam.cullingMask &= ~(1 << LayerMask.NameToLayer("PortalLine"));
     }
 
     public void SetCurrentTileToRoad()

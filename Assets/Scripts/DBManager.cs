@@ -292,9 +292,10 @@ public class DBManager : MonoBehaviour
     {
         try
         {
+            var userId = SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id;
             await _client.Storage
                 .From("uploaded-map-thumbnails")
-                .Remove(new List<string> { $"{SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id}/{id}.jpg" });
+                .Remove(new List<string> { $"{userId}/{id}.jpg" });
         }
         catch (Exception e)
         {
@@ -306,10 +307,22 @@ public class DBManager : MonoBehaviour
             .Where(x => x.MapId == id)
             .Delete();
     }
-
-    public async Task IncreaseMapPlayCount()
+    
+    public async Task<List<Map>> FetchMyMapAsync()
     {
-        await _client.Rpc("increment_map_play_count", null);
+        var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
+        var response = await _client.From<Map>()
+            .Where(x => x.UserId == userId).Get();
+        return response.Models;
+    }
+    
+    public async Task<short?> GetNewBestMoves(long mapId, Guid userId)
+    {
+        var response = await _client.From<Map>()
+            .Select("best_moves")
+            .Where(x => x.UserId == userId && x.MapId == mapId)
+            .Single();
+        return response.BestMoves;
     }
     
     #endregion

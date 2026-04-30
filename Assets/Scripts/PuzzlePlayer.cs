@@ -261,7 +261,7 @@ public class PuzzlePlayer : MonoBehaviour
     [SerializeField] private bool _isUser;
     private bool _isCleared;
     private Stack<Vector3Int> _answer;
-    private int _moves = 0;
+    private short _moves = 0;
     [SerializeField] private GameObject[] innerCubes; // empty, x, y, z
     private bool[] _canRotate;
     private Transform[] _layers;
@@ -485,7 +485,7 @@ public class PuzzlePlayer : MonoBehaviour
         }
         else if (_isUser)
         {
-            GameManager.Instance.GameClearedUser(_moves);
+            GameManager.Instance.GameClearedUser(_moves).Forget();
         }
     }
 

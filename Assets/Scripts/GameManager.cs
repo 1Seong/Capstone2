@@ -1,6 +1,8 @@
 
+using System;
 using System.Collections.Generic;
 using com.example;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
@@ -8,12 +10,26 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
     public bool isPlaying = true;
-
-    [SerializeField] private GameObject testClearPanel;
-    [SerializeField] private TMP_Text testResultTMP;
-    private MapCreating _currentMapCreating;
-    public bool blockIndicators;
+    public event Action UserClearEvent;
+    public event Action UserEnterEvent;
+    public event Action SingleClearEvent;
+    public event Action SingleEnterEvent;
     
+    [SerializeField] private GameObject testClearPanel;
+    [SerializeField] private GameObject userClearPanel;
+    [SerializeField] private GameObject singleClearPanel;
+    [SerializeField] private TMP_Text testResultTMP;
+    [SerializeField] private TMP_Text userResultTMP;
+    [SerializeField] private TMP_Text singleResultTMP;
+    [SerializeField] private GameObject userBestText;
+    [SerializeField] private GameObject singleBestText;
+    private MapCreating _currentMapCreating;
+    private long _currentUserMapId;
+    private short? _currentUserBestMoves;
+    private Guid _currentUserMapUserId;
+    private int _currentSingleMapId;
+    private short? _currentSingleBestMoves;
+    public bool blockIndicators;
     //[SerializeField] private GameObject playInstance;
     
     private void Awake()
@@ -27,16 +43,27 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void EnterGameSingle(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
+    public async UniTask EnterGameSingle(int id, short? best, char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
     {
-        // 플레이 씬 로드
+        await SceneChange.Instance.LoadSceneAddition("PuzzlePlayScene", false);
+        SingleEnterEvent?.Invoke();
+        SingleEnterEvent = null;
+        _currentSingleMapId = id;
+        _currentSingleBestMoves = best;
         PlayGame(data, portalPairDic, rotateAxis, canRotate);
+        await SceneChange.Instance.LoadSceneAddition("PuzzlePlayScene", false);
     }
     
-    public void EnterGameUser(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
+    public async UniTask EnterGameUser(long id, Guid userId, short? best, char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
     {
-        // 플레이 씬 로드
+        await SceneChange.Instance.LoadSceneAddition("PuzzlePlayScene", false);
+        UserEnterEvent?.Invoke();
+        UserEnterEvent = null;
+        _currentUserMapId = id;
+        _currentUserMapUserId =  userId;
+        _currentUserBestMoves = best;
         PlayGame(data, portalPairDic, rotateAxis, canRotate);
+        await SceneChange.Instance.ManualEndFade();
     }
 
     public void PlayGame(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
@@ -66,9 +93,47 @@ public class GameManager : MonoBehaviour
         // 싱글이냐 유저맵이냐에 따라 다름
     }
     
-    public void GameClearedUser(int moves)
+    public async void ReturnToHubMap()
     {
-        // 싱글이냐 유저맵이냐에 따라 다름
+        await UniTask.Yield();
+    }
+    
+    public async UniTaskVoid GameClearedUser(short moves)
+    {
+        userResultTMP.text = $"움직임 수: {moves.ToString()}";
+        if(_currentUserBestMoves == null || moves < _currentUserBestMoves)
+            userBestText.SetActive(true);
+        userClearPanel.SetActive(true);
+        
+        //SceneChange.Instance.LightLoading(true);
+        try
+        {
+            await DBManager.Instance.UpsertMapClearsAsync(new MapClears()
+            {
+                UserId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id),
+                MapId = _currentUserMapId,
+                MapUserId = _currentUserMapUserId,
+                Moves = moves
+            });
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
+            PopUpManager.Instance.Show("기록 업로드 실패");
+        }
+        //SceneChange.Instance.LightLoading(false);
+    }
+
+    public async void ReturnToUserMapList()
+    {
+        userClearPanel.SetActive(false);
+        await SceneChange.Instance.UnloadScene("PuzzlePlayScene");
+    }
+
+    public void GameClearedEventInvoke()
+    {
+        UserClearEvent?.Invoke();
+        UserClearEvent = null;
     }
 
     public void GameClearedTest(int moves)

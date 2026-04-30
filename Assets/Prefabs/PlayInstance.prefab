@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 772022689674400644}
   - component: {fileID: 324505053818569654}
   - component: {fileID: 3464057798423699971}
+  - component: {fileID: 8649286356150759385}
   m_Layer: 5
   m_Name: ESCPanel
   m_TagString: Untagged
@@ -76,6 +77,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &8649286356150759385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 51964238131976366}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 586464c8de468f641af93856bd883d8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TurnOffIndicators
 --- !u!1 &109059555859038596
 GameObject:
   m_ObjectHideFlags: 0
@@ -2901,6 +2914,7 @@ GameObject:
   - component: {fileID: 2274141976007635632}
   - component: {fileID: 8722227601667787630}
   - component: {fileID: 8317961912883384933}
+  - component: {fileID: 6402957238530097926}
   m_Layer: 5
   m_Name: 'ResetCheckPanel '
   m_TagString: Untagged
@@ -2968,6 +2982,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6402957238530097926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1908812978884603507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 586464c8de468f641af93856bd883d8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TurnOffIndicators
 --- !u!1 &1911506370341302367
 GameObject:
   m_ObjectHideFlags: 0
@@ -15467,7 +15493,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6677705686261940245}
   - component: {fileID: 5701217638749208763}
-  - component: {fileID: 8300586154758033978}
   - component: {fileID: 2638754865920684769}
   - component: {fileID: 4590033880298800614}
   m_Layer: 0
@@ -15543,14 +15568,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &8300586154758033978
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6773484042250431809}
-  m_Enabled: 1
 --- !u!114 &2638754865920684769
 MonoBehaviour:
   m_ObjectHideFlags: 0
