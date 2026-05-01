@@ -1,4 +1,5 @@
 
+using System;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
@@ -11,16 +12,19 @@ public class SceneChange : MonoBehaviour
     [SerializeField] private Image background;
     [SerializeField] private GameObject lightLoadingBackground;
 
-    private void Awake()
+    private async void Awake()
     {
         if(Instance != null && Instance != this)
         {
             Destroy(this.gameObject);
+            return;
         }
         else
         {
             Instance = this;
         }
+        await UniTask.Delay(TimeSpan.FromSeconds(1.5));
+        await ManualEndFade();
     }
 
     public async UniTask LoadScene(string sceneName, bool autoEndFade = true)

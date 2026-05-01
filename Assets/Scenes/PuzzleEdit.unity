@@ -6245,6 +6245,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8842427892844910700, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 3783019883035890097}
+    - target: {fileID: 8842427892844910700, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
       propertyPath: escPanel
       value: 
       objectReference: {fileID: 1399696002}
@@ -6328,6 +6332,11 @@ PrefabInstance:
 --- !u!23 &3783019883035890096 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 2902538711112131932, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+  m_PrefabInstance: {fileID: 3783019883035890095}
+  m_PrefabAsset: {fileID: 0}
+--- !u!20 &3783019883035890097 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 44371702801631284, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
   m_PrefabInstance: {fileID: 3783019883035890095}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4091896468417250739

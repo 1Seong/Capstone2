@@ -337,6 +337,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 892370842}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &116595258
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -886,10 +898,10 @@ RectTransform:
   - {fileID: 390772510}
   - {fileID: 1778310651}
   - {fileID: 1920595258}
-  - {fileID: 2025960525}
-  - {fileID: 2093223196}
   - {fileID: 2146608235}
   - {fileID: 2051345682}
+  - {fileID: 2025960525}
+  - {fileID: 2093223196}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -910,6 +922,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelListController
   levelButtonPrefab: {fileID: 7023816644569810108, guid: 2ffbcc31f8c09a14ab0bd3c2954b319f, type: 3}
+  _defaultThumbnail: {fileID: 2800000, guid: ce8d22c2c67b11c4e829ef1d9c354ba1, type: 3}
   levelButtonParent: {fileID: 1288251349}
   rightPageObject: {fileID: 1950163662}
   rightPageRawImage: {fileID: 1842748316}
@@ -4594,7 +4607,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 23560338}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99996096
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -6588,7 +6601,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.000064216416}
+  m_AnchoredPosition: {x: 0, y: 0.000011522442}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1288251350
@@ -8941,7 +8954,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.7735849, g: 0.7735849, b: 0.7735849, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

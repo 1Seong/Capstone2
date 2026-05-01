@@ -48,7 +48,7 @@ namespace com.example
 			{
 				var filePath = FilePath();
 				var str = JsonConvert.SerializeObject(session);
-				Debug.Log("SaveSession - write");
+				//Debug.Log("SaveSession - write");
 				using StreamWriter file = new(filePath);
 				file.Write(str);
 				file.Dispose();
@@ -83,7 +83,7 @@ namespace com.example
 			{
 				return null;
 			}
-			Debug.Log("LoadSession Called");
+			//Debug.Log("LoadSession Called");
 
 			try
 			{

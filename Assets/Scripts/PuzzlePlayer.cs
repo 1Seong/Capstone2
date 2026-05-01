@@ -100,7 +100,7 @@ public class PuzzlePlayer : MonoBehaviour
     [SerializeField] private Transform playerModel;
     [SerializeField] private float playerMoveDuration = 0.5f;
     [SerializeField] private Ease playerMoveEase = Ease.OutExpo;
-    private bool _isMoving;
+    [SerializeField] private bool _isMoving;
     [SerializeField] private TMP_Text ghostText;
     private readonly List<CellPulse> _highlightCells = new();
     
@@ -329,6 +329,8 @@ public class PuzzlePlayer : MonoBehaviour
         resetAction.action.Enable();
         
         InitGame();
+        RepositionCamera(false);
+        _isMoving = false;
         CheckGameCleared();
     }
 
@@ -442,6 +444,7 @@ public class PuzzlePlayer : MonoBehaviour
             }
         }
         _edgeCubeInitializer.Initialize(_canRotate, _rotAxis, CubeSize);
+        RepositionCamera();
     }
 
     public void SetMapData(char[,,] map, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, 
@@ -604,7 +607,7 @@ public class PuzzlePlayer : MonoBehaviour
                     .AsyncWaitForCompletion().AsUniTask();
                 await PaintWithRender(x, y, z, true);
                 --_roadLeftCount;
-                RepositionCamera(playerModel.position);
+                RepositionCamera();
                 break;
             
             case (char)TileType.Ghost:
@@ -933,7 +936,7 @@ public class PuzzlePlayer : MonoBehaviour
         _answer.Push(new Vector3Int((int)playerTarget.x, (int)playerTarget.y, (int)playerTarget.z));
         if (hadLaser)
             HasLaser = true;
-        RepositionCamera(playerModel.position);
+        RepositionCamera();
     }
 
     private async UniTask RotateTilesEffect(int index, List<GameObject> objectsToRotate, Vector3 targetAngle, bool includePlayer = true,
@@ -1027,7 +1030,7 @@ public class PuzzlePlayer : MonoBehaviour
             Render();
         
         HasLaser = s.HasLaser;
-        RepositionCamera(playerModel.position, false);
+        RepositionCamera(false);
     }
 
     // 이동 및 아이템 사용할때 사용 -> 즉 타일이 색칠
@@ -1171,8 +1174,9 @@ public class PuzzlePlayer : MonoBehaviour
 
     #region CameraMove
 
-    private void RepositionCamera(Vector3 pos, bool byPassIsMoving = true)
+    private void RepositionCamera(bool byPassIsMoving = true)
     {
+        var pos = playerModel.position;
         var v = pos + Vector3.one;
         var rv = (int)Vector3.Dot(currentRight, v);
         var lv = (int)Vector3.Dot(currentLeft, v);

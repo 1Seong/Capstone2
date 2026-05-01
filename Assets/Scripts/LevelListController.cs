@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using com.example;
 using Cysharp.Threading.Tasks;
+using Postgrest.Exceptions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -10,6 +11,7 @@ using UnityEngine.UI;
 public class LevelListController : MonoBehaviour
 {
     [SerializeField] private GameObject levelButtonPrefab;
+    [SerializeField] private Texture _defaultThumbnail;
     
     [Header("Tab1")]
     [SerializeField] private Transform levelButtonParent;
@@ -140,7 +142,7 @@ public class LevelListController : MonoBehaviour
     private void UpdateRightPage()
     {
         var m = _selectedMapCreating.Item1;
-        rightPageRawImage.texture = _selectedMapCreating.Item2;
+        rightPageRawImage.texture = _selectedMapCreating.Item2 == null ? _defaultThumbnail : _selectedMapCreating.Item2;
         rightPageName.text = m.Name;
         rightPageName.placeholder.GetComponent<TextMeshProUGUI>().text = m.Name;
         rightPageDescription.text = m.Desc;
@@ -237,8 +239,8 @@ public class LevelListController : MonoBehaviour
             return;
         }
         
-        if(_selectedMap.Item2.name != "default")
-            Destroy(_selectedMap.Item2);
+        if(_selectedMapCreating.Item2 != _defaultThumbnail)
+            Destroy(_selectedMapCreating.Item2);
         Destroy(_selectedMapCreating.Item3.gameObject);
         _selectedMapCreating = null;
         
@@ -265,7 +267,7 @@ public class LevelListController : MonoBehaviour
             return;
         }
         
-        if(_selectedMap.Item2.name != "default")
+        if(_selectedMap.Item2 != _defaultThumbnail)
             Destroy(_selectedMap.Item2);
         Destroy(_selectedMap.Item3.gameObject);
         _selectedMap = null;
@@ -343,12 +345,28 @@ public class LevelListController : MonoBehaviour
         {
             await DBManager.Instance.UpdateMapCreatingAsync(_selectedMapCreating.Item1);
         }
+        catch (PostgrestException e) when (e.Message.Contains("inappropriate_content"))
+        {
+            PopUpManager.Instance.Show("부적절한 단어가 포함되어 있습니다.");
+            _selectedMapCreating.Item1.Name = originalName;
+            _selectedMapCreating.Item1.Desc = originalDesc;
+            rightPageName.text = originalName;
+            rightPageName.placeholder.GetComponent<TextMeshProUGUI>().text = originalName;
+            rightPageDescription.text = originalDesc;
+            rightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = originalDesc;
+            SceneChange.Instance.LightLoading(false);
+            return;
+        }
         catch (Exception e)
         {
             Debug.LogWarning(e.Message);
             PopUpManager.Instance.Show("나중에 다시 시도해주세요.");
             _selectedMapCreating.Item1.Name = originalName;
             _selectedMapCreating.Item1.Desc = originalDesc;
+            rightPageName.text = originalName;
+            rightPageName.placeholder.GetComponent<TextMeshProUGUI>().text = originalName;
+            rightPageDescription.text = originalDesc;
+            rightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = originalDesc;
             SceneChange.Instance.LightLoading(false);
             return;
         }
@@ -359,6 +377,7 @@ public class LevelListController : MonoBehaviour
         rightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = newDesc;
         var b = _selectedMapCreating.Item3;
         b.GetComponentInChildren<TextMeshProUGUI>().text = newName;
+        PopUpManager.Instance.Show("정보 업데이트 완료");
         SceneChange.Instance.LightLoading(false);
     }
 

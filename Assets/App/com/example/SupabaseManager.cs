@@ -119,6 +119,7 @@ namespace com.example
 			// 네트워크 상태 모니터링 시작
 			_cts = new CancellationTokenSource();
 			MonitorNetworkAsync(_cts.Token).Forget();
+			
 		}
         
         /*
