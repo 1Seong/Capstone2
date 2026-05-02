@@ -130,6 +130,50 @@ public class StorySaves : BaseModel
     public short Moves { get; set; }
 }
 
+[Table("report")]
+public class Report : BaseModel
+{
+    [PrimaryKey("user_id", shouldInsert: true)]
+    public Guid UserId { get; set; } // auth.id() 기본값
+
+    [PrimaryKey("map_id", shouldInsert: true)]
+    public long MapId { get; set; }
+    
+    [PrimaryKey("map_user_id", shouldInsert: true)]
+    public Guid MapUserId { get; set; }
+    
+    [Column("description")]
+    public string Desc { get; set; }
+}
+
+[Table("nickname")]
+public class Nickname : BaseModel
+{
+    [PrimaryKey("user_id", shouldInsert: true)]
+    public Guid UserId { get; set; } // auth.id() 기본값
+    
+    [Column("name")]
+    public string Name { get; set; }
+}
+
+public class MapInteractionResult
+{
+    [JsonProperty("map_id")]
+    public long MapId { get; set; }
+
+    [JsonProperty("map_user_id")]
+    public Guid MapUserId { get; set; }
+
+    [JsonProperty("is_liked")]
+    public bool IsLiked { get; set; }
+
+    [JsonProperty("is_cleared")]
+    public bool IsCleared { get; set; }
+
+    [JsonProperty("is_reported")]
+    public bool IsReported { get; set; }
+}
+
 // ReSharper restore ExplicitCallerInfoArgument
 #endregion
 
@@ -138,18 +182,25 @@ public class MapDetailResult
     public Map Map       { get; set; }
     public bool IsLiked  { get; set; }
     public bool IsCleared { get; set; }
+    public bool IsReported { get; set; }
+    public string Nickname { get; set; }
 }
 
 public enum SortOrder { Ascending, Descending }
+
+public enum ClearFilter
+{
+    All,
+    ClearedOnly,
+    NotClearedOnly
+}
 
 public class DBManager : MonoBehaviour
 {
     public static DBManager Instance;
     private Client _client;
     
-    private const int PageSize = 10;
-    private int _currentPage = 0;
-    public int CurrentPage() => _currentPage;
+    private const int PageSize = 6;
     
     private void Awake()
     {
@@ -168,117 +219,86 @@ public class DBManager : MonoBehaviour
     
     #region Map
     
-    // 유저맵 가져오기 함수들 (RLS에 의해 public과, 본인의 private 맵들을 조회)
-    // TODO : 문자열 검색은 맵 이름, id, 그리고 닉네임을 동시에 찾아봄(or)
     private async Task<List<Map>> FetchPageAsync(
         int page,
         string sortColumn = "created_at",
         SortOrder sortOrder = SortOrder.Descending,
-        string nameSearch = null, string idSearch = null)
+        string search = null,
+        ClearFilter clearFilter = ClearFilter.All)
     {
         int from = page * PageSize;
         int to   = from + PageSize - 1;
+        var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
 
-        var ordering = sortOrder == SortOrder.Ascending ? Constants.Ordering.Ascending : Constants.Ordering.Descending;
-
-        var table = _client.From<Map>();
-
-        ModeledResponse<Map> response;
-
-        if (!string.IsNullOrEmpty(idSearch))
+        var orderStr = sortOrder == SortOrder.Ascending ? "ASC" : "DESC";
+        var clearStr = clearFilter switch
         {
-            var m = await table.Where(x => x.MapId.ToString().Contains(idSearch))
-                .Single();
-            
-            var l = new List<Map>();
-            l.Add(m);
-            return l;
-        }
-        else if (!string.IsNullOrEmpty(nameSearch))
-        {
-            response = await table.Filter("name", Constants.Operator.ILike, $"%{nameSearch}%")
-                .Order(sortColumn, ordering)
-                .Range(from, to)
-                .Get();
-        }
-        else
-        {
-            response = await table.Order(sortColumn, ordering).Range(from, to).Get();
-        }
+            ClearFilter.ClearedOnly    => "cleared",
+            ClearFilter.NotClearedOnly => "not_cleared",
+            _                          => "all"
+        };
 
-        return response.Models;
+        var rpcParams = new Dictionary<string, object>
+        {
+            { "p_user_id",      userId },
+            { "p_sort_col",     sortColumn },
+            { "p_sort_order",   orderStr },
+            { "p_from_idx",     from },
+            { "p_to_idx",       to },
+            { "p_search",       search },
+            { "p_clear_filter", clearStr }
+        };
+
+        var response = await _client.Rpc("fetch_maps_page", rpcParams);
+
+        return string.IsNullOrEmpty(response.Content)
+            ? new List<Map>()
+            : JsonConvert.DeserializeObject<List<Map>>(response.Content) ?? new List<Map>();
     }
-    
-    // 내 좋아요 여부, 내 클리어 여부, 내 맵 여부까지 조회해서 가져옴
-    // TODO : 닉네임도 함께 조회
-    public async Task<List<MapDetailResult>> FetchPageWithDetailsAsync(int page, string sortColumn = "created_at", 
+
+    public async Task<List<MapDetailResult>> FetchPageWithDetailsAsync(
+        int page = 0,
+        string sortColumn = "created_at",
         SortOrder sortOrder = SortOrder.Descending,
-        string nameSearch = null, string idSearch = null)
+        string search = null,
+        ClearFilter clearFilter = ClearFilter.All)
     {
-        // 1. 맵 목록 먼저 조회
-        var maps = await FetchPageAsync(page, sortColumn, sortOrder, nameSearch, idSearch);
-    
+        var maps = await FetchPageAsync(page, sortColumn, sortOrder, search, clearFilter);
         if (maps.Count == 0) return new List<MapDetailResult>();
-    
-        var mapIds = maps.Select(m => m.MapId).ToList();
+        
+        var creatorIds = maps.Select(m => m.UserId).Distinct().ToList();
+        var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
 
-        // 2. 좋아요/클리어를 map id 목록으로 한번에 조회 (쿼리 2개)
-        var likedTask = _client.From<MapLikes>()
-            .Filter("map_id", Constants.Operator.In, mapIds)
+        var mapKeys = maps.Select(m => new { map_id = m.MapId, map_user_id = m.UserId }).ToList();
+
+        var rpcParams = new Dictionary<string, object>
+        {
+            { "p_user_id", userId },
+            { "p_map_keys", JsonConvert.SerializeObject(mapKeys) }
+        };
+
+        var interactionsTask = _client.Rpc("get_user_map_interactions", rpcParams);
+        var nicknameTask = _client.From<Nickname>()
+            .Filter("user_id", Constants.Operator.In, creatorIds)
             .Get();
 
-        var clearedTask = _client.From<MapClears>()
-            .Filter("map_id", Constants.Operator.In, mapIds)
-            .Get();
+        await Task.WhenAll(interactionsTask, nicknameTask);
 
-        await Task.WhenAll(likedTask, clearedTask);
+        var interactions = string.IsNullOrEmpty(interactionsTask.Result.Content)
+            ? new List<MapInteractionResult>()
+            : JsonConvert.DeserializeObject<List<MapInteractionResult>>(interactionsTask.Result.Content) 
+              ?? new List<MapInteractionResult>();
+        var interactionMap = interactions.ToDictionary(x => (x.MapId, x.MapUserId));
+        var nicknameMap = nicknameTask.Result.Models.ToDictionary(x => x.UserId, x => x.Name);
 
-        // 3. HashSet으로 빠르게 룩업
-        var likedMapIds   = likedTask.Result.Models.Select(x => x.MapId).ToHashSet();
-        var clearedMapIds = clearedTask.Result.Models.Select(x => x.MapId).ToHashSet();
-
-        // 4. 조합
         return maps.Select(map => new MapDetailResult
         {
-            Map       = map,
-            IsLiked   = likedMapIds.Contains(map.MapId),
-            IsCleared = clearedMapIds.Contains(map.MapId),
+            Map        = map,
+            IsLiked    = interactionMap.TryGetValue((map.MapId, map.UserId), out var i) && i.IsLiked,
+            IsCleared  = interactionMap.TryGetValue((map.MapId, map.UserId), out var j) && j.IsCleared,
+            IsReported = interactionMap.TryGetValue((map.MapId, map.UserId), out var k) && k.IsReported,
+            Nickname   = nicknameMap.GetValueOrDefault(map.UserId, ""),
         }).ToList();
-    }
-    
-    public async Task<List<MapDetailResult>> FetchNextPageAsync(string sortColumn = "created_at", SortOrder sortOrder = SortOrder.Descending,
-        string nameSearch = null, string idSearch = null)
-    {
-        var result = await FetchPageWithDetailsAsync(_currentPage + 1, sortColumn, sortOrder, nameSearch, idSearch);
-
-        if (result.Count > 0)
-        {
-            _currentPage++;
-            return result;
-        }
-        else
-        {
-            PopUpManager.Instance.Show("마지막 페이지입니다.");
-            return null;
-        }
-    }
-    
-    public async Task<List<MapDetailResult>> FetchPrevPageAsync(string sortColumn = "created_at", SortOrder sortOrder = SortOrder.Descending,
-        string nameSearch = null, string idSearch = null)
-    {
-        if (_currentPage == 0)
-        {
-            PopUpManager.Instance.Show("첫 페이지입니다.");
-            return null;
-        }
-        
-        return await FetchPageWithDetailsAsync(--_currentPage, sortColumn, sortOrder, nameSearch, idSearch);
-    }
-    
-    public async Task<List<MapDetailResult>> RefreshPageAsync(string sortColumn = "created_at", SortOrder sortOrder = SortOrder.Descending,
-        string nameSearch = null, string idSearch = null)
-    {
-        return await FetchPageWithDetailsAsync(_currentPage, sortColumn, sortOrder, nameSearch, idSearch);
     }
     
     // 유저맵 업로드 함수(RLS에 의해 본인 맵만 삽입 가능)
@@ -321,8 +341,10 @@ public class DBManager : MonoBehaviour
         var response = await _client.From<Map>()
             .Select("best_moves")
             .Where(x => x.UserId == userId && x.MapId == mapId)
-            .Single();
-        return response.BestMoves;
+            .Limit(1)
+            .Get();
+
+        return response.Models.FirstOrDefault()?.BestMoves;
     }
     
     #endregion
@@ -330,10 +352,15 @@ public class DBManager : MonoBehaviour
     #region Map_Likes
     
     // 좋아요 삽입
-    // TODO: 트리거 함수 호출로 변경
-    public async Task InsertMapLikesAsync(long mapId)
+    public async Task ToggleMapLikesAsync(long mapId, Guid mapUserId)
     {
-        await _client.From<MapLikes>().Insert(new MapLikes{MapId = mapId});
+        var rpcParams = new Dictionary<string, object>
+        {
+            { "p_map_id", mapId },
+            { "p_map_user_id", mapUserId }
+        };
+
+        await _client.Rpc("toggle_map_like", rpcParams);
     }
     
     #endregion
@@ -343,6 +370,21 @@ public class DBManager : MonoBehaviour
     public async Task UpsertMapClearsAsync(MapClears mapClear)
     {
         await _client.From<MapClears>().Insert(mapClear); // upsert를 하지 않은 이유는 Trigger에 의해 자동 업데이트를 설정해놨기 때문
+    }
+    
+    public async Task<bool> GetIsCleared(long mapId, Guid mapUserId)
+    {
+        var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
+        var result = await _client
+            .From<MapClears>()
+            .Select("user_id")
+            .Filter("user_id", Constants.Operator.Equals, userId)
+            .Filter("map_user_id", Constants.Operator.Equals, mapUserId)
+            .Filter("map_id", Constants.Operator.Equals, mapId)
+            .Limit(1)
+            .Get();
+
+        return result.Models.Count > 0;
     }
     
     #endregion
@@ -413,5 +455,48 @@ public class DBManager : MonoBehaviour
         return response.Models;
     }
 
+    #endregion
+    
+    #region Nickname
+
+    public async Task UpsertNicknameAsync(string text)
+    {
+        var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
+        await _client.From<Nickname>().Upsert(new  Nickname { UserId = userId, Name = text });
+    }
+    
+    public async Task<bool> HasNicknameAsync()
+    {
+        var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
+        var result = await _client
+            .From<Nickname>()
+            .Select("user_id")
+            .Filter("user_id", Constants.Operator.Equals, userId)
+            .Limit(1)
+            .Get();
+
+        return result.Models.Count > 0;
+    }
+    
+    public async Task<bool> IsNicknameAvailableAsync(string nickname)
+    {
+        var result = await _client.From<Nickname>()
+            .Select("user_id")
+            .Filter("name", Constants.Operator.Equals, nickname)
+            .Limit(1)
+            .Get();
+
+        return result.Models.Count == 0;
+    }
+    
+    #endregion
+    
+    #region Report
+
+    public async Task InsertReportAsync(Report report)
+    {
+        await _client.From<Report>().Insert(report);
+    }
+    
     #endregion
 }

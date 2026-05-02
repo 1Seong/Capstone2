@@ -310,9 +310,12 @@ public class LevelListController : MonoBehaviour
         {
             try
             {
-                var r = await DBManager.Instance.GetNewBestMoves(_selectedMap.Item1.MapId, _selectedMap.Item1.UserId);
+                var r = await DBManager.Instance.GetNewBestMoves(id, user);
                 if (r != null)
+                {
+                    _selectedMap.Item1.BestMoves = r.Value;
                     mapRightPageBestMovesTMP.text = r.Value.ToString();
+                }
             }
             catch (Exception e)
             {
@@ -336,10 +339,23 @@ public class LevelListController : MonoBehaviour
         SceneChange.Instance.LightLoading(true);
         var originalName = _selectedMapCreating.Item1.Name;
         var originalDesc = _selectedMapCreating.Item1.Desc;
-        var newName = rightPageName.text;
-        var newDesc = rightPageDescription.text;
+        var newName = rightPageName.text.Trim();
+        var newDesc = rightPageDescription.text.Trim();
         _selectedMapCreating.Item1.Name = newName;
         _selectedMapCreating.Item1.Desc = newDesc;
+
+        if (string.IsNullOrEmpty(newName))
+        {
+            PopUpManager.Instance.Show("제목은 최소 한 자 이상이어야 합니다.");
+            _selectedMapCreating.Item1.Name = originalName;
+            _selectedMapCreating.Item1.Desc = originalDesc;
+            rightPageName.text = originalName;
+            rightPageName.placeholder.GetComponent<TextMeshProUGUI>().text = originalName;
+            rightPageDescription.text = originalDesc;
+            rightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = originalDesc;
+            SceneChange.Instance.LightLoading(false);
+            return;
+        }
         
         try
         {
