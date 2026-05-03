@@ -13,7 +13,7 @@ TagManager:
   - UI
   - PortalLine
   - Grid
-  - 
+  - Indicator
   - 
   - 
   - 
@@ -43,3 +43,4 @@ TagManager:
     locked: 0
   m_RenderingLayers:
   - Default
+  m_MigratedRenderPipelines: []

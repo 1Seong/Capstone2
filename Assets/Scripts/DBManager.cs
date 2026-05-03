@@ -5,10 +5,12 @@ using System.Threading.Tasks;
 using UnityEngine;
 using com.example;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Postgrest;
 using Postgrest.Models;
 using Postgrest.Attributes;
 using Postgrest.Responses;
+using BaseResponse = Postgrest.Responses.BaseResponse;
 using Client = Supabase.Client;
 
 #region Models
@@ -16,30 +18,39 @@ using Client = Supabase.Client;
 [Table("map")]
 public class Map : BaseModel
 {
+    [JsonProperty("map_id")]
     [PrimaryKey("map_id", shouldInsert: true)]
     public long MapId { get; set; }
-
+    
+    [JsonProperty("name")]
     [Column("name")]
     public string Name { get; set; } = default!;
 
+    [JsonProperty("created_at")]
     [Column("created_at", ignoreOnInsert: true, ignoreOnUpdate: true)]
     public DateTime CreatedAt { get; set; } // 현재 시간 기본값
 
+    [JsonProperty("data")]
     [Column("data")]
     public string Data { get; set; }
 
+    [JsonProperty("num_likes")]
     [Column("num_likes", ignoreOnInsert: true, ignoreOnUpdate: true)]
     public long NumLikes { get; set; } // 0 기본값
 
+    [JsonProperty("user_id")]
     [PrimaryKey("user_id", shouldInsert: true)]
     public Guid UserId { get; set; }
 
+    [JsonProperty("is_private")]
     [Column("is_private", ignoreOnInsert: true, ignoreOnUpdate: true)]
     public bool IsPrivate { get; set; }
     
+    [JsonProperty("desc")]
     [Column("desc")]
     public string Desc { get; set; } // NULL 가능
     
+    [JsonProperty("best_moves")]
     [Column("best_moves",  ignoreOnInsert: true, ignoreOnUpdate: true)]
     public short? BestMoves { get; set; } // NULL 기본값
     
@@ -51,6 +62,7 @@ public class Map : BaseModel
     [Column("rotation_info")]
     public string RotInfo { get; set; }
     
+    [JsonProperty("thumbnail_url")]
     [Column("thumbnail_url")]
     public string ThumbnailUrl { get; set; }
 }
@@ -142,7 +154,7 @@ public class Report : BaseModel
     [PrimaryKey("map_user_id", shouldInsert: true)]
     public Guid MapUserId { get; set; }
     
-    [Column("description")]
+    [Column("desc")]
     public string Desc { get; set; }
 }
 
@@ -228,7 +240,7 @@ public class DBManager : MonoBehaviour
     {
         int from = page * PageSize;
         int to   = from + PageSize - 1;
-        var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
+        var userId = SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id;
 
         var orderStr = sortOrder == SortOrder.Ascending ? "ASC" : "DESC";
         var clearStr = clearFilter switch
@@ -243,14 +255,15 @@ public class DBManager : MonoBehaviour
             { "p_user_id",      userId },
             { "p_sort_col",     sortColumn },
             { "p_sort_order",   orderStr },
-            { "p_from_idx",     from },
-            { "p_to_idx",       to },
-            { "p_search",       search },
+            { "p_from_idx",     from.ToString() },
+            { "p_to_idx",       to.ToString() },
             { "p_clear_filter", clearStr }
         };
+        if (!string.IsNullOrEmpty(search))
+            rpcParams.Add("p_search", search);
 
         var response = await _client.Rpc("fetch_maps_page", rpcParams);
-
+        //Debug.Log(response.Content);
         return string.IsNullOrEmpty(response.Content)
             ? new List<Map>()
             : JsonConvert.DeserializeObject<List<Map>>(response.Content) ?? new List<Map>();
@@ -263,41 +276,62 @@ public class DBManager : MonoBehaviour
         string search = null,
         ClearFilter clearFilter = ClearFilter.All)
     {
-        var maps = await FetchPageAsync(page, sortColumn, sortOrder, search, clearFilter);
+        List<Map> maps;
+        try
+        {
+            maps = await FetchPageAsync(page, sortColumn, sortOrder, search, clearFilter);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
+            throw;
+        }
+        //Debug.Log(maps[0].MapId.ToString());
+
         if (maps.Count == 0) return new List<MapDetailResult>();
         
-        var creatorIds = maps.Select(m => m.UserId).Distinct().ToList();
-        var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
+        var creatorIds = maps.Select(m => (object)m.UserId.ToString()).Distinct().ToList();
+        var userId = SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id;
 
         var mapKeys = maps.Select(m => new { map_id = m.MapId, map_user_id = m.UserId }).ToList();
 
         var rpcParams = new Dictionary<string, object>
         {
             { "p_user_id", userId },
-            { "p_map_keys", JsonConvert.SerializeObject(mapKeys) }
+            { "p_map_keys", JArray.FromObject(mapKeys) }
         };
 
-        var interactionsTask = _client.Rpc("get_user_map_interactions", rpcParams);
-        var nicknameTask = _client.From<Nickname>()
-            .Filter("user_id", Constants.Operator.In, creatorIds)
-            .Get();
+        Task<BaseResponse> interactionsTask;
+        Task<ModeledResponse<Nickname>> nicknameTask;
+        try
+        {
+            interactionsTask = _client.Rpc("get_user_map_interactions", rpcParams);
+            nicknameTask = _client.From<Nickname>()
+                .Filter("user_id", Constants.Operator.In, creatorIds)
+                .Get();
 
-        await Task.WhenAll(interactionsTask, nicknameTask);
-
+            await Task.WhenAll(interactionsTask, nicknameTask);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
+            throw;
+        }
+        //Debug.Log(interactionsTask.Result.Content);
         var interactions = string.IsNullOrEmpty(interactionsTask.Result.Content)
             ? new List<MapInteractionResult>()
             : JsonConvert.DeserializeObject<List<MapInteractionResult>>(interactionsTask.Result.Content) 
               ?? new List<MapInteractionResult>();
         var interactionMap = interactions.ToDictionary(x => (x.MapId, x.MapUserId));
         var nicknameMap = nicknameTask.Result.Models.ToDictionary(x => x.UserId, x => x.Name);
-
+        
         return maps.Select(map => new MapDetailResult
         {
             Map        = map,
             IsLiked    = interactionMap.TryGetValue((map.MapId, map.UserId), out var i) && i.IsLiked,
             IsCleared  = interactionMap.TryGetValue((map.MapId, map.UserId), out var j) && j.IsCleared,
             IsReported = interactionMap.TryGetValue((map.MapId, map.UserId), out var k) && k.IsReported,
-            Nickname   = nicknameMap.GetValueOrDefault(map.UserId, ""),
+            Nickname   = nicknameMap.GetValueOrDefault(map.UserId, "익명"),
         }).ToList();
     }
     
@@ -332,7 +366,7 @@ public class DBManager : MonoBehaviour
     {
         var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
         var response = await _client.From<Map>()
-            .Where(x => x.UserId == userId).Get();
+            .Where(x => x.UserId == userId).Order("map_id", Constants.Ordering.Ascending).Get();
         return response.Models;
     }
     
@@ -356,8 +390,8 @@ public class DBManager : MonoBehaviour
     {
         var rpcParams = new Dictionary<string, object>
         {
-            { "p_map_id", mapId },
-            { "p_map_user_id", mapUserId }
+            { "p_map_id", mapId.ToString() },
+            { "p_map_user_id", mapUserId.ToString() }
         };
 
         await _client.Rpc("toggle_map_like", rpcParams);
@@ -374,13 +408,13 @@ public class DBManager : MonoBehaviour
     
     public async Task<bool> GetIsCleared(long mapId, Guid mapUserId)
     {
-        var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
+        var userId = SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id;
         var result = await _client
             .From<MapClears>()
             .Select("user_id")
             .Filter("user_id", Constants.Operator.Equals, userId)
-            .Filter("map_user_id", Constants.Operator.Equals, mapUserId)
-            .Filter("map_id", Constants.Operator.Equals, mapId)
+            .Filter("map_user_id", Constants.Operator.Equals, mapUserId.ToString())
+            .Filter("map_id", Constants.Operator.Equals, mapId.ToString())
             .Limit(1)
             .Get();
 
@@ -425,7 +459,7 @@ public class DBManager : MonoBehaviour
 
     public async Task<List<MapCreating>> FetchMapCreatingAsync()
     {
-        var response = await _client.From<MapCreating>().Get();
+        var response = await _client.From<MapCreating>().Order("map_id", Constants.Ordering.Ascending).Get();
         return response.Models;
     }
 
@@ -467,7 +501,7 @@ public class DBManager : MonoBehaviour
     
     public async Task<bool> HasNicknameAsync()
     {
-        var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
+        var userId = SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id;
         var result = await _client
             .From<Nickname>()
             .Select("user_id")

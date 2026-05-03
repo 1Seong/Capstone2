@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using com.example;
 using Cysharp.Threading.Tasks;
@@ -51,9 +50,9 @@ public class UserLevelList : MonoBehaviour
         }
     }
 
-    [SerializeField] private Dropdown sortDropdown;
-    [SerializeField] private Dropdown orderDropdown;
-    [SerializeField] private Dropdown filterDropdown;
+    [SerializeField] private TMP_Dropdown sortDropdown;
+    [SerializeField] private TMP_Dropdown orderDropdown;
+    [SerializeField] private TMP_Dropdown filterDropdown;
     [SerializeField] private TMP_InputField searchInput;
     [SerializeField] private TextMeshProUGUI pageText;
     [SerializeField] private TMP_InputField reportInput;
@@ -74,6 +73,8 @@ public class UserLevelList : MonoBehaviour
         {
             Debug.LogWarning(e.Message);
             PopUpManager.Instance.Show("맵을 가져올 수 없습니다.");
+            await SceneChange.Instance.ManualEndFade();
+            return;
         }
 
         await UpdateCells(maps);
@@ -85,7 +86,7 @@ public class UserLevelList : MonoBehaviour
         foreach (var i in levelCells)
         {
             i.gameObject.SetActive(false);
-            var tex = i.GetComponent<RawImage>().texture;
+            var tex = i.GetComponentInChildren<RawImage>().texture;
             if(tex != _defaultThumbnail)
                 Destroy(tex);
         }
@@ -99,7 +100,7 @@ public class UserLevelList : MonoBehaviour
             o.SetActive(true);
             entries.Add(new Tuple<MapDetailResult, RawImage, Button>(
                 maps[i],
-                o.GetComponent<RawImage>(),
+                o.GetComponentInChildren<RawImage>(),
                 o.GetComponent<Button>()
             ));
         }
@@ -316,7 +317,7 @@ public class UserLevelList : MonoBehaviour
             1 => SortOrder.Ascending,
             _ => SortOrder.Descending
         };
-        var filter = orderDropdown.value switch
+        var filter = filterDropdown.value switch
         {
             0 => ClearFilter.All,
             1 => ClearFilter.NotClearedOnly,
@@ -351,7 +352,11 @@ public class UserLevelList : MonoBehaviour
     {
         if (!GameManager.Instance.CheckNetworkAndLogIn())
             return;
-        
+        if (string.IsNullOrEmpty(reportInput.text.Trim()))
+        {
+            PopUpManager.Instance.Show("내용은 최소 한 자 이상이어야 합니다.");
+            return;
+        }
         // rightpage 버튼 비활시키고 맵 정보 수정
         SceneChange.Instance.LightLoading(true);
         var rep = new Report()
@@ -361,6 +366,7 @@ public class UserLevelList : MonoBehaviour
             MapUserId = _selectedMap.Item1.Map.UserId,
             Desc = reportInput.text.Trim()
         };
+        
         try
         {
             await DBManager.Instance.InsertReportAsync(rep);
@@ -383,6 +389,7 @@ public class UserLevelList : MonoBehaviour
         _selectedMap.Item1.IsReported = true;
         reportPanel.SetActive(false);
         PopUpManager.Instance.Show("신고가 접수되었습니다.");
+        SceneChange.Instance.LightLoading(false);
     }
 
     public async void ToggleLikeMap() // 측정해보고 결정
@@ -406,7 +413,7 @@ public class UserLevelList : MonoBehaviour
         rightPageLikesTMP.text = likes;
         _selectedMap.Item3.GetComponent<UserLevelCell>().UpdateLikes(likes);
         
-        SceneChange.Instance.LightLoading(true);
+        //SceneChange.Instance.LightLoading(true);
         try
         {
             await DBManager.Instance.ToggleMapLikesAsync(mapId, mapUserId);
@@ -414,6 +421,7 @@ public class UserLevelList : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogWarning(e.Message);
+            /*
             _selectedMap.Item1.IsLiked = originalIsLiked;
             if (originalIsLiked)
             {
@@ -427,7 +435,8 @@ public class UserLevelList : MonoBehaviour
             }
             rightPageLikesTMP.text = likes;
             _selectedMap.Item3.GetComponent<UserLevelCell>().UpdateLikes(likes);
+            */
         }
-        SceneChange.Instance.LightLoading(false);
+        //SceneChange.Instance.LightLoading(false);
     }
 }

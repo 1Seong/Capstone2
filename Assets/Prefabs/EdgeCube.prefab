@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5418099939667526869}
   - component: {fileID: 91114810115986565}
   - component: {fileID: 450131715809208399}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: QuadYp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,7 +101,7 @@ GameObject:
   - component: {fileID: 4202086801352114067}
   - component: {fileID: 5511162970987590230}
   - component: {fileID: 5027898006740729421}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: QuadXm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -191,7 +191,7 @@ GameObject:
   - component: {fileID: 2918434726731287164}
   - component: {fileID: 3753316953890876333}
   - component: {fileID: 3785234254335114913}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: QuadYm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -279,7 +279,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2986909196072566121}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: EdgeCube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -318,7 +318,7 @@ GameObject:
   - component: {fileID: 6036015084603383535}
   - component: {fileID: 7550200519522786255}
   - component: {fileID: 8582894400057983177}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: QuadZm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -408,7 +408,7 @@ GameObject:
   - component: {fileID: 2900516116648366022}
   - component: {fileID: 4892232591391221636}
   - component: {fileID: 3309075466713995654}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: QuadXp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -498,7 +498,7 @@ GameObject:
   - component: {fileID: 6802807618954517950}
   - component: {fileID: 5692190624442411834}
   - component: {fileID: 6231624276400672071}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: QuadZp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
