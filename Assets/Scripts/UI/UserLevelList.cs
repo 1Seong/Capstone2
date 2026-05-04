@@ -12,6 +12,8 @@ using UnityEngine.UI;
 public class UserLevelList : MonoBehaviour
 {
     [SerializeField] private UserLevelCell[] levelCells;
+    [SerializeField] private RawImage[] rawImages;
+    [SerializeField] private Button[] buttons;
     [SerializeField] private Texture _defaultThumbnail;
     
     [SerializeField] private GameObject cam;
@@ -61,6 +63,7 @@ public class UserLevelList : MonoBehaviour
     private string _currentSort = "created_at";
     private SortOrder _currentSortOrder = SortOrder.Descending;
     private ClearFilter _currentFilter = ClearFilter.All;
+    private const int PageNum = 6;
 
     private async void Start()
     {
@@ -76,7 +79,7 @@ public class UserLevelList : MonoBehaviour
             await SceneChange.Instance.ManualEndFade();
             return;
         }
-
+        
         await UpdateCells(maps);
         await SceneChange.Instance.ManualEndFade();
     }
@@ -97,11 +100,10 @@ public class UserLevelList : MonoBehaviour
         {
             levelCells[i].UpdateInfo(maps[i].IsCleared, maps[i].Map.Name, maps[i].Nickname, maps[i].Map.NumLikes, maps[i].Map.BestMoves);
             var o = levelCells[i].gameObject;
-            o.SetActive(true);
             entries.Add(new Tuple<MapDetailResult, RawImage, Button>(
                 maps[i],
-                o.GetComponentInChildren<RawImage>(),
-                o.GetComponent<Button>()
+                rawImages[i],
+                buttons[i]
             ));
         }
 
@@ -112,14 +114,16 @@ public class UserLevelList : MonoBehaviour
                 : LoadThumbnailAsync(e.Item2, e.Item1.Map.ThumbnailUrl)
         ));
 
-        // 3. 버튼 이벤트 등록
-        foreach (var e in entries)
+        // 3. 현재 항목 등록
+        for(int i = 0; i != entries.Count; ++i)
         {
+            var e = entries[i];
             var map = e.Item1;
             var tex = e.Item2.texture;
             var btn = e.Item3;
             var m = new Tuple<MapDetailResult, Texture, Button>(map, tex, btn);
-            btn.onClick.AddListener(() => SelectedMap = m);
+            btn.onClick.AddListener(()=> SelectedMap = m);
+            levelCells[i].gameObject.SetActive(true);
         }
     }
     
@@ -143,8 +147,7 @@ public class UserLevelList : MonoBehaviour
     
     private async UniTask LoadThumbnailAsync(RawImage rawImage, string url)
     {
-        var bustUrl = $"{url}?t={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
-        using var request = UnityWebRequestTexture.GetTexture(bustUrl);
+        using var request = UnityWebRequestTexture.GetTexture(url);
         await request.SendWebRequest();
 
         if (request.result != UnityWebRequest.Result.Success)
@@ -204,22 +207,6 @@ public class UserLevelList : MonoBehaviour
                     _selectedMap.Item1.IsCleared = true;
                     rightPageClearObject.SetActive(false);
                     cell.UpdateCleared(true);
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning(e.Message);
-            }
-        };
-        GameManager.Instance.UserClearEvent += async () =>
-        {
-            try
-            {
-                var r = await DBManager.Instance.GetNewBestMoves(id, user);
-                if (r != null)
-                {
-                    _selectedMap.Item1.Map.BestMoves = r.Value;
-                    rightPageBestMovesTMP.text = r.Value.ToString();
                 }
             }
             catch (Exception e)

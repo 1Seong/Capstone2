@@ -210,7 +210,6 @@ public enum ClearFilter
 public class DBManager : MonoBehaviour
 {
     public static DBManager Instance;
-    private Client _client;
     
     private const int PageSize = 6;
     
@@ -226,9 +225,8 @@ public class DBManager : MonoBehaviour
             DontDestroyOnLoad(gameObject);
         }
 
-        _client = SupabaseManager.Instance.Supabase();
     }
-    
+
     #region Map
     
     private async Task<List<Map>> FetchPageAsync(
@@ -240,7 +238,8 @@ public class DBManager : MonoBehaviour
     {
         int from = page * PageSize;
         int to   = from + PageSize - 1;
-        var userId = SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id;
+        var _client = SupabaseManager.Instance.Supabase();
+        var userId = _client.Auth.CurrentUser.Id;
 
         var orderStr = sortOrder == SortOrder.Ascending ? "ASC" : "DESC";
         var clearStr = clearFilter switch
@@ -276,6 +275,7 @@ public class DBManager : MonoBehaviour
         string search = null,
         ClearFilter clearFilter = ClearFilter.All)
     {
+        var _client = SupabaseManager.Instance.Supabase();
         List<Map> maps;
         try
         {
@@ -291,7 +291,7 @@ public class DBManager : MonoBehaviour
         if (maps.Count == 0) return new List<MapDetailResult>();
         
         var creatorIds = maps.Select(m => (object)m.UserId.ToString()).Distinct().ToList();
-        var userId = SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id;
+        var userId = _client.Auth.CurrentUser.Id;
 
         var mapKeys = maps.Select(m => new { map_id = m.MapId, map_user_id = m.UserId }).ToList();
 
@@ -338,16 +338,18 @@ public class DBManager : MonoBehaviour
     // 유저맵 업로드 함수(RLS에 의해 본인 맵만 삽입 가능)
     public async Task UpsertMapAsync(Map map)
     {
-        await _client.From<Map>().Upsert(map, new QueryOptions(){Returning = QueryOptions.ReturnType.Minimal});
+        await SupabaseManager.Instance.Supabase().From<Map>().Upsert(map, new QueryOptions(){Returning = QueryOptions.ReturnType.Minimal});
     }
     
     // 맵 id를 사용한 유저맵 삭제(RLS에 의해 본인 맵만 삭제 가능)
     public async Task DeleteMapAsync(long id)
     {
+        var client = SupabaseManager.Instance.Supabase();
+        
         try
         {
             var userId = SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id;
-            await _client.Storage
+            await client.Storage
                 .From("uploaded-map-thumbnails")
                 .Remove(new List<string> { $"{userId}/{id}.jpg" });
         }
@@ -357,7 +359,7 @@ public class DBManager : MonoBehaviour
             Debug.LogWarning($"썸네일 삭제 실패 (무시): {e.Message}");
         }
         
-        await _client.From<Map>()
+        await client.From<Map>()
             .Where(x => x.MapId == id)
             .Delete();
     }
@@ -365,14 +367,14 @@ public class DBManager : MonoBehaviour
     public async Task<List<Map>> FetchMyMapAsync()
     {
         var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
-        var response = await _client.From<Map>()
+        var response = await SupabaseManager.Instance.Supabase().From<Map>()
             .Where(x => x.UserId == userId).Order("map_id", Constants.Ordering.Ascending).Get();
         return response.Models;
     }
     
     public async Task<short?> GetNewBestMoves(long mapId, Guid userId)
     {
-        var response = await _client.From<Map>()
+        var response = await SupabaseManager.Instance.Supabase().From<Map>()
             .Select("best_moves")
             .Where(x => x.UserId == userId && x.MapId == mapId)
             .Limit(1)
@@ -394,7 +396,7 @@ public class DBManager : MonoBehaviour
             { "p_map_user_id", mapUserId.ToString() }
         };
 
-        await _client.Rpc("toggle_map_like", rpcParams);
+        await SupabaseManager.Instance.Supabase().Rpc("toggle_map_like", rpcParams);
     }
     
     #endregion
@@ -403,13 +405,13 @@ public class DBManager : MonoBehaviour
 
     public async Task UpsertMapClearsAsync(MapClears mapClear)
     {
-        await _client.From<MapClears>().Insert(mapClear); // upsert를 하지 않은 이유는 Trigger에 의해 자동 업데이트를 설정해놨기 때문
+        await SupabaseManager.Instance.Supabase().From<MapClears>().Insert(mapClear); // upsert를 하지 않은 이유는 Trigger에 의해 자동 업데이트를 설정해놨기 때문
     }
     
     public async Task<bool> GetIsCleared(long mapId, Guid mapUserId)
     {
         var userId = SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id;
-        var result = await _client
+        var result = await SupabaseManager.Instance.Supabase()
             .From<MapClears>()
             .Select("user_id")
             .Filter("user_id", Constants.Operator.Equals, userId)
@@ -427,12 +429,12 @@ public class DBManager : MonoBehaviour
 
     public async Task InsertMapCreatingAsync(MapCreating map)
     {
-        await _client.From<MapCreating>().Insert(map);
+        await SupabaseManager.Instance.Supabase().From<MapCreating>().Insert(map);
     }
     
     public async Task UpdateMapCreatingAsync(MapCreating map)
     {
-        await _client.From<MapCreating>().Update(map);
+        await SupabaseManager.Instance.Supabase().From<MapCreating>().Update(map);
     }
 
     public async Task DeleteMapCreatingAsync(long id)
@@ -440,7 +442,7 @@ public class DBManager : MonoBehaviour
         // 1. Storage 먼저
         try
         {
-            await _client.Storage
+            await SupabaseManager.Instance.Supabase().Storage
                 .From("map-thumbnails")
                 .Remove(new List<string> { $"{id}.jpg" });
         }
@@ -451,7 +453,7 @@ public class DBManager : MonoBehaviour
         }
 
         // 2. DB 삭제
-        await _client
+        await SupabaseManager.Instance.Supabase()
             .From<MapCreating>()
             .Where(x => x.MapId == id)
             .Delete();
@@ -459,13 +461,13 @@ public class DBManager : MonoBehaviour
 
     public async Task<List<MapCreating>> FetchMapCreatingAsync()
     {
-        var response = await _client.From<MapCreating>().Order("map_id", Constants.Ordering.Ascending).Get();
+        var response = await SupabaseManager.Instance.Supabase().From<MapCreating>().Order("map_id", Constants.Ordering.Ascending).Get();
         return response.Models;
     }
 
     public async Task<MapCreating> FetchRecentMapCreatingSingleAsync()
     {
-        var response = await _client
+        var response = await SupabaseManager.Instance.Supabase()
             .From<MapCreating>()
             .Order("created_at", Constants.Ordering.Descending)
             .Limit(1)
@@ -479,12 +481,12 @@ public class DBManager : MonoBehaviour
 
     public async Task UpsertStorySavesAsync(StorySaves save)
     {
-        await _client.From<StorySaves>().Insert(save); // upsert를 하지 않은 이유는 Trigger에 의해 자동 업데이트를 설정해놨기 때문
+        await SupabaseManager.Instance.Supabase().From<StorySaves>().Insert(save); // upsert를 하지 않은 이유는 Trigger에 의해 자동 업데이트를 설정해놨기 때문
     }
 
     public async Task<List<StorySaves>> FetchStorySavesAsync()
     {
-        var response = await _client.From<StorySaves>().Get();
+        var response = await SupabaseManager.Instance.Supabase().From<StorySaves>().Get();
 
         return response.Models;
     }
@@ -496,31 +498,30 @@ public class DBManager : MonoBehaviour
     public async Task UpsertNicknameAsync(string text)
     {
         var userId = Guid.Parse(SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id);
-        await _client.From<Nickname>().Upsert(new  Nickname { UserId = userId, Name = text });
+        await SupabaseManager.Instance.Supabase().From<Nickname>().Upsert(new  Nickname { UserId = userId, Name = text });
     }
     
     public async Task<bool> HasNicknameAsync()
     {
         var userId = SupabaseManager.Instance.Supabase().Auth.CurrentUser.Id;
-        var result = await _client
+        var result = await SupabaseManager.Instance.Supabase()
             .From<Nickname>()
             .Select("user_id")
             .Filter("user_id", Constants.Operator.Equals, userId)
-            .Limit(1)
-            .Get();
+            .Count(Constants.CountType.Exact);
 
-        return result.Models.Count > 0;
+        return result > 0;
     }
-    
+
     public async Task<bool> IsNicknameAvailableAsync(string nickname)
     {
-        var result = await _client.From<Nickname>()
+        var result = await SupabaseManager.Instance.Supabase()
+            .From<Nickname>()
             .Select("user_id")
             .Filter("name", Constants.Operator.Equals, nickname)
-            .Limit(1)
-            .Get();
+            .Count(Constants.CountType.Exact);
 
-        return result.Models.Count == 0;
+        return result == 0;
     }
     
     #endregion
@@ -529,7 +530,7 @@ public class DBManager : MonoBehaviour
 
     public async Task InsertReportAsync(Report report)
     {
-        await _client.From<Report>().Insert(report);
+        await SupabaseManager.Instance.Supabase().From<Report>().Insert(report);
     }
     
     #endregion
