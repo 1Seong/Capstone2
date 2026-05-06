@@ -167,7 +167,7 @@ public class LevelListController : MonoBehaviour
     private async UniTask LoadThumbnailAsync(RawImage rawImage, string url)
     {
         var bustUrl = $"{url}?t={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
-        using var request = UnityWebRequestTexture.GetTexture(bustUrl);
+        using var request = UnityWebRequestTexture.GetTexture(bustUrl, false);
         await request.SendWebRequest();
 
         if (request.result != UnityWebRequest.Result.Success)
@@ -217,6 +217,87 @@ public class LevelListController : MonoBehaviour
         var o = Instantiate(levelButtonPrefab, levelButtonParent);
         var newMap = new Tuple<MapCreating, Texture, Button>(recent, null, o.GetComponent<Button>());
         newMap.Item3.onClick.AddListener(() => SelectedMapCreating = newMap);
+        SceneChange.Instance.LightLoading(false);
+    }
+
+    public async void CopyMap()
+    {
+        if (!GameManager.Instance.CheckNetworkAndLogIn())
+            return;
+
+        var client = SupabaseManager.Instance.Supabase();
+        SceneChange.Instance.LightLoading(true);
+        try
+        {
+            await DBManager.Instance.InsertMapCreatingAsync(new MapCreating()
+            {
+                UserId = Guid.Parse(client.Auth.CurrentUser.Id),
+                Name = _selectedMapCreating.Item1.Name.Length < 16 ? _selectedMapCreating.Item1.Name + "_Copy" : _selectedMapCreating.Item1.Name,
+                //Desc = _selectedMapCreating.Item1.Desc,
+                //Data =  _selectedMapCreating.Item1.Data,
+                //PortalPairs =  _selectedMapCreating.Item1.PortalPairs,
+                //RotInfo =  _selectedMapCreating.Item1.RotInfo
+            });
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
+            PopUpManager.Instance.Show("나중에 다시 시도해주세요.");
+            SceneChange.Instance.LightLoading(false);
+            return;
+        }
+
+        MapCreating recent;
+        try
+        {
+            recent = await DBManager.Instance.FetchRecentMapCreatingSingleAsync();
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
+            PopUpManager.Instance.Show("정보 가져오기 실패");
+            SceneChange.Instance.LightLoading(false);
+            return;
+        }
+
+        recent.Desc = _selectedMapCreating.Item1.Desc;
+        recent.Data = _selectedMapCreating.Item1.Data;
+        recent.PortalPairs =  _selectedMapCreating.Item1.PortalPairs;
+        recent.RotInfo = _selectedMapCreating.Item1.RotInfo;
+        var o = Instantiate(levelButtonPrefab, levelButtonParent);
+        var newMap = new Tuple<MapCreating, Texture, Button>(recent, _selectedMapCreating.Item2, o.GetComponent<Button>());
+        o.GetComponentInChildren<TextMeshProUGUI>().text = newMap.Item1.Name;
+        o.GetComponent<RawImage>().texture = _selectedMapCreating.Item2;
+        newMap.Item3.onClick.AddListener(() => SelectedMapCreating = newMap);
+        
+        if (_selectedMapCreating.Item2 is Texture2D tex2D)
+        {
+            var bytes = tex2D.EncodeToJPG(quality: 80);
+            var path = $"{recent.MapId}.jpg";
+            await client.Storage
+                .From("map-thumbnails")
+                .Upload(bytes, path, new Supabase.Storage.FileOptions { Upsert = true });
+            
+            var url = client.Storage
+                .From("map-thumbnails")
+                .GetPublicUrl(path);
+            recent.ThumbnailUrl = url;
+
+            try
+            {
+                await DBManager.Instance.UpdateMapCreatingAsync(recent);
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e.Message);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Texture2D casting failed");
+        }
+        
+        PopUpManager.Instance.Show("사본 만들기 성공");
         SceneChange.Instance.LightLoading(false);
     }
     

@@ -68,6 +68,7 @@ public class GameManager : MonoBehaviour
 
     public void PlayGame(char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
     {
+        isPlaying = true;
         var o = FindAnyObjectByType<PuzzlePlayer>(FindObjectsInactive.Include);
         
         o.SetMapData(data, portalPairDic, rotateAxis, canRotate);
@@ -90,6 +91,7 @@ public class GameManager : MonoBehaviour
 
     public void GameClearedSingle(int moves)
     {
+        isPlaying = false;
         // 싱글이냐 유저맵이냐에 따라 다름
     }
     
@@ -100,6 +102,7 @@ public class GameManager : MonoBehaviour
     
     public async UniTaskVoid GameClearedUser(short moves)
     {
+        isPlaying = false;
         userResultTMP.text = $"움직임 수: {moves.ToString()}";
         if(_currentUserBestMoves == null || moves < _currentUserBestMoves)
             userBestText.SetActive(true);
@@ -138,6 +141,7 @@ public class GameManager : MonoBehaviour
 
     public void GameClearedTest(int moves)
     {
+        isPlaying = false;
         testResultTMP.text = $"움직임 수: {moves.ToString()}";
         testClearPanel.SetActive(true);
     }

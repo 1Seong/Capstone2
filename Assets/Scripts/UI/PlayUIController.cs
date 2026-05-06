@@ -8,6 +8,8 @@ public class PlayUIController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!GameManager.Instance.isPlaying) return;
+        
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             escPanel.SetActive(!escPanel.activeSelf);

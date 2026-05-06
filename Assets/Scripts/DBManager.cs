@@ -210,8 +210,8 @@ public enum ClearFilter
 public class DBManager : MonoBehaviour
 {
     public static DBManager Instance;
-    
-    private const int PageSize = 6;
+
+    private const int PageSize = 18;
     
     private void Awake()
     {

@@ -32,6 +32,7 @@ public class UserLevelList : MonoBehaviour
     [SerializeField] private Sprite rightPageLikeSprite;
     [SerializeField] private Sprite rightPageUnlikeSprite;
     [SerializeField] private GameObject reportPanel;
+    [SerializeField] private Scrollbar scrollBar;
     
     private Tuple<MapDetailResult, Texture, Button> _selectedMap;
     public Tuple<MapDetailResult, Texture, Button> SelectedMap
@@ -63,7 +64,7 @@ public class UserLevelList : MonoBehaviour
     private string _currentSort = "created_at";
     private SortOrder _currentSortOrder = SortOrder.Descending;
     private ClearFilter _currentFilter = ClearFilter.All;
-    private const int PageNum = 6;
+    private const int PageNum = 18;
 
     private async void Start()
     {
@@ -86,6 +87,7 @@ public class UserLevelList : MonoBehaviour
 
     private async UniTask UpdateCells(List<MapDetailResult> maps)
     {
+        scrollBar.value = 1;
         foreach (var i in levelCells)
         {
             i.gameObject.SetActive(false);

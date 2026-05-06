@@ -17,5 +17,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/PuzzlePlayScene.unity
     guid: 2ab9c38a3c47b0e43ae80c789423f028
+  - enabled: 1
+    path: Assets/Scenes/UsermapMenu.unity
+    guid: dd9c5fbc7cefeae4cb1ce8ae3f26d33b
+  - enabled: 1
+    path: Assets/Scenes/SinglePuzzlePlayScene.unity
+    guid: ccfc11a9cf95ef64595a8917670516d5
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: fa811a91b966ee244b3725df271774db, type: 3}
