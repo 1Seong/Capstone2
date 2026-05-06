@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -593,6 +592,8 @@ public class MapEditor : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.Instance.blockIndicators) return;
+        
         if (Input.GetKeyDown(KeyCode.Z))
         {
             Undo();
@@ -604,8 +605,7 @@ public class MapEditor : MonoBehaviour
         {
             resetPanel.SetActive(true);
         }
-        
-        if (Input.GetKeyDown(KeyCode.Escape) && !_isShowingAnswer)
+        else if (Input.GetKeyDown(KeyCode.Escape) && !_isShowingAnswer)
         {
             if (resetCheckPanel.activeSelf)
             {
@@ -615,6 +615,14 @@ public class MapEditor : MonoBehaviour
             }
             
             escPanel.SetActive(!escPanel.activeSelf);
+        }
+        else if(Input.GetKeyDown(KeyCode.D))
+        {
+            SetCurrentTileToRoad();
+        }
+        else if (Input.GetKeyDown(KeyCode.E))
+        {
+            SetCurrentTileToEraser();
         }
     }
 

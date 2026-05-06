@@ -8,6 +8,7 @@ public class ToggleButtonGroup : MonoBehaviour
     [SerializeField] private Color selectedColor = new Color(0.3f, 0.6f, 1f);
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private int defaultIndex = 0;
+    [SerializeField] private bool enableKeySwitch = false;
 
     public event Action<int> OnSelectionChanged;
 
@@ -27,6 +28,16 @@ public class ToggleButtonGroup : MonoBehaviour
 
         if (_buttons.Count > 0)
             Select(defaultIndex);
+    }
+    
+    private void Update()
+    {
+        if (!enableKeySwitch && GameManager.Instance.blockIndicators) return;
+
+        if(Input.GetKeyDown(KeyCode.E))
+            Select(1);
+        else if(Input.GetKeyDown(KeyCode.D))
+            Select(0);
     }
 
     public void Select(int index)

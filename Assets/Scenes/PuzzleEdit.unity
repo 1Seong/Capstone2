@@ -6892,6 +6892,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 8
       objectReference: {fileID: 0}
+    - target: {fileID: 3929213176319681540, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: enableScrollSwitch
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3943146800105377104, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 

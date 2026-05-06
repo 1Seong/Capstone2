@@ -215,6 +215,7 @@ public class LevelListController : MonoBehaviour
             return;
         }
         var o = Instantiate(levelButtonPrefab, levelButtonParent);
+        o.transform.SetSiblingIndex(1);
         var newMap = new Tuple<MapCreating, Texture, Button>(recent, null, o.GetComponent<Button>());
         newMap.Item3.onClick.AddListener(() => SelectedMapCreating = newMap);
         SceneChange.Instance.LightLoading(false);
@@ -265,6 +266,7 @@ public class LevelListController : MonoBehaviour
         recent.PortalPairs =  _selectedMapCreating.Item1.PortalPairs;
         recent.RotInfo = _selectedMapCreating.Item1.RotInfo;
         var o = Instantiate(levelButtonPrefab, levelButtonParent);
+        o.transform.SetSiblingIndex(1);
         var newMap = new Tuple<MapCreating, Texture, Button>(recent, _selectedMapCreating.Item2, o.GetComponent<Button>());
         o.GetComponentInChildren<TextMeshProUGUI>().text = newMap.Item1.Name;
         o.GetComponent<RawImage>().texture = _selectedMapCreating.Item2;
@@ -282,19 +284,18 @@ public class LevelListController : MonoBehaviour
                 .From("map-thumbnails")
                 .GetPublicUrl(path);
             recent.ThumbnailUrl = url;
-
-            try
-            {
-                await DBManager.Instance.UpdateMapCreatingAsync(recent);
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning(e.Message);
-            }
         }
         else
         {
             Debug.LogWarning("Texture2D casting failed");
+        }
+        try
+        {
+            await DBManager.Instance.UpdateMapCreatingAsync(recent);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
         }
         
         PopUpManager.Instance.Show("사본 만들기 성공");
