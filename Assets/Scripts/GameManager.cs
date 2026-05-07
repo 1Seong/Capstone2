@@ -5,6 +5,25 @@ using com.example;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+
+// 스테이지 하나
+[CreateAssetMenu(menuName = "Game/Stage Data")]
+public class StageData : ScriptableObject
+{
+    public string stageName;
+    public string mapData;
+    public string rotData;
+    public string portalData;
+}
+
+// 에피소드 하나 (스테이지 묶음)
+[CreateAssetMenu(menuName = "Game/Episode Data")]
+public class EpisodeData : ScriptableObject
+{
+    public string episodeName;
+    public List<StageData> stages;
+}
 
 public class GameManager : MonoBehaviour
 {
@@ -27,10 +46,19 @@ public class GameManager : MonoBehaviour
     private long _currentUserMapId;
     private short? _currentUserBestMoves;
     private Guid _currentUserMapUserId;
-    private int _currentSingleMapId;
+    private string _currentSingleMapId;
     private short? _currentSingleBestMoves;
     public bool blockIndicators;
-    //[SerializeField] private GameObject playInstance;
+    [SerializeField] private List<EpisodeData> _episodes;
+
+    private bool _showGrid;
+    public bool ShowGrid {get => _showGrid;}
+    private bool _showParticle;
+    public bool  ShowParticle {get => _showParticle;}
+    [SerializeField] private Toggle gridToggle;
+    [SerializeField] private Toggle particleToggle;
+
+    [SerializeField] private GameObject optionPanel;
     
     private void Awake()
     {
@@ -41,17 +69,53 @@ public class GameManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
+        
+        _showGrid = PlayerPrefs.GetInt("showGrid", 1) == 1;
+        _showParticle = PlayerPrefs.GetInt("showParticle", 1) == 1;
+        gridToggle.isOn = _showGrid;
+        particleToggle.isOn = _showParticle;
     }
 
-    public async UniTask EnterGameSingle(int id, short? best, char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
+    public void GridToggle(bool b)
+    {
+        _showGrid = b;
+        PlayerPrefs.SetInt("showGrid", _showGrid ? 1 : 0);
+    }
+
+    public void ParticleToggle(bool b)
+    {
+        _showParticle = b;
+        PlayerPrefs.SetInt("showParticle", _showParticle ? 1 : 0);
+    }
+
+    public void ShowOption()
+    {
+        optionPanel.SetActive(true);
+    }
+
+    public void HideOption()
+    {
+        optionPanel.SetActive(false);
+    }
+
+    public async void EnterGameSingle(int ep, int stage)
     {
         await SceneChange.Instance.LoadSceneAddition("PuzzlePlayScene", false);
         SingleEnterEvent?.Invoke();
         SingleEnterEvent = null;
-        _currentSingleMapId = id;
-        _currentSingleBestMoves = best;
-        PlayGame(data, portalPairDic, rotateAxis, canRotate);
-        await SceneChange.Instance.LoadSceneAddition("PuzzlePlayScene", false);
+
+        var s = _episodes[ep].stages[stage];
+        _currentSingleMapId = s.name;
+        _currentSingleBestMoves = (short)SaveManager.Instance.LoadClear(s.name);
+        if (_currentSingleBestMoves.Value == -1)
+            _currentSingleBestMoves = null;
+
+        var data = StringHelper.DecodeCube(s.mapData);
+        var portalPairDic = PortalPairHelper.ToDict(PortalPairHelper.Decode(s.portalData));
+        var rotInfo = RotateHelper.Decode(s.rotData);
+        
+        PlayGame(data, portalPairDic, rotInfo.Axis, rotInfo.Layers);
+        await SceneChange.Instance.ManualEndFade();
     }
     
     public async UniTask EnterGameUser(long id, Guid userId, short? best, char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
@@ -92,12 +156,20 @@ public class GameManager : MonoBehaviour
     public void GameClearedSingle(int moves)
     {
         isPlaying = false;
-        // 싱글이냐 유저맵이냐에 따라 다름
+        singleResultTMP.text = $"움직임 수: {moves.ToString()}";
+        if (_currentSingleBestMoves == null || moves < _currentSingleBestMoves)
+        {
+            SaveManager.Instance.SaveClear(_currentSingleMapId, moves);
+            singleBestText.SetActive(true);
+        }
+
+        singleClearPanel.SetActive(true);
     }
     
     public async void ReturnToHubMap()
     {
-        await UniTask.Yield();
+        singleClearPanel.SetActive(false);
+        await SceneChange.Instance.UnloadScene("PuzzlePlayScene");
     }
     
     public async UniTaskVoid GameClearedUser(short moves)

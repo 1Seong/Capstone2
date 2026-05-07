@@ -2,6 +2,11 @@ using UnityEngine;
 
 public class MainMenu : MonoBehaviour
 {
+    public void ShowOption()
+    {
+        GameManager.Instance.ShowOption();
+    }
+    
     public void QuitApplication()
     {
 #if UNITY_EDITOR

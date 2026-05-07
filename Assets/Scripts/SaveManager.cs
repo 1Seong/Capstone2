@@ -22,6 +22,7 @@ public class SaveManager : MonoBehaviour
     public void SaveClear(string mapId, int moves)
     {
         PlayerPrefs.SetInt(mapId, moves);
+        PlayerPrefs.Save();
     }
 
     public int LoadClear(string mapId)
