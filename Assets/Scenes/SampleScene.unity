@@ -2065,9 +2065,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a47cfa718d192644d872427e5d022839, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
-  audioMixer: {fileID: 0}
-  bgmSource: {fileID: 0}
-  sfxSource: {fileID: 0}
+  audioMixer: {fileID: 24100000, guid: e71d424c9de71114e9859bd3564d4f41, type: 2}
+  bgmSource: {fileID: 130549039}
+  sfxSource: {fileID: 130549038}
   bgmClips: []
   sfxClips: []
 --- !u!4 &130549042
@@ -17937,7 +17937,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1744858286
 RectTransform:
   m_ObjectHideFlags: 0
@@ -19628,7 +19628,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5924591234120395030, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6123172179824130091, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_Color.a

@@ -33,6 +33,8 @@ public class GameManager : MonoBehaviour
     public event Action UserEnterEvent;
     public event Action SingleClearEvent;
     public event Action SingleEnterEvent;
+    public event Action ParticleOptionEvent;
+    public event Action GridOptionEvent;
     
     [SerializeField] private GameObject testClearPanel;
     [SerializeField] private GameObject userClearPanel;
@@ -79,12 +81,14 @@ public class GameManager : MonoBehaviour
     public void GridToggle(bool b)
     {
         _showGrid = b;
+        GridOptionEvent?.Invoke();
         PlayerPrefs.SetInt("showGrid", _showGrid ? 1 : 0);
     }
 
     public void ParticleToggle(bool b)
     {
         _showParticle = b;
+        ParticleOptionEvent?.Invoke();
         PlayerPrefs.SetInt("showParticle", _showParticle ? 1 : 0);
     }
 
