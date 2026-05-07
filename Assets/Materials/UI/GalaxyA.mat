@@ -110,16 +110,16 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EdgeGlow: 0
-    - _EdgeThickness: 0.5
+    - _EdgeGlow: 0.5
+    - _EdgeThickness: 0.156
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Metallic: 0
-    - _NebulaOpacity: 0.07
-    - _NebulaScale: 5
-    - _NebulaSpeed: 0
+    - _NebulaOpacity: 1
+    - _NebulaScale: 3.71
+    - _NebulaSpeed: 0.138
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
@@ -129,9 +129,9 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _StarBrightness: 0.52
-    - _StarDensity: 147
-    - _StarTwinkle: 0.91
+    - _StarBrightness: 0.51
+    - _StarDensity: 37
+    - _StarTwinkle: 0.52
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -143,10 +143,10 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.08013842, g: 0.06108277, b: 0.15363872, a: 1}
-    - _EdgeColor: {r: 0.22011736, g: 0.15527706, b: 0.2237196, a: 1}
+    - _Color: {r: 0.046704806, g: 0.0467048, b: 0.1159029, a: 1}
+    - _EdgeColor: {r: 0.09433949, g: 0.06751249, b: 0.06751249, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _NebulaColor: {r: 0.5473937, g: 0.46907896, b: 0.6226415, a: 1}
+    - _NebulaColor: {r: 0.1500152, g: 0.11404665, b: 0.18598378, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

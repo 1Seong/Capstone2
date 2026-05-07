@@ -110,14 +110,14 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EdgeGlow: 0.05
+    - _EdgeGlow: 0.88
     - _EdgeThickness: 0.329
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _Metallic: 0
-    - _NebulaOpacity: 0.11
+    - _NebulaOpacity: 0.355
     - _NebulaScale: 5
     - _NebulaSpeed: 0
     - _OcclusionStrength: 1
@@ -129,8 +129,8 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _StarBrightness: 0.91
-    - _StarDensity: 37
+    - _StarBrightness: 0
+    - _StarDensity: 54
     - _StarTwinkle: 0.54
     - _Stencil: 0
     - _StencilComp: 8
