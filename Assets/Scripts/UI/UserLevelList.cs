@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using com.example;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using Postgrest.Exceptions;
 using TMPro;
 using UnityEngine;
@@ -28,9 +29,8 @@ public class UserLevelList : MonoBehaviour
     [SerializeField] private TextMeshProUGUI rightPageNicknameTMP;
     [SerializeField] private GameObject rightPageClearObject;
     [SerializeField] private Button rightPageReportButton;
-    [SerializeField] private Image rightPageLikeImage;
-    [SerializeField] private Sprite rightPageLikeSprite;
-    [SerializeField] private Sprite rightPageUnlikeSprite;
+    //[SerializeField] private Image rightPageLikeImage;
+    [SerializeField] private Transform rightPageLikeFilledImage;
     [SerializeField] private GameObject reportPanel;
     [SerializeField] private Scrollbar scrollBar;
     
@@ -143,7 +143,10 @@ public class UserLevelList : MonoBehaviour
         rightPageNicknameTMP.text = m.Nickname;
         rightPageClearObject.SetActive(m.IsCleared);
         rightPageReportButton.interactable = !m.IsReported;
-        rightPageLikeImage.sprite = _selectedMap.Item1.IsLiked ? rightPageLikeSprite : rightPageUnlikeSprite;
+        if(_selectedMap.Item1.IsLiked)
+            rightPageLikeFilledImage.DOScale(Vector3.one, 0.3f).SetEase(Ease.OutBack);
+        else
+            rightPageLikeFilledImage.DOScale(Vector3.zero, 0.3f).SetEase(Ease.InBack);
         rightPageObject.SetActive(true);
     }
     
@@ -391,12 +394,12 @@ public class UserLevelList : MonoBehaviour
         string likes;
         if (originalIsLiked)
         {
-            rightPageLikeImage.sprite = rightPageUnlikeSprite;
+            rightPageLikeFilledImage.DOScale(Vector3.zero, 0.3f).SetEase(Ease.InBack);
             likes = (--_selectedMap.Item1.Map.NumLikes).ToString();
         }
         else
         {
-            rightPageLikeImage.sprite = rightPageLikeSprite;
+            rightPageLikeFilledImage.DOScale(Vector3.one, 0.3f).SetEase(Ease.OutBack);
             likes = (++_selectedMap.Item1.Map.NumLikes).ToString();
         }
         rightPageLikesTMP.text = likes;
