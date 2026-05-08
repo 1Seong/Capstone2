@@ -20471,7 +20471,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1758046554
 RectTransform:
   m_ObjectHideFlags: 0
@@ -23836,7 +23836,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de5c85527f2b46040a0f6c441c45cf5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RainbowText
-  speed: 0.2
+  speed: 0.26
   scale: 0.96
   saturation: 0.2
   brightness: 0.95

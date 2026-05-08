@@ -454,6 +454,22 @@ PrefabInstance:
       propertyPath: _isTesting
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5701217638749208763, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
+      propertyPath: m_BackGroundColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5701217638749208763, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 0.21832877
+      objectReference: {fileID: 0}
+    - target: {fileID: 5701217638749208763, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 0.1126953
+      objectReference: {fileID: 0}
+    - target: {fileID: 5701217638749208763, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 0.11269531
+      objectReference: {fileID: 0}
     - target: {fileID: 5809774825408019652, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

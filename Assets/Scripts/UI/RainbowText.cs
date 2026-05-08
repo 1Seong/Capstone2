@@ -31,14 +31,12 @@ public class RainbowText : MonoBehaviour
         ApplyColors();
     }
 
-    private void ApplyColors()
+private void ApplyColors()
     {
         if (_isUpdating) return;
         _isUpdating = true;
 
-        // ForceMeshUpdate는 텍스트가 dirty할 때만 실제 재생성 발생
-        // 플래그로 감싸서 이벤트 루프 차단
-        _tmp.ForceMeshUpdate();
+        _tmp.ForceMeshUpdate(true, false);
 
         TMP_TextInfo textInfo = _tmp.textInfo;
         int charCount = textInfo.characterCount;

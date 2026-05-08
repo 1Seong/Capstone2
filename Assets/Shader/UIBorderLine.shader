@@ -7,13 +7,34 @@ Shader "Custom/UIBorderLine"
         _BorderWidth    ("Border Width",     Float) = 2.0
         _InnerColor     ("Inner Color",      Color) = (0,0,0,0.5)
         _UseInnerColor  ("Use Inner Color",  Float) = 0
+
+        // Unity UI 마스킹(ScrollView 등) 연동용 Stencil 프로퍼티
+        _StencilComp    ("Stencil Comparison", Float) = 8
+        _Stencil        ("Stencil ID",         Float) = 0
+        _StencilOp      ("Stencil Operation",  Float) = 0
+        _StencilWriteMask ("Stencil Write Mask", Float) = 255
+        _StencilReadMask  ("Stencil Read Mask",  Float) = 255
+        _ColorMask      ("Color Mask",         Float) = 15
     }
+
     SubShader
     {
         Tags { "Queue"="Transparent" "RenderType"="Transparent" "IgnoreProjector"="True" }
+
+        Stencil
+        {
+            Ref   [_Stencil]
+            Comp  [_StencilComp]
+            Pass  [_StencilOp]
+            ReadMask  [_StencilReadMask]
+            WriteMask [_StencilWriteMask]
+        }
+
         Blend SrcAlpha OneMinusSrcAlpha
         Cull Off
         ZWrite Off
+        ZTest [unity_GUIZTestMode]
+        ColorMask [_ColorMask]
 
         Pass
         {
@@ -63,13 +84,11 @@ Shader "Custom/UIBorderLine"
 
                 if (isBorder)
                 {
-                    // 테두리에도 버텍스 컬러(Tint) 반영
                     half4 tintedBorder = _BorderColor * i.color;
                     return half4(tintedBorder.rgb, tintedBorder.a * texColor.a);
                 }
                 else
                 {
-                    // _InnerColor에 버텍스 컬러를 곱해 Color Tint Transition 반영
                     half4 tintedInner = _InnerColor * i.color;
                     half4 inner = lerp(texColor, tintedInner, _UseInnerColor);
                     return inner;
