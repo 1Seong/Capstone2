@@ -14,13 +14,14 @@ public class GalaxyBackground : MonoBehaviour
     [SerializeField] private float resolutionScale = 0.5f;
 
     private RenderTexture _rt;
-    private RawImage      _rawImage;
+    [SerializeField] private RawImage      _rawImage;
     private int           _cachedWidth;
     private int           _cachedHeight;
 
     private void Awake()
     {
-        _rawImage = GetComponent<RawImage>();
+        if(_rawImage == null)
+            _rawImage = GetComponent<RawImage>();
     }
 
     private void OnEnable()
@@ -66,6 +67,10 @@ public class GalaxyBackground : MonoBehaviour
     private void ReleaseRT()
     {
         if (_rt == null) return;
+        
+        // active RenderTexture가 _rt이면 해제
+        if (RenderTexture.active == _rt)
+            RenderTexture.active = null;
         _rawImage.texture = null;
         _rt.Release();
         Destroy(_rt);

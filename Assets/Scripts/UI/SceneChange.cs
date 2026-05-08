@@ -9,12 +9,13 @@ using UnityEngine.UI;
 public class SceneChange : MonoBehaviour
 {
     public static SceneChange Instance;
-    [SerializeField] private Image background;
+    [SerializeField] private CanvasGroup background;
+    [SerializeField] private Image initialBackground;
     [SerializeField] private GameObject lightLoadingBackground;
 
     private async void Awake()
     {
-        if(Instance != null && Instance != this)
+        if (Instance != null && Instance != this)
         {
             Destroy(this.gameObject);
             return;
@@ -23,8 +24,9 @@ public class SceneChange : MonoBehaviour
         {
             Instance = this;
         }
+
         await UniTask.Delay(TimeSpan.FromSeconds(1.5));
-        await ManualEndFade();
+        await initialBackground.DOFade(0f, 0.5f).AsyncWaitForCompletion().AsUniTask();
     }
 
     public async UniTask LoadScene(string sceneName, bool autoEndFade = true)
