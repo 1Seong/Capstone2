@@ -15,7 +15,7 @@ public class UserLevelCell : MonoBehaviour
         titleTMP.text = title;
         creatorTMP.text = creator;
         likesTMP.text = likes.ToString();
-        bestTMP.text = best == null ? "None" : best.Value.ToString();
+        bestTMP.text = best == null ? "없음" : best.Value.ToString() + " 회";
         clearedObject.SetActive(isCleared);
     }
     
@@ -26,7 +26,7 @@ public class UserLevelCell : MonoBehaviour
 
     public void UpdateBest(short? best)
     {
-        bestTMP.text = best == null ? "None" : best.Value.ToString();
+        bestTMP.text = best == null ? "없음" : best.Value.ToString() + " 회";
     }
 
     public void UpdateCleared(bool isCleared)

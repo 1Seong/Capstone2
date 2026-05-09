@@ -163,7 +163,7 @@ public class GameManager : MonoBehaviour
     public void GameClearedSingle(int moves)
     {
         isPlaying = false;
-        singleResultTMP.text = $"움직임 수: {moves.ToString()}";
+        singleResultTMP.text = $"이동 횟수: {moves.ToString()}";
         if (_currentSingleBestMoves == null || moves < _currentSingleBestMoves)
         {
             SaveManager.Instance.SaveClear(_currentSingleMapId, moves);
@@ -182,7 +182,7 @@ public class GameManager : MonoBehaviour
     public async UniTaskVoid GameClearedUser(short moves)
     {
         isPlaying = false;
-        userResultTMP.text = $"움직임 수: {moves.ToString()}";
+        userResultTMP.text = $"이동 횟수: {moves.ToString()}";
         if(_currentUserBestMoves == null || moves < _currentUserBestMoves)
             userBestText.SetActive(true);
         userClearPanel.SetActive(true);
@@ -221,7 +221,7 @@ public class GameManager : MonoBehaviour
     public void GameClearedTest(int moves)
     {
         isPlaying = false;
-        testResultTMP.text = $"움직임 수: {moves.ToString()}";
+        testResultTMP.text = $"이동 횟수: {moves.ToString()}";
         testClearPanel.SetActive(true);
     }
 

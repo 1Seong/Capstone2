@@ -1,13 +1,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using Quaternion = UnityEngine.Quaternion;
 using Vector3 = UnityEngine.Vector3;
 
@@ -262,11 +261,22 @@ public class PuzzlePlayer : MonoBehaviour
     private bool _isCleared;
     private Stack<Vector3Int> _answer;
     private short _moves = 0;
+    [SerializeField] private TextMeshProUGUI movesText;
+
+    private short Moves
+    {
+        set
+        {
+            _moves = value;
+            movesText.text = _moves.ToString();
+        }
+    }
     [SerializeField] private GameObject[] innerCubes; // empty, x, y, z
     private bool[] _canRotate;
     private Transform[] _layers;
     private int _rotAxis; // 0, x, y, z
     [SerializeField] EdgeCubeInitializer _edgeCubeInitializer;
+    [SerializeField] private Button undoButton;
 
     private struct MapState
     {
@@ -419,7 +429,7 @@ public class PuzzlePlayer : MonoBehaviour
         currentUp = Vector3.up;
         currentRight = Vector3.right;
         currentLeft = Vector3.back;
-        _moves = 0;
+        Moves = 0;
         CurrentGhostCount = 0;
         HasLaser = false;
         
@@ -537,7 +547,7 @@ public class PuzzlePlayer : MonoBehaviour
         if (doSave)
         {
             SaveUndoState();
-            ++_moves;
+            Moves = (short)(_moves+1);
         }
 
         if (_currentGhostCount == 0 && _rotAxis != 0 
@@ -1005,6 +1015,7 @@ public class PuzzlePlayer : MonoBehaviour
             Map = snapshot, PlayerPos = playerModel.position, RoadLeftCount = _roadLeftCount, CurrentGhostCount = _currentGhostCount,
             HasLaser = _hasLaser, PortalDic = new Dictionary<Vector3Int, Vector3Int>(_portalPairDic)
         });
+        undoButton.interactable = true;
     }
 
     public void UndoInputWrapper(InputAction.CallbackContext _) => Undo();
@@ -1024,13 +1035,16 @@ public class PuzzlePlayer : MonoBehaviour
         _answer.Pop();
         if (_undoStack.Count < _answer.Count) 
             _answer.Pop();
-        --_moves;
+        Moves = (short)(_moves-1);
 
         if (doRender)
             Render();
         
         HasLaser = s.HasLaser;
         RepositionCamera(false);
+        
+        if(_undoStack.Count == 0)
+            undoButton.interactable = false;
     }
 
     // 이동 및 아이템 사용할때 사용 -> 즉 타일이 색칠

@@ -139,7 +139,7 @@ public class UserLevelList : MonoBehaviour
         rightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = m.Map.Desc;
         rightPageIdTMP.text = m.Map.MapId.ToString();
         rightPageLikesTMP.text = m.Map.NumLikes.ToString();
-        rightPageBestMovesTMP.text = m.Map.BestMoves == null ? "none" : m.Map.BestMoves.Value.ToString();
+        rightPageBestMovesTMP.text = m.Map.BestMoves == null ? "없음" : m.Map.BestMoves.Value.ToString() + " 회";
         rightPageNicknameTMP.text = m.Nickname;
         rightPageClearObject.SetActive(m.IsCleared);
         rightPageReportButton.interactable = !m.IsReported;
