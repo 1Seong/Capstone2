@@ -109,6 +109,7 @@ public class MapEditor : MonoBehaviour
     private bool[] _canRotate;
     [SerializeField] private GameObject leftPanel;
     [SerializeField] private Transform[] innerCubes;
+    [SerializeField] private Button undoButton;
     
     private struct MapState
     {
@@ -125,6 +126,7 @@ public class MapEditor : MonoBehaviour
         var snapshot = (char[,,])_map.Clone();
         _undoStack.Push(new MapState()
             { Map = snapshot, PlayerPos = playerModel.position, PlayerActive = playerModel.gameObject.activeSelf});
+        undoButton.interactable = true;
     }
 
     public void Undo(bool doRender = true)
@@ -143,6 +145,9 @@ public class MapEditor : MonoBehaviour
 
         if (doRender)
             Render();
+
+        if (_undoStack.Count == 0)
+            undoButton.interactable = false;
     }
     
     private void Render()
@@ -616,11 +621,11 @@ public class MapEditor : MonoBehaviour
             
             escPanel.SetActive(!escPanel.activeSelf);
         }
-        else if(Input.GetKeyDown(KeyCode.D))
+        else if(Input.GetKeyDown(KeyCode.D) && leftPanel.activeSelf)
         {
             SetCurrentTileToRoad();
         }
-        else if (Input.GetKeyDown(KeyCode.E))
+        else if (Input.GetKeyDown(KeyCode.E) && leftPanel.activeSelf)
         {
             SetCurrentTileToEraser();
         }

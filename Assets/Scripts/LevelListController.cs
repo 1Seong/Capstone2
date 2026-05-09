@@ -160,7 +160,7 @@ public class LevelListController : MonoBehaviour
         mapRightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = m.Desc;
         mapRightPageIdTMP.text = m.MapId.ToString();
         mapRightPageLikesTMP.text = m.NumLikes.ToString();
-        mapRightPageBestMovesTMP.text = m.BestMoves == null ? "none" : m.BestMoves.Value.ToString();
+        mapRightPageBestMovesTMP.text = m.BestMoves == null ? "없음" : m.BestMoves.Value.ToString() + " 회";
         mapRightPageObject.SetActive(true);
     }
     
