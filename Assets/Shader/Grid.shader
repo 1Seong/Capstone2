@@ -2,14 +2,14 @@ Shader "Custom/Grid"
 {
     Properties
     {
-        _GridColor ("Grid Color", Color) = (1, 1, 1, 0.3)
-        _LineThickness ("Line Thickness", Range(0.001, 0.05)) = 0.02
-        _GridSize ("Grid Size", Float) = 10.0
+        _GridColor     ("Grid Color",      Color)        = (1, 1, 1, 0.3)
+        _LineThickness ("Line Thickness",  Range(0.001, 0.05)) = 0.02
+        _GridSize      ("Grid Size",       Float)        = 10.0
     }
 
     SubShader
     {
-        Tags { "RenderType"="Transparent" "Queue"="Overlay" "RenderPipeline"="UniversalPipeline" }
+        Tags { "RenderType"="Transparent" "Queue"="Transparent-1" "RenderPipeline"="UniversalPipeline" }
         Blend SrcAlpha OneMinusSrcAlpha
         ZWrite Off
         ZTest LEqual
@@ -41,11 +41,11 @@ Shader "Custom/Grid"
 
             half4 frag(Varyings IN) : SV_Target
             {
-                float2 gridUV = frac(IN.uv * _GridSize);
-                float  gridLine = step(1.0 - _LineThickness, gridUV.x)  // 오른쪽
-                + step(gridUV.x, _LineThickness)          // 왼쪽
-                + step(1.0 - _LineThickness, gridUV.y)   // 위쪽
-                + step(gridUV.y, _LineThickness);         // 아래쪽
+                float2 gridUV  = frac(IN.uv * _GridSize);
+                float  gridLine = step(1.0 - _LineThickness, gridUV.x)
+                                + step(gridUV.x, _LineThickness)
+                                + step(1.0 - _LineThickness, gridUV.y)
+                                + step(gridUV.y, _LineThickness);
                 clip(gridLine - 0.001);
                 return half4(_GridColor.rgb, _GridColor.a * saturate(gridLine));
             }

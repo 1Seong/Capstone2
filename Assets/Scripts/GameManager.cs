@@ -28,6 +28,8 @@ public class EpisodeData : ScriptableObject
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
+    private static readonly int PulseEnabled = Shader.PropertyToID("_PulseEnabled");
+    private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
     public bool isPlaying = true;
     public event Action UserClearEvent;
     public event Action UserEnterEvent;
@@ -61,6 +63,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Toggle particleToggle;
 
     [SerializeField] private GameObject optionPanel;
+    [SerializeField] private GameObject color1SelectImage;
+    [SerializeField] private GameObject color2SelectImage;
+    [SerializeField] private Material paintedMat;
+    [SerializeField] private Toggle pulseToggle;
+    [SerializeField] private Material roadMat;
+    [SerializeField] private Color color1;
+    [SerializeField] private Color color2;
     
     private void Awake()
     {
@@ -79,6 +88,20 @@ public class GameManager : MonoBehaviour
         _showParticle = PlayerPrefs.GetInt("showParticle", 1) == 1;
         gridToggle.isOn = _showGrid;
         particleToggle.isOn = _showParticle;
+        paintedMat.SetFloat(PulseEnabled, PlayerPrefs.GetInt("pulse", 1));
+        pulseToggle.isOn = PlayerPrefs.GetInt("pulse", 1) == 1;
+        color1SelectImage.SetActive(false);
+        color2SelectImage.SetActive(false);
+        if (PlayerPrefs.GetInt("roadColor", 0) == 0)
+        {
+            color1SelectImage.SetActive(true);
+            roadMat.SetColor(BaseColor, color1);
+        }
+        else
+        {
+            color2SelectImage.SetActive(true);
+            roadMat.SetColor(BaseColor, color2);
+        }
     }
 
     public void GridToggle(bool b)
@@ -93,6 +116,28 @@ public class GameManager : MonoBehaviour
         _showParticle = b;
         ParticleOptionEvent?.Invoke();
         PlayerPrefs.SetInt("showParticle", _showParticle ? 1 : 0);
+    }
+
+    public void PulseToggle(bool b)
+    {
+        paintedMat.SetFloat(PulseEnabled, b ? 1 : 0);
+        PlayerPrefs.SetInt("pulse", b  ? 1 : 0);
+    }
+
+    public void SetColor1()
+    {
+        roadMat.SetColor(BaseColor, color1);
+        color1SelectImage.SetActive(true);
+        color2SelectImage.SetActive(false);
+        PlayerPrefs.SetInt("roadColor", 0);
+    }
+    
+    public void SetColor2()
+    {
+        roadMat.SetColor(BaseColor, color2);
+        color2SelectImage.SetActive(true);
+        color1SelectImage.SetActive(false);
+        PlayerPrefs.SetInt("roadColor", 1);
     }
 
     public void ShowOption()

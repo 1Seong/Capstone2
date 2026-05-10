@@ -1,4 +1,4 @@
-using System;
+
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -8,8 +8,10 @@ public class PuzzleTile : MonoBehaviour
     
     [SerializeField] private MeshRenderer meshRenderer;
     [SerializeField] private MeshRenderer arrowRenderer;
+    [SerializeField] private MeshRenderer quadRenderer;
     [SerializeField] private Material[] mats;
     [SerializeField] private Material[] arrowMats;
+    [SerializeField] private Material[] quadMats;
 
     // 이펙트나 애니메이션 없이 단순 렌더링
     // 초기화나 undo 할때 사용
@@ -20,9 +22,10 @@ public class PuzzleTile : MonoBehaviour
 
         meshRenderer.enabled = false;
         arrowRenderer.gameObject.SetActive(false);
-        if (tile != (char)TileType.PortalIn && transform.childCount == 2)
+        quadRenderer.gameObject.SetActive(false);
+        if (tile != (char)TileType.PortalIn && transform.childCount == 3)
         {
-            transform.GetChild(1).gameObject.SetActive(false);
+            transform.GetChild(2).gameObject.SetActive(false);
         }
 
         int id;
@@ -31,6 +34,12 @@ public class PuzzleTile : MonoBehaviour
             case (char)TileType.Empty:
             case (char)TileType.Player:
                 return;
+            case (char)TileType.Road:
+            case (char)TileType.Painted:
+                id = tile - (int)TileType.Empty;
+                meshRenderer.enabled = true;
+                meshRenderer.material = mats[id];
+                break;
             case (char)TileType.DashXp:
             case (char)TileType.DashXpPainted:
                 id = tile - (int)TileType.Empty;
@@ -89,6 +98,8 @@ public class PuzzleTile : MonoBehaviour
                 id = tile - (int)TileType.Empty;
                 meshRenderer.enabled = true;
                 meshRenderer.material = mats[id];
+                quadRenderer.gameObject.SetActive(true);
+                quadRenderer.material = quadMats[id];
                 break;
         }
     }

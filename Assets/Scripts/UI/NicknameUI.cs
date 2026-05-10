@@ -5,6 +5,7 @@ using UnityEngine;
 public class NicknameUI : MonoBehaviour
 {
     [SerializeField] private GameObject panel;
+    [SerializeField] private GameObject signoutPanel;
     [SerializeField] private TMP_InputField inputField;
     [SerializeField] private TextMeshProUGUI errorTMP;
     
@@ -74,6 +75,7 @@ public class NicknameUI : MonoBehaviour
         }
         
         panel.SetActive(false);
+        signoutPanel.SetActive(true);
         PopUpManager.Instance.Show("닉네임 설정 완료.");
         SceneChange.Instance.LightLoading(false);
     }
