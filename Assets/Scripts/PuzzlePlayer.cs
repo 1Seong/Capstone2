@@ -609,13 +609,15 @@ public class PuzzlePlayer : MonoBehaviour
         switch (before)
         {
             case (char)TileType.PortalIn:
+                //Debug.Log(before);
                 await playerModel.DOScale(Vector3.zero, playerMoveDuration).SetEase(Ease.InOutSine)
                     .AsyncWaitForCompletion().AsUniTask();
-                playerModel.position = _portalPairDic[new Vector3Int(x, y, z)];
-                _answer.Push(_portalPairDic[new Vector3Int(x, y, z)]);
+                var afterPos = _portalPairDic[new Vector3Int(x, y, z)];
+                playerModel.position = afterPos;
+                _answer.Push(afterPos);
                 await playerModel.DOScale(Vector3.one, playerMoveDuration).SetEase(Ease.InOutSine)
                     .AsyncWaitForCompletion().AsUniTask();
-                await PaintWithRender(x, y, z, true);
+                await PaintWithRender(afterPos.x, afterPos.y, afterPos.z, true);
                 --_roadLeftCount;
                 RepositionCamera();
                 break;
@@ -1056,7 +1058,7 @@ public class PuzzlePlayer : MonoBehaviour
         
         var tile = TileHelper.PaintTable[before];
         _map[layer, row, col] = tile;
-        
+        //Debug.Log(tile);
         if (useSimpleRender)
         {
             _tiles[layer, row, col].SimpleRender(tile);

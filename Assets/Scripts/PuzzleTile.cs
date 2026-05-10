@@ -17,6 +17,7 @@ public class PuzzleTile : MonoBehaviour
     // 초기화나 undo 할때 사용
     public void SimpleRender(char tile)
     {
+        //Debug.Log(tile);
         if (tile == _tileCache) return;
         _tileCache = tile;
 
