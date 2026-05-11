@@ -12,6 +12,8 @@ public class CellPulse : MonoBehaviour
 
     static readonly int ID_EmissionColor    = Shader.PropertyToID("_EmissionColor");
     static readonly int ID_EmissionStrength = Shader.PropertyToID("_EmissionStrength");
+    static readonly int ID_BaseColor = Shader.PropertyToID("_BaseColor");
+    private Color _originalBaseColor;
 
     float _phaseOffset;
     bool  _isPulsing;
@@ -19,11 +21,9 @@ public class CellPulse : MonoBehaviour
     public void StartPulse(float delay = 0f)
     {
         _pulseMaterial = GetComponent<MeshRenderer>().material;
-
-        // 원본값 저장
         _originalEmissionColor    = _pulseMaterial.GetColor(ID_EmissionColor);
         _originalEmissionStrength = _pulseMaterial.GetFloat(ID_EmissionStrength);
-
+        _originalBaseColor        = _pulseMaterial.GetColor(ID_BaseColor);
         _phaseOffset = delay;
         _isPulsing   = true;
     }
@@ -31,11 +31,10 @@ public class CellPulse : MonoBehaviour
     void Update()
     {
         if (!_isPulsing) return;
-
         float phase = Mathf.PingPong((Time.time - _phaseOffset) / pulseDuration, 1f);
-
         _pulseMaterial.SetColor(ID_EmissionColor,    Color.Lerp(_originalEmissionColor, highlightColor, phase));
         _pulseMaterial.SetFloat(ID_EmissionStrength, Mathf.Lerp(_originalEmissionStrength, pulseIntensity, phase));
+        _pulseMaterial.SetColor(ID_BaseColor,        Color.Lerp(_originalBaseColor, highlightColor, phase));
     }
 
     public void StopPulse()
@@ -43,5 +42,6 @@ public class CellPulse : MonoBehaviour
         _isPulsing = false;
         _pulseMaterial.SetColor(ID_EmissionColor,    _originalEmissionColor);
         _pulseMaterial.SetFloat(ID_EmissionStrength, _originalEmissionStrength);
+        _pulseMaterial.SetColor(ID_BaseColor,        _originalBaseColor);
     }
 }

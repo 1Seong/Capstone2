@@ -141,7 +141,7 @@ public class PuzzlePlayer : MonoBehaviour
                 int x = (int)p.x, y = (int)p.y, z = (int)p.z;
                 bool d1 = true, d2 = true, d3 = true, d4 = true, d5 = true, d6 = true;
                 var depth = 1;
-                var offset = 0.06f;
+                var offset = 0.08f;
                 while (d1 || d2 || d3 || d4 || d5 || d6)
                 {
                     if (d1)

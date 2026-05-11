@@ -20229,6 +20229,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4651151970298180844, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: highlightColor.b
+      value: 0.010189516
+      objectReference: {fileID: 0}
+    - target: {fileID: 4651151970298180844, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: highlightColor.g
+      value: 0.5666912
+      objectReference: {fileID: 0}
+    - target: {fileID: 4651151970298180844, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: highlightColor.r
+      value: 0.68733144
+      objectReference: {fileID: 0}
     - target: {fileID: 4913488047174711545, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

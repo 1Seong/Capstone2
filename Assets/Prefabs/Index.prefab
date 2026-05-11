@@ -119,9 +119,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 063ad46c9a200af4cb6b36de7fc22c80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  highlightColor: {r: 0.70889485, g: 0.58755887, b: 0.025795294, a: 1}
-  pulseIntensity: 2.3
-  pulseDuration: 1
+  highlightColor: {r: 0.70980394, g: 0.47058532, b: 0.011764689, a: 1}
+  pulseIntensity: 2
+  pulseDuration: 0.8
 --- !u!33 &6041014543123988665
 MeshFilter:
   m_ObjectHideFlags: 0
