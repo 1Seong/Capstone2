@@ -15,6 +15,14 @@ Shader "Custom/WorldSpaceGradient"
     {
         Tags { "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }
 
+        // 중심 큐브가 렌더되는 픽셀에 Stencil 값 1 기록
+        Stencil
+        {
+            Ref 1
+            Comp Always
+            Pass Replace
+        }
+
         Pass
         {
             HLSLPROGRAM
@@ -47,7 +55,6 @@ Shader "Custom/WorldSpaceGradient"
 
             half4 frag(Varyings IN) : SV_Target
             {
-                // 큐브 중심 기준으로 -0.5~0.5 정규화 후 0~1로
                 float3 t = (IN.worldPos - _CubeCenter.xyz) / _CubeSize + 0.5;
                 t = saturate(t);
 
@@ -55,10 +62,9 @@ Shader "Custom/WorldSpaceGradient"
                            + _ColorY.rgb * t.y
                            + _ColorZ.rgb * t.z;
 
-                // 채도 살짝 낮추고 밝기 lift (축 원색과 분리)
                 float luma = dot(col, float3(0.299, 0.587, 0.114));
                 col = lerp(col, luma, _Luma);
-                col = lerp(col, float3(1,1,1), _Whiteness); // 밝고 부드러운 톤
+                col = lerp(col, float3(1,1,1), _Whiteness);
                 col = col * 0.9 + 0.07;
 
                 return half4(col, 1);

@@ -24,7 +24,8 @@ public class SceneChange : MonoBehaviour
         {
             Instance = this;
         }
-
+        
+        //Shader.WarmupAllShaders();
         await UniTask.Delay(TimeSpan.FromSeconds(1.5));
         await initialBackground.DOFade(0f, 0.5f).AsyncWaitForCompletion().AsUniTask();
     }
@@ -44,7 +45,8 @@ public class SceneChange : MonoBehaviour
 
         op.allowSceneActivation = true;
         await UniTask.WaitUntil(() => op.isDone);
-
+        
+        //Shader.WarmupAllShaders();
         for (int i = 0; i != 5; ++i)
             await UniTask.WaitForEndOfFrame(this);
 

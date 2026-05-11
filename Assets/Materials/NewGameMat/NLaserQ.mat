@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-686040384887029562
+--- !u!114 &-2821641984771421427
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
@@ -20,8 +20,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: NRoad
-  m_Shader: {fileID: 4800000, guid: 12efbd2a82ec16b409735438e468ef53, type: 3}
+  m_Name: NLaserQ
+  m_Shader: {fileID: 4800000, guid: 5a47c69908a8ea149bb4bc66e1a8ae70, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -109,38 +109,38 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EmissionStrength: 0
+    - _EmissionStrength: 2.5
     - _EnvironmentReflections: 1
-    - _FaceAlpha: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _GridAlpha: 1
-    - _GridDarkness: 1
-    - _GridWidth: 0.058
+    - _GlowRadius: 0.4
+    - _InnerRadius: 0.187
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
-    - _PulseEnabled: 0
-    - _PulseMax: 1.5
-    - _PulseMin: 0.2
-    - _PulsePeriod: 1.5
+    - _PulseAmount: 0.04
+    - _PulseSpeed: 0.27
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _RotationSpeed: -3
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
+    - _StarScale: 0.33
+    - _StarSharpness: 8
     - _Surface: 0
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 0.09433949, g: 0.06751249, b: 0.06751249, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0.9029649, g: 0.9029649, b: 0.9029649, a: 1}
-    - _GridColor: {r: 0.6226415, g: 0.6226415, b: 0.6226415, a: 1}
+    - _ColorInner: {r: 1, g: 0.9225331, b: 0.39218324, a: 1}
+    - _ColorOuter: {r: 1, g: 0.4, b: 0.1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

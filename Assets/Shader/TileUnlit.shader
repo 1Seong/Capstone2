@@ -5,12 +5,10 @@ Shader "Custom/TileUnlit"
         _BaseColor        ("베이스 색상",       Color) = (0.2, 0.2, 0.2, 1)
         _EmissionColor    ("Emission 색상",     Color) = (0.3, 0.6, 1.0, 1)
         _EmissionStrength ("Emission 강도",     Range(0, 5)) = 0.0
-        _FaceAlpha        ("면 투명도",         Range(0, 1)) = 1.0
 
         _GridColor        ("그리드 선 색상",    Color) = (0.0, 0.0, 0.0, 1)
         _GridWidth        ("그리드 선 두께",    Range(0, 0.2)) = 0.04
         _GridDarkness     ("그리드 선 강도",    Range(0, 1)) = 0.6
-        _GridAlpha        ("그리드 선 투명도",  Range(0, 1)) = 1.0
 
         [Header(Pulse)]
         _PulseEnabled     ("Pulse 활성화",        Float) = 0.0
@@ -21,11 +19,10 @@ Shader "Custom/TileUnlit"
 
     SubShader
     {
-        Tags { "Queue"="Transparent" "RenderType"="Transparent" "RenderPipeline"="UniversalPipeline" }
+        Tags { "Queue"="Geometry" "RenderType"="Opaque" "RenderPipeline"="UniversalPipeline" }
         Cull Back
-        ZWrite Off
+        ZWrite On
         ZTest LEqual
-        Blend SrcAlpha OneMinusSrcAlpha
 
         Pass
         {
@@ -39,11 +36,9 @@ Shader "Custom/TileUnlit"
                 float4 _BaseColor;
                 float4 _EmissionColor;
                 float  _EmissionStrength;
-                float  _FaceAlpha;
                 float4 _GridColor;
                 float  _GridWidth;
                 float  _GridDarkness;
-                float  _GridAlpha;
                 float  _PulseEnabled;
                 float  _PulseMin;
                 float  _PulseMax;
@@ -90,15 +85,12 @@ Shader "Custom/TileUnlit"
                 }
 
                 float3 faceCol  = _BaseColor.rgb + _EmissionColor.rgb * emission;
-
                 float2 grid     = abs(frac(IN.uv) - 0.5) * 2.0;
                 float  gridLine = smoothstep(1.0 - _GridWidth * 2.0, 1.0, max(grid.x, grid.y));
+                float3 gridCol  = lerp(faceCol, _GridColor.rgb, _GridDarkness);
+                float3 col      = lerp(faceCol, gridCol, gridLine);
 
-                float3 gridCol = lerp(faceCol, _GridColor.rgb, _GridDarkness);
-                float3 col     = lerp(faceCol, gridCol, gridLine);
-                float  alpha   = lerp(_FaceAlpha, _GridAlpha, gridLine);
-
-                return half4(col, saturate(alpha));
+                return half4(col, 1.0);
             }
             ENDHLSL
         }

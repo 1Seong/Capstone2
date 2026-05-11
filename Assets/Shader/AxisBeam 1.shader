@@ -1,4 +1,4 @@
-Shader "Custom/AxisBeam"
+Shader "Custom/AxisBeam1"
 {
     Properties
     {
