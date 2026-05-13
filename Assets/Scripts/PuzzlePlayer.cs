@@ -627,6 +627,7 @@ public class PuzzlePlayer : MonoBehaviour
                 break;
             
             case (char)TileType.Inv:
+                RippleEffectController.Instance.Play(new Vector3(x, y, z));
                 _roadLeftCount = 0;
                 for (var i = 0; i != CubeSize; ++i)
                 for (var j = 0; j != CubeSize; ++j)
