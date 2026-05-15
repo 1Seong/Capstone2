@@ -32,6 +32,7 @@ Shader "Custom/TileUnlit"
             Ref 1
             Comp Always
             Pass [_StencilOp]
+            ZFail Keep
         }
 
         Pass
