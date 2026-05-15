@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using com.example;
 using Cysharp.Threading.Tasks;
 using Postgrest.Exceptions;
@@ -53,89 +54,77 @@ public class LevelListController : MonoBehaviour
 
     private async void Start()
     {
-        List<MapCreating> maps = new();
-        List<Map> uploadedMaps;
+        // 두 fetch 동시 실행
+        (List<MapCreating>, List<Map>) result;
         try
         {
-            maps = await DBManager.Instance.FetchMapCreatingAsync();
+            result = await UniTask.WhenAll(
+                DBManager.Instance.FetchMapCreatingAsync().AsUniTask(),
+                DBManager.Instance.FetchMyMapAsync().AsUniTask()
+            );
         }
         catch (Exception e)
         {
             Debug.LogWarning(e.Message);
-            PopUpManager.Instance.Show("제작 중인 맵을 가져올 수 없습니다.");
-        }
-        
-        // 1. 버튼 오브젝트 먼저 다 생성
-        var entries = new List<Tuple<MapCreating, RawImage, Button>>();
-        for (int i = 0; i < maps.Count; i++)
-        {
-            var o = Instantiate(levelButtonPrefab, levelButtonParent);
-            o.GetComponentInChildren<TextMeshProUGUI>().text = maps[i].Name;
-            entries.Add(new Tuple<MapCreating, RawImage, Button>(
-                maps[i],
-                o.GetComponent<RawImage>(),
-                o.GetComponent<Button>()
-            ));
-        }
-
-        // 2. 썸네일 로딩 전부 동시에
-        await UniTask.WhenAll(entries.Select(e =>
-            string.IsNullOrEmpty(e.Item1.ThumbnailUrl)
-                ? UniTask.CompletedTask
-                : LoadThumbnailAsync(e.Item2, e.Item1.ThumbnailUrl)
-        ));
-
-        // 3. 버튼 이벤트 등록
-        foreach (var e in entries)
-        {
-            var map = e.Item1;
-            var tex = e.Item2.texture;
-            var btn = e.Item3;
-            var m = new Tuple<MapCreating, Texture, Button>(map, tex, btn);
-            btn.onClick.AddListener(() => SelectedMapCreating = m);
-        }
-        
-        try
-        {
-            uploadedMaps = await DBManager.Instance.FetchMyMapAsync();
-        }
-        catch (Exception e)
-        {
-            Debug.LogWarning(e.Message);
-            PopUpManager.Instance.Show("업로드한 맵을 가져올 수 없습니다.");
+            PopUpManager.Instance.Show("맵을 가져올 수 없습니다.");
             await SceneChange.Instance.ManualEndFade();
             return;
         }
-        // 1. 버튼 오브젝트 먼저 다 생성
-        var mapEntries = new List<Tuple<Map, RawImage, Button>>();
-        for (int i = 0; i < uploadedMaps.Count; i++)
+        // 예외 처리는 아래에서
+
+        // -- 제작 중인 맵 버튼 생성 --
+        var entries = new List<(MapCreating map, RawImage img, Button btn)>();
+        foreach (var map in result.Item1)
+        {
+            var o = Instantiate(levelButtonPrefab, levelButtonParent);
+            o.GetComponentInChildren<TextMeshProUGUI>().text = map.Name;
+            entries.Add((map, o.GetComponent<RawImage>(), o.GetComponent<Button>()));
+        }
+
+        // -- 업로드된 맵 버튼 생성 --
+        var mapEntries = new List<(Map map, RawImage img, Button btn)>();
+        foreach (var map in result.Item2)
         {
             var o = Instantiate(levelButtonPrefab, mapLevelButtonParent);
-            o.GetComponentInChildren<TextMeshProUGUI>().text = uploadedMaps[i].Name;
-            mapEntries.Add(new Tuple<Map, RawImage, Button>(
-                uploadedMaps[i],
-                o.GetComponent<RawImage>(),
-                o.GetComponent<Button>()
-            ));
+            o.GetComponentInChildren<TextMeshProUGUI>().text = map.Name;
+            mapEntries.Add((map, o.GetComponent<RawImage>(), o.GetComponent<Button>()));
         }
 
-        // 2. 썸네일 로딩 전부 동시에
-        await UniTask.WhenAll(mapEntries.Select(e =>
-            string.IsNullOrEmpty(e.Item1.ThumbnailUrl)
-                ? UniTask.CompletedTask
-                : LoadThumbnailAsync(e.Item2, e.Item1.ThumbnailUrl)
-        ));
-
-        // 3. 버튼 이벤트 등록
+        // 버튼 이벤트 등록
+        foreach (var e in entries)
+        {
+            var map = e.map;
+            e.btn.onClick.AddListener(() =>
+                SelectedMapCreating = new Tuple<MapCreating, Texture, Button>(map, e.img.texture, e.btn));
+        }
         foreach (var e in mapEntries)
         {
-            var map = e.Item1;
-            var tex = e.Item2.texture;
-            var btn = e.Item3;
-            var m = new Tuple<Map, Texture, Button>(map, tex, btn);
-            btn.onClick.AddListener(() => SelectedMap = m);
+            var map = e.map;
+            e.btn.onClick.AddListener(() =>
+                SelectedMap = new Tuple<Map, Texture, Button>(map, e.img.texture, e.btn));
+        }
+        
+        // 썸네일은 화면 표시 후 백그라운드에서 로딩
+        try
+        {
+            await UniTask.WhenAll(
+                entries
+                    .Where(e => !string.IsNullOrEmpty(e.map.ThumbnailUrl))
+                    .Select(e => LoadThumbnailAsync(e.img, e.map.ThumbnailUrl))
+                    .Concat(
+                        mapEntries
+                            .Where(e => !string.IsNullOrEmpty(e.map.ThumbnailUrl))
+                            .Select(e => LoadThumbnailAsync(e.img, e.map.ThumbnailUrl))
+                    )
+            );
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
+            PopUpManager.Instance.Show("썸네일 로드 실패");
         }
 
+        // 버튼이 다 생성됐으니 화면 먼저 표시
         await SceneChange.Instance.ManualEndFade();
     }
 

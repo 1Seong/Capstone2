@@ -7,9 +7,6 @@ public class BillboardQuad : MonoBehaviour
 
     [SerializeField] private BillboardMode mode = BillboardMode.Free;
 
-    [Header("Free 모드")]
-    [SerializeField] private float forwardOffset = 0.52f;
-
     [Header("AxisLocked 모드")]
     [SerializeField] private DashDirection dashDirection = DashDirection.XPositive;
 
@@ -35,8 +32,6 @@ public class BillboardQuad : MonoBehaviour
     private void Free()
     {
         transform.rotation = _cam.rotation;
-        Vector3 toCam      = (_cam.position - _parent.position).normalized;
-        transform.position = _parent.position + toCam * forwardOffset;
     }
 
     private void AxisLocked()

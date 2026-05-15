@@ -9836,6 +9836,25 @@ RectTransform:
   m_AnchoredPosition: {x: 365, y: -189}
   m_SizeDelta: {x: 100, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1178303931 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4691252790749619803, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+  m_PrefabInstance: {fileID: 3783019883035890095}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1178303932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1178303931}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eee1e75232891c3439f6be2dcab85189, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BillboardQuad
+  mode: 0
+  dashDirection: 0
 --- !u!1 &1178960895
 GameObject:
   m_ObjectHideFlags: 0
@@ -19764,6 +19783,10 @@ PrefabInstance:
       propertyPath: m_hasFontAssetChanged
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 233710831511761601, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
     - target: {fileID: 252779775919228887, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
       propertyPath: m_Sprite
       value: 
@@ -19971,6 +19994,22 @@ PrefabInstance:
     - target: {fileID: 1721586217383002122, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 1849512539815995259, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1849512539815995259, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1849512539815995259, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1849512539815995259, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1887922975337429079, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
       propertyPath: m_SizeDelta.x
@@ -20281,6 +20320,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4638692991591981866, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4691252790749619803, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
@@ -20683,6 +20726,9 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1266251375}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4691252790749619803, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1178303932}
     - targetCorrespondingSourceObject: {fileID: 4412440583484333103, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3783019883035890097}

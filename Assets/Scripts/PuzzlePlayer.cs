@@ -454,7 +454,7 @@ public class PuzzlePlayer : MonoBehaviour
             }
         }
         _edgeCubeInitializer.Initialize(_canRotate, _rotAxis, CubeSize);
-        RepositionCamera();
+        RepositionCamera(false);
     }
 
     public void SetMapData(char[,,] map, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, 

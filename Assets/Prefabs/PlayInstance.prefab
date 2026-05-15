@@ -8095,6 +8095,7 @@ MonoBehaviour:
   playerModel: {fileID: 382851662945187795}
   playerMoveDuration: 0.17
   playerMoveEase: 21
+  _isMoving: 0
   ghostText: {fileID: 9167505553736373240}
   cam: {fileID: 5701217638749208763}
   pivot: {fileID: 1345047583733573138}
@@ -8120,12 +8121,14 @@ MonoBehaviour:
   _isTesting: 1
   _isSingle: 0
   _isUser: 0
+  movesText: {fileID: 0}
   innerCubes:
   - {fileID: 2242323408655496601}
   - {fileID: 4020432163345773791}
   - {fileID: 3710195643656876900}
   - {fileID: 4608503529103388918}
   _edgeCubeInitializer: {fileID: 4931948948835171911}
+  undoButton: {fileID: 0}
 --- !u!1 &2242323408655496601
 GameObject:
   m_ObjectHideFlags: 0
@@ -16090,6 +16093,7 @@ GameObject:
   - component: {fileID: 382851662945187795}
   - component: {fileID: 3171440588950095627}
   - component: {fileID: 2790013511282022634}
+  - component: {fileID: 208650118214169407}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -16108,7 +16112,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 5809774825408019652}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -16145,7 +16149,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 3616902b5c28a0a40ad0bb641ba706e9, type: 2}
+  - {fileID: 2100000, guid: 3a4754e59145a9141a622927fe48ce64, type: 2}
   - {fileID: 2100000, guid: b5b28ca50a3691e46877e1ee474f114d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -16170,6 +16174,20 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &208650118214169407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6929618918362382261}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eee1e75232891c3439f6be2dcab85189, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BillboardQuad
+  mode: 0
+  dashDirection: 0
 --- !u!1 &6976487166068842885
 GameObject:
   m_ObjectHideFlags: 0

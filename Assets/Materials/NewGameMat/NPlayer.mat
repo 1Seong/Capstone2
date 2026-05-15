@@ -109,18 +109,22 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EmissionStrength: 0
+    - _EmissionStrength: 1.47
     - _EnvironmentReflections: 1
     - _FaceAlpha: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
     - _GridAlpha: 1
-    - _GridDarkness: 0.6
-    - _GridWidth: 0.04
+    - _GridDarkness: 1
+    - _GridWidth: 0.2
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
+    - _PulseEnabled: 1
+    - _PulseMax: 1.5
+    - _PulseMin: 0.8
+    - _PulsePeriod: 4
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _Smoothness: 0.5
@@ -133,10 +137,10 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 1, g: 0, b: 0, a: 1}
+    - _BaseColor: {r: 1, g: 0.26130137, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _GridColor: {r: 0, g: 0, b: 0, a: 1}
+    - _EmissionColor: {r: 1, g: 0.38488096, b: 0, a: 1}
+    - _GridColor: {r: 0.89411765, g: 0.41463348, b: 0, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
