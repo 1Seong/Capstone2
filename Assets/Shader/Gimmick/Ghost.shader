@@ -77,20 +77,21 @@ Shader "Custom/Gimmick/Ghost"
             }
             half4 frag(Varyings IN) : SV_Target
             {
-                // 카메라 → 픽셀 방향 레이가 중심 큐브 AABB를 통과하는지 체크
-                float3 rayOrigin = _WorldSpaceCameraPos;
-                float3 rayDir    = normalize(IN.worldPos - rayOrigin);
-                float3 boxMin    = _CubeCenter.xyz - _CubeSize * 0.5;
-                float3 boxMax    = _CubeCenter.xyz + _CubeSize * 0.5;
-                float3 invDir    = 1.0 / rayDir;
-                float3 t0        = (boxMin - rayOrigin) * invDir;
-                float3 t1        = (boxMax - rayOrigin) * invDir;
-                float3 tMin      = min(t0, t1);
-                float3 tMax      = max(t0, t1);
-                float  tEnter    = max(max(tMin.x, tMin.y), tMin.z);
-                float  tExit     = min(min(tMax.x, tMax.y), tMax.z);
+                // Orthographic: 레이가 카메라 forward 방향으로 평행
+                float3 rayDir    = -UNITY_MATRIX_V[2].xyz;
+                // 빌보드 월드 포지션에서 카메라 forward 역방향으로 충분히 뒤에서 시작
+                float3 rayOrigin = IN.worldPos - rayDir * 1000.0;
 
-                // 레이가 큐브를 통과하고, 빌보드가 큐브 뒤에 있으면 discard
+                float3 boxMin = _CubeCenter.xyz - _CubeSize * 0.5;
+                float3 boxMax = _CubeCenter.xyz + _CubeSize * 0.5;
+                float3 invDir = 1.0 / rayDir;
+                float3 t0     = (boxMin - rayOrigin) * invDir;
+                float3 t1     = (boxMax - rayOrigin) * invDir;
+                float3 tMin   = min(t0, t1);
+                float3 tMax   = max(t0, t1);
+                float  tEnter = max(max(tMin.x, tMin.y), tMin.z);
+                float  tExit  = min(min(tMax.x, tMax.y), tMax.z);
+
                 float distToPixel = length(IN.worldPos - rayOrigin);
                 if (tExit > tEnter && tEnter > 0.0 && distToPixel > tExit + 0.01) discard;
                 
