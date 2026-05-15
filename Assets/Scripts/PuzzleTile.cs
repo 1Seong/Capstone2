@@ -1,5 +1,7 @@
 
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using UnityEditor;
 using UnityEngine;
 
 public class PuzzleTile : MonoBehaviour
@@ -12,6 +14,10 @@ public class PuzzleTile : MonoBehaviour
     [SerializeField] private Material[] mats;
     [SerializeField] private Material[] arrowMats;
     [SerializeField] private Material[] quadMats;
+    [SerializeField] private float popDis = 0.8f;
+    [SerializeField] private float popDur = 0.3f;
+
+    private const int CubeSize = 10;
 
     // 이펙트나 애니메이션 없이 단순 렌더링
     // 초기화나 undo 할때 사용
@@ -103,6 +109,27 @@ public class PuzzleTile : MonoBehaviour
                 quadRenderer.material = quadMats[id];
                 break;
         }
+    }
+
+    public async UniTask Pop()
+    {
+        var target = Vector3.zero;
+        if (transform.position.x == 0) 
+            --target.x;
+        else if (transform.position.x == CubeSize - 1)
+            ++target.x;
+        if (transform.position.y == 0)
+            --target.y;
+        else if (transform.position.y == CubeSize - 1)
+            ++target.y;
+        if (transform.position.z == 0)
+            --target.z;
+        else if (transform.position.z == CubeSize - 1)
+            ++target.z;
+
+        target = transform.position + target.normalized * popDis;
+
+        await transform.DOMove(target, popDur).SetLoops(2, LoopType.Yoyo).AsyncWaitForCompletion().AsUniTask();
     }
     
     // 이펙트나 애니메이션이 적용된 렌더링

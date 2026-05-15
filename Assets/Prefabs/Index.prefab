@@ -107,6 +107,8 @@ MonoBehaviour:
   - {fileID: 2100000, guid: e71b88a395e60ce43985edbfa1b33d50, type: 2}
   - {fileID: 2100000, guid: 17252630fbbeccd46981932669287a50, type: 2}
   - {fileID: 2100000, guid: 17252630fbbeccd46981932669287a50, type: 2}
+  popDis: 0.35
+  popDur: 0.15
 --- !u!114 &7368364215449373580
 MonoBehaviour:
   m_ObjectHideFlags: 0

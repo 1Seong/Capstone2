@@ -17987,6 +17987,10 @@ PrefabInstance:
       propertyPath: undoButton
       value: 
       objectReference: {fileID: 2121597138}
+    - target: {fileID: 5289594935719764491, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
+      propertyPath: waveInterval
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 5671786616443581163, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
       propertyPath: m_Material
       value: 
@@ -20362,6 +20366,14 @@ PrefabInstance:
     - target: {fileID: 4988355910077446654, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5032740795197519002, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: popDis
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 5032740795197519002, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
+      propertyPath: popDur
+      value: 0.15
       objectReference: {fileID: 0}
     - target: {fileID: 5081642643656826589, guid: ccca12b9be394194bb70ece4d1770c19, type: 3}
       propertyPath: m_AnchorMax.x

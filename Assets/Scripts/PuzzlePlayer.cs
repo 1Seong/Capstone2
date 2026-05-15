@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
@@ -102,6 +103,7 @@ public class PuzzlePlayer : MonoBehaviour
     [SerializeField] private bool _isMoving;
     [SerializeField] private TMP_Text ghostText;
     private readonly List<CellPulse> _highlightCells = new();
+    [SerializeField] private float waveInterval = 0.2f;
     
     #region GhostProperty
     private int _currentGhostCount;
@@ -576,15 +578,18 @@ public class PuzzlePlayer : MonoBehaviour
         if (_hasLaser)
         {
             HasLaser = false;
+            var animTasks =  new List<UniTask>();
             do
             {
                 --_roadLeftCount;
                 var afterInv = TileHelper.InvTable[_map[(int)nPos.x, (int)nPos.y, (int)nPos.z]];
                 _map[(int)nPos.x, (int)nPos.y, (int)nPos.z] = afterInv;
+                animTasks.Add(_tiles[(int)nPos.x, (int)nPos.y, (int)nPos.z].Pop());
                 _tiles[(int)nPos.x, (int)nPos.y, (int)nPos.z].SimpleRender(afterInv); // TODO: 나중에 Render로 변경
-                await UniTask.WaitForSeconds(0.11f);
+                await UniTask.WaitForSeconds(0.1f);
                 nPos += dir;
             } while (!CannotMove((int)nPos.x, (int)nPos.y, (int)nPos.z));
+            await UniTask.WhenAll(animTasks);
         }
         else
         {
@@ -627,27 +632,11 @@ public class PuzzlePlayer : MonoBehaviour
                 break;
             
             case (char)TileType.Inv:
-                RippleEffectController.Instance.Play(new Vector3(x, y, z));
-                _roadLeftCount = 0;
-                for (var i = 0; i != CubeSize; ++i)
-                for (var j = 0; j != CubeSize; ++j)
-                for (var k = 0; k != CubeSize; ++k)
-                {
-                    var beforeInv = _map[i, j, k];
-                    if(beforeInv == (char)TileType.Empty || i == x && j == y && k == z)
-                        continue;
-                    var afterInv = TileHelper.InvTable[beforeInv];
-                    _map[i, j, k] = afterInv;
-                    if (!TileHelper.IsPainted(afterInv))
-                        ++_roadLeftCount;
-                    _tiles[i, j, k].SimpleRender(afterInv); // TODO: 나중에 Render로 변경
-                }
+                await InverterEffectAsync(x, y, z);
                 break;
-            
             case (char)TileType.Laser:
                 HasLaser = true;
                 break;
-            
             case (char)TileType.DashXp:
                 await MovePlayer(new Vector3(1, 0, 0), false);
                 break;
@@ -668,6 +657,66 @@ public class PuzzlePlayer : MonoBehaviour
                 break;
         }
     }
+    
+    private async UniTask InverterEffectAsync(int x, int y, int z)
+    {
+        RippleEffectController.Instance.Play(new Vector3(x, y, z));
+
+        _roadLeftCount = 0;
+
+        // 모든 겉면 타일을 출발점으로부터의 맨해튼 거리 기준으로 그룹핑
+        var waveGroups = new Dictionary<int, List<(int cx, int cy, int cz)>>();
+
+        for (var i = 0; i < CubeSize; i++)
+        for (var j = 0; j < CubeSize; j++)
+        for (var k = 0; k < CubeSize; k++)
+        {
+            // 겉면 타일만, 발동 위치 제외
+            if (!IsOnSurface(i, j, k)) continue;
+            if (_map[i, j, k] == (char)TileType.Empty) continue;
+            if (i == x && j == y && k == z) continue;
+
+            var dist = Mathf.Abs(i - x) + Mathf.Abs(j - y) + Mathf.Abs(k - z);
+            if (!waveGroups.ContainsKey(dist))
+                waveGroups[dist] = new List<(int, int, int)>();
+            waveGroups[dist].Add((i, j, k));
+        }
+
+        // 데이터 반전 즉시 전체 적용
+        for (var i = 0; i < CubeSize; i++)
+        for (var j = 0; j < CubeSize; j++)
+        for (var k = 0; k < CubeSize; k++)
+        {
+            if (!IsOnSurface(i, j, k)) continue;
+            if (_map[i, j, k] == (char)TileType.Empty) continue;
+            if (i == x && j == y && k == z) continue;
+
+            var after = TileHelper.InvTable[_map[i, j, k]];
+            _map[i, j, k] = after;
+            if (!TileHelper.IsPainted(after))
+                ++_roadLeftCount;
+        }
+
+        // 거리 순으로 웨이브 애니메이션
+        var allAnimTasks = new List<UniTask>();
+        foreach (var dist in waveGroups.Keys.OrderBy(d => d))
+        {
+            foreach (var (cx, cy, cz) in waveGroups[dist])
+            {
+                _tiles[cx, cy, cz].SimpleRender(_map[cx, cy, cz]);
+                allAnimTasks.Add(_tiles[cx, cy, cz].Pop());
+            }
+
+            await UniTask.Delay(TimeSpan.FromSeconds(waveInterval));
+        }
+
+        await UniTask.WhenAll(allAnimTasks);
+    }
+
+    bool IsOnSurface(int i, int j, int k) =>
+        i == 0 || i == CubeSize - 1 ||
+        j == 0 || j == CubeSize - 1 ||
+        k == 0 || k == CubeSize - 1;
 
     #region Rotation
     private async UniTask ApplyRotate(int x, int y, int z, bool clockWise, bool cascade = true)

@@ -58,6 +58,7 @@ public class RippleEffectController : MonoBehaviour
         }
 
         rippleMaterial.SetFloat(ID_Progress, 0f);
+        rippleMaterial.SetVector(ID_OriginUV,    new Vector4(0, 0, 0, 0));
     }
 
     private void OnDestroy()
