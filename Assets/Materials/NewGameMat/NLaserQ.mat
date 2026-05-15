@@ -111,6 +111,8 @@ Material:
     - _DstBlendAlpha: 0
     - _EmissionStrength: 2.5
     - _EnvironmentReflections: 1
+    - _FadeEnd: 22
+    - _FadeStart: 15.1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0

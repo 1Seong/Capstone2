@@ -10,6 +10,8 @@ Shader "Custom/Gimmick/Inverter"
         _SpikeAmp         ("삐죽 진폭",         Range(0, 0.3)) = 0.1
         _SpikeFreq        ("삐죽 빈도",         Range(2, 20)) = 8.0
         _SpikeSpeed       ("삐죽 변형 속도",    Range(0, 3)) = 1.2
+        _CubeCenter ("큐브 중심 (월드)", Vector) = (0, 0, 0, 0)
+        _CubeSize   ("큐브 크기",        Float) = 10.0
     }
     SubShader
     {
@@ -40,9 +42,11 @@ Shader "Custom/Gimmick/Inverter"
                 float  _SpikeAmp;
                 float  _SpikeFreq;
                 float  _SpikeSpeed;
+                float4 _CubeCenter;
+                float  _CubeSize;
             CBUFFER_END
             struct Attributes { float4 positionOS : POSITION; float2 uv : TEXCOORD0; };
-            struct Varyings   { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; };
+            struct Varyings   { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; float3 worldPos : TEXCOORD2;};
             float hash(float2 p) { return frac(sin(dot(p, float2(127.1, 311.7))) * 43758.5453); }
             float smoothNoise(float2 p)
             {
@@ -56,10 +60,28 @@ Shader "Custom/Gimmick/Inverter"
                 Varyings OUT;
                 OUT.positionCS = TransformObjectToHClip(IN.positionOS);
                 OUT.uv = IN.uv;
+                OUT.worldPos = TransformObjectToWorld(IN.positionOS);
                 return OUT;
             }
             half4 frag(Varyings IN) : SV_Target
             {
+                // 카메라 → 픽셀 방향 레이가 중심 큐브 AABB를 통과하는지 체크
+                float3 rayOrigin = _WorldSpaceCameraPos;
+                float3 rayDir    = normalize(IN.worldPos - rayOrigin);
+                float3 boxMin    = _CubeCenter.xyz - _CubeSize * 0.5;
+                float3 boxMax    = _CubeCenter.xyz + _CubeSize * 0.5;
+                float3 invDir    = 1.0 / rayDir;
+                float3 t0        = (boxMin - rayOrigin) * invDir;
+                float3 t1        = (boxMax - rayOrigin) * invDir;
+                float3 tMin      = min(t0, t1);
+                float3 tMax      = max(t0, t1);
+                float  tEnter    = max(max(tMin.x, tMin.y), tMin.z);
+                float  tExit     = min(min(tMax.x, tMax.y), tMax.z);
+
+                // 레이가 큐브를 통과하고, 빌보드가 큐브 뒤에 있으면 discard
+                float distToPixel = length(IN.worldPos - rayOrigin);
+                if (tExit > tEnter && tEnter > 0.0 && distToPixel > tExit + 0.01) discard;
+                
                 float t = _Time.y;
                 float2 centered = IN.uv - 0.5;
                 float  r = length(centered), angle = atan2(centered.y, centered.x);
@@ -79,6 +101,7 @@ Shader "Custom/Gimmick/Inverter"
                 }
                 totalAlpha = saturate(totalAlpha);
                 if (totalAlpha <= 0.001) return half4(0,0,0,0);
+
                 return half4(_PulseColor.rgb*(1.0+_EmissionStrength), totalAlpha*circleMask);
             }
             ENDHLSL

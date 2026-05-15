@@ -11,6 +11,8 @@ Shader "Custom/Gimmick/Ghost"
         _WiggleFreq       ("꼬불 빈도",       Range(1, 10)) = 4.0
         _LayerCount       ("레이어 수",       Range(1, 4)) = 3.0
         _LayerSpread      ("레이어 간격",     Range(0, 0.3)) = 0.08
+        _CubeCenter ("큐브 중심 (월드)", Vector) = (0, 0, 0, 0)
+        _CubeSize   ("큐브 크기",        Float) = 10.0
     }
     SubShader
     {
@@ -42,9 +44,11 @@ Shader "Custom/Gimmick/Ghost"
                 float  _WiggleFreq;
                 float  _LayerCount;
                 float  _LayerSpread;
+                float4 _CubeCenter;
+                float  _CubeSize;
             CBUFFER_END
             struct Attributes { float4 positionOS : POSITION; float2 uv : TEXCOORD0; };
-            struct Varyings   { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; };
+            struct Varyings   { float4 positionCS : SV_POSITION; float2 uv : TEXCOORD0; float3 worldPos : TEXCOORD2;};
             float hash(float2 p) { return frac(sin(dot(p, float2(127.1, 311.7))) * 43758.5453); }
             float smoothNoise(float2 p)
             {
@@ -68,10 +72,28 @@ Shader "Custom/Gimmick/Ghost"
                 Varyings OUT;
                 OUT.positionCS = TransformObjectToHClip(IN.positionOS);
                 OUT.uv = IN.uv;
+                OUT.worldPos = TransformObjectToWorld(IN.positionOS);
                 return OUT;
             }
             half4 frag(Varyings IN) : SV_Target
             {
+                // 카메라 → 픽셀 방향 레이가 중심 큐브 AABB를 통과하는지 체크
+                float3 rayOrigin = _WorldSpaceCameraPos;
+                float3 rayDir    = normalize(IN.worldPos - rayOrigin);
+                float3 boxMin    = _CubeCenter.xyz - _CubeSize * 0.5;
+                float3 boxMax    = _CubeCenter.xyz + _CubeSize * 0.5;
+                float3 invDir    = 1.0 / rayDir;
+                float3 t0        = (boxMin - rayOrigin) * invDir;
+                float3 t1        = (boxMax - rayOrigin) * invDir;
+                float3 tMin      = min(t0, t1);
+                float3 tMax      = max(t0, t1);
+                float  tEnter    = max(max(tMin.x, tMin.y), tMin.z);
+                float  tExit     = min(min(tMax.x, tMax.y), tMax.z);
+
+                // 레이가 큐브를 통과하고, 빌보드가 큐브 뒤에 있으면 discard
+                float distToPixel = length(IN.worldPos - rayOrigin);
+                if (tExit > tEnter && tEnter > 0.0 && distToPixel > tExit + 0.01) discard;
+                
                 float totalAlpha = 0.0, colorBlend = 0.0;
                 int layers = clamp((int)_LayerCount, 1, 4);
                 for (int i = 0; i < layers; i++)
@@ -83,6 +105,7 @@ Shader "Custom/Gimmick/Ghost"
                     totalAlpha += layerAlpha;
                 }
                 totalAlpha = saturate(totalAlpha);
+                if (totalAlpha <= 0.001) return half4(0,0,0,0);
                 if (totalAlpha <= 0.001) return half4(0,0,0,0);
                 colorBlend = saturate(colorBlend/totalAlpha);
                 float3 col = lerp(_ColorA.rgb, _ColorB.rgb, colorBlend) * (1.0+_EmissionStrength);

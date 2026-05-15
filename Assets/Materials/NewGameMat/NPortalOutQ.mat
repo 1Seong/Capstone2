@@ -113,6 +113,8 @@ Material:
     - _EdgeFade: 0.434
     - _EmissionStrength: 2.44
     - _EnvironmentReflections: 1
+    - _FadeEnd: 23.5
+    - _FadeStart: 15.1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0

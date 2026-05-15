@@ -15,6 +15,9 @@ Shader "Custom/TileUnlit"
         _PulseMin         ("Pulse 최소 Emission", Range(0, 5)) = 0.2
         _PulseMax         ("Pulse 최대 Emission", Range(0, 5)) = 1.5
         _PulsePeriod      ("Pulse 주기 (초)",     Range(0.1, 10)) = 1.5
+        
+        [Header(Stencil)]
+        [Enum(Keep,0,Replace,2)] _StencilOp ("스텐실 쓰기 (일반 타일: Replace / 기믹 타일: Keep)", Float) = 2.0
     }
 
     SubShader
@@ -23,6 +26,13 @@ Shader "Custom/TileUnlit"
         Cull Back
         ZWrite On
         ZTest LEqual
+
+        Stencil
+        {
+            Ref 1
+            Comp Always
+            Pass [_StencilOp]
+        }
 
         Pass
         {
