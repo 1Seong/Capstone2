@@ -115,14 +115,21 @@ public class PuzzlePlayer : MonoBehaviour
             ghostText.text = value.ToString();
             if (_currentGhostCount > 0 && value == 0) // 카운트가 꺼지는 경우
             {
+                /*
                 playerModel.GetComponent<MeshRenderer>().materials[0].DOFade(1f, 0.5f)
                     .SetEase(Ease.InOutSine).OnComplete(()=>ghostText.gameObject.SetActive(false));
+                */
+                ghostText.gameObject.SetActive(false);
+                GhostEffectController.Instance.Exit();
             }
             else if (_currentGhostCount == 0 && value > 0) // 켜지는 경우
             {
                 ghostText.gameObject.SetActive(true);
+                GhostEffectController.Instance.Enter();
+                /*
                 playerModel.GetComponent<MeshRenderer>().materials[0].DOFade(0.45f, 0.5f)
                     .SetEase(Ease.InOutSine);
+                */
             }
             _currentGhostCount = value;
         }
@@ -371,6 +378,7 @@ public class PuzzlePlayer : MonoBehaviour
         resetAction.action.Disable();
         
         _edgeCubeInitializer.Clear();
+        GhostEffectController.Instance.Exit();
     }
     #endregion
 
