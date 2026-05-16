@@ -20,6 +20,7 @@ public class PopUpManager : MonoBehaviour
     private const float ItemHeight = 60f;   // 팝업 하나의 높이
     private const float ItemSpacing = 8f;   // 팝업 사이 간격
     private const float ShiftDuration = 0.2f;
+    private const int MaxPopups = 3; // 최대 팝업 개수
 
     private void Awake()
     {
@@ -42,6 +43,19 @@ public class PopUpManager : MonoBehaviour
 
     private async UniTask ShowAsync(string message)
     {
+        if (_activePopups.Count >= MaxPopups)
+            return;
+        /*
+        // 최대 개수 초과 시 가장 오래된 팝업 즉시 제거
+        while (_activePopups.Count >= MaxPopups)
+        {
+            var oldest = _activePopups[^1]; // 맨 아래 = 가장 오래된 것
+            _activePopups.Remove(oldest);
+            oldest.ForceClose(); // 아래에서 설명
+            Destroy(oldest.gameObject);
+        }
+        */
+        
         // 기존 팝업들을 아래로 밀어냄
         ShiftExistingPopups();
 

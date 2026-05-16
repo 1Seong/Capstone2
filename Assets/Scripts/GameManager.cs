@@ -83,7 +83,7 @@ public class GameManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
-        
+        Application.targetFrameRate = 60;
         _showGrid = PlayerPrefs.GetInt("showGrid", 1) == 1;
         _showParticle = PlayerPrefs.GetInt("showParticle", 1) == 1;
         gridToggle.isOn = _showGrid;

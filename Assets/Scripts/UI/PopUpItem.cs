@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using TMPro;
@@ -14,25 +15,45 @@ public class PopUpItem : MonoBehaviour
     private const float FadeOutDuration = 0.35f;
     private const float SlideInDistance = 30f;
 
+    private CancellationTokenSource _cts;
+
     public async UniTask ShowAsync(string message, float displayDuration)
     {
-        _messageText.text = message;
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
 
-        // 초기 상태
+        _messageText.text = message;
         _canvasGroup.alpha = 0f;
         var startY = _rectTransform.anchoredPosition.y - SlideInDistance;
         _rectTransform.anchoredPosition = new Vector2(_rectTransform.anchoredPosition.x, startY);
 
-        // 슬라이드 인 + 페이드 인
         var targetY = _rectTransform.anchoredPosition.y + SlideInDistance;
-        _rectTransform.DOAnchorPosY(targetY, FadeInDuration).SetEase(Ease.OutCubic);
-        await _canvasGroup.DOFade(1f, FadeInDuration).SetEase(Ease.OutCubic)
-            .AsyncWaitForCompletion().AsUniTask();
 
-        await UniTask.Delay(TimeSpan.FromSeconds(displayDuration));
+        // DOTween에 token 직접 연결 → 취소 시 트윈도 자동 Kill
+        _rectTransform.DOAnchorPosY(targetY, FadeInDuration)
+            .SetEase(Ease.OutCubic)
+            .WithCancellation(token);
 
-        // 페이드 아웃
-        await _canvasGroup.DOFade(0f, FadeOutDuration).SetEase(Ease.InCubic)
-            .AsyncWaitForCompletion().AsUniTask();
+        await _canvasGroup.DOFade(1f, FadeInDuration)
+            .SetEase(Ease.OutCubic)
+            .WithCancellation(token);
+
+        await UniTask.Delay(TimeSpan.FromSeconds(displayDuration), cancellationToken: token);
+
+        await _canvasGroup.DOFade(0f, FadeOutDuration)
+            .SetEase(Ease.InCubic)
+            .WithCancellation(token);
+    }
+
+    public void ForceClose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+    }
+
+    private void OnDestroy()
+    {
+        ForceClose();
     }
 }
