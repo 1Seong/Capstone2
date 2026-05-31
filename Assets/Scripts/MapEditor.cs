@@ -68,6 +68,7 @@ public class MapEditor : MonoBehaviour
     [SerializeField] private GameObject escMenuPanel;
     [SerializeField] private GameObject resetPanel;
     [SerializeField] private GameObject resetCheckPanel;
+    [SerializeField] private GameObject returnCheckPanel;
     public bool IsTesting = false;
 
     private int _selectedAxis = 0;
@@ -491,6 +492,15 @@ public class MapEditor : MonoBehaviour
     }
     
     #endregion
+
+    public void EditorReturn()
+    {
+        if(_undoStack.Count == 0)
+            ExitEditorWithoutSave();
+        else
+            returnCheckPanel.SetActive(true);
+    }
+    
     public async void ExitEditor()
     {
         _showAnswerCts?.Cancel();

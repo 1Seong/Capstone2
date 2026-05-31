@@ -83,7 +83,8 @@ public class GameManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
         }
-        Application.targetFrameRate = 60;
+        QualitySettings.vSyncCount = 1;     // vSync 활성화 (모니터 주사율에 동기화)
+        //Application.targetFrameRate = 60;
         _showGrid = PlayerPrefs.GetInt("showGrid", 1) == 1;
         _showParticle = PlayerPrefs.GetInt("showParticle", 1) == 1;
         gridToggle.isOn = _showGrid;

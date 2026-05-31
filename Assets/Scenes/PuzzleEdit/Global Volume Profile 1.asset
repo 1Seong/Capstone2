@@ -21,10 +21,10 @@ MonoBehaviour:
     m_Value: 1.2
   intensity:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.9
   scatter:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0.9
   clamp:
     m_OverrideState: 1
     m_Value: 65472
@@ -44,11 +44,11 @@ MonoBehaviour:
     m_OverrideState: 1
     m_Value: 5
   dirtTexture:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: {fileID: 0}
     dimension: 1
   dirtIntensity:
-    m_OverrideState: 1
+    m_OverrideState: 0
     m_Value: 0
 --- !u!114 &11400000
 MonoBehaviour:
