@@ -493,6 +493,7 @@ public class PuzzlePlayer : MonoBehaviour
 
     private void CheckGameCleared()
     {
+        //Debug.Log(_roadLeftCount);
         if (_roadLeftCount != 0) return;
 
         _isCleared = true;
@@ -630,8 +631,10 @@ public class PuzzlePlayer : MonoBehaviour
                 _answer.Push(afterPos);
                 await playerModel.DOScale(Vector3.one, playerMoveDuration).SetEase(Ease.InOutSine)
                     .AsyncWaitForCompletion().AsUniTask();
+                
+                if (!TileHelper.IsPainted(_map[afterPos.x, afterPos.y, afterPos.z]))
+                    --_roadLeftCount;
                 await PaintWithRender(afterPos.x, afterPos.y, afterPos.z, true);
-                --_roadLeftCount;
                 RepositionCamera();
                 break;
             
