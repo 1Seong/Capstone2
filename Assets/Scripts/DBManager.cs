@@ -340,6 +340,11 @@ public class DBManager : MonoBehaviour
     {
         await SupabaseManager.Instance.Supabase().From<Map>().Upsert(map, new QueryOptions(){Returning = QueryOptions.ReturnType.Minimal});
     }
+
+    public async Task UpdateMapAsync(Map map)
+    {
+        await SupabaseManager.Instance.Supabase().From<Map>().Update(map);
+    }
     
     // 맵 id를 사용한 유저맵 삭제(RLS에 의해 본인 맵만 삭제 가능)
     public async Task DeleteMapAsync(long id)

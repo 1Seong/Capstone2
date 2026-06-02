@@ -475,4 +475,78 @@ public class LevelListController : MonoBehaviour
         rightPageDescription.text = _selectedMapCreating.Item1.Desc;
         rightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = _selectedMapCreating.Item1.Desc;
     }
+    
+    public async void UserUpdateMap()
+    {
+        if (!GameManager.Instance.CheckNetworkAndLogIn())
+            return;
+        
+        SceneChange.Instance.LightLoading(true);
+        var originalName = _selectedMap.Item1.Name;
+        var originalDesc = _selectedMap.Item1.Desc;
+        var newName = mapRightPageName.text.Trim();
+        var newDesc = mapRightPageDescription.text.Trim();
+        _selectedMap.Item1.Name = newName;
+        _selectedMap.Item1.Desc = newDesc;
+
+        if (string.IsNullOrEmpty(newName))
+        {
+            PopUpManager.Instance.Show("제목은 최소 한 자 이상이어야 합니다.");
+            _selectedMap.Item1.Name = originalName;
+            _selectedMap.Item1.Desc = originalDesc;
+            mapRightPageName.text = originalName;
+            mapRightPageName.placeholder.GetComponent<TextMeshProUGUI>().text = originalName;
+            mapRightPageDescription.text = originalDesc;
+            mapRightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = originalDesc;
+            SceneChange.Instance.LightLoading(false);
+            return;
+        }
+        
+        try
+        {
+            await DBManager.Instance.UpdateMapAsync(_selectedMap.Item1);
+        }
+        catch (PostgrestException e) when (e.Message.Contains("inappropriate_content"))
+        {
+            PopUpManager.Instance.Show("부적절한 단어가 포함되어 있습니다.");
+            _selectedMap.Item1.Name = originalName;
+            _selectedMap.Item1.Desc = originalDesc;
+            mapRightPageName.text = originalName;
+            mapRightPageName.placeholder.GetComponent<TextMeshProUGUI>().text = originalName;
+            mapRightPageDescription.text = originalDesc;
+            mapRightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = originalDesc;
+            SceneChange.Instance.LightLoading(false);
+            return;
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning(e.Message);
+            PopUpManager.Instance.Show("나중에 다시 시도해주세요.");
+            _selectedMap.Item1.Name = originalName;
+            _selectedMap.Item1.Desc = originalDesc;
+            mapRightPageName.text = originalName;
+            mapRightPageName.placeholder.GetComponent<TextMeshProUGUI>().text = originalName;
+            mapRightPageDescription.text = originalDesc;
+            mapRightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = originalDesc;
+            SceneChange.Instance.LightLoading(false);
+            return;
+        }
+        
+        mapRightPageName.text = newName;
+        mapRightPageName.placeholder.GetComponent<TextMeshProUGUI>().text = newName;
+        mapRightPageDescription.text = newDesc;
+        mapRightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = newDesc;
+        var b = _selectedMap.Item3;
+        b.GetComponentInChildren<TextMeshProUGUI>().text = newName;
+        PopUpManager.Instance.Show("정보 업데이트 완료");
+        SceneChange.Instance.LightLoading(false);
+    }
+
+    public void UserCancelEdit()
+    {
+        mapRightPageName.text = _selectedMap.Item1.Name;
+        mapRightPageName.placeholder.GetComponent<TextMeshProUGUI>().text = _selectedMap.Item1.Name;
+        mapRightPageDescription.text = _selectedMap.Item1.Desc;
+        mapRightPageDescription.placeholder.GetComponent<TextMeshProUGUI>().text = _selectedMap.Item1.Desc;
+    }
 }
