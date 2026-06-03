@@ -7,24 +7,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 스테이지 하나
-[CreateAssetMenu(menuName = "Game/Stage Data")]
-public class StageData : ScriptableObject
-{
-    public string stageName;
-    public string mapData;
-    public string rotData;
-    public string portalData;
-}
-
-// 에피소드 하나 (스테이지 묶음)
-[CreateAssetMenu(menuName = "Game/Episode Data")]
-public class EpisodeData : ScriptableObject
-{
-    public string episodeName;
-    public List<StageData> stages;
-}
-
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
@@ -53,7 +35,6 @@ public class GameManager : MonoBehaviour
     private string _currentSingleMapId;
     private short? _currentSingleBestMoves;
     public bool blockIndicators;
-    [SerializeField] private List<EpisodeData> _episodes;
 
     private bool _showGrid;
     public bool ShowGrid {get => _showGrid;}
@@ -151,24 +132,24 @@ public class GameManager : MonoBehaviour
         optionPanel.SetActive(false);
     }
 
-    public async void EnterGameSingle(int ep, int stage)
+    public async UniTask EnterGameSingle(long mapId, string mapData, string portalData, string rotData)
     {
-        await SceneChange.Instance.LoadSceneAddition("PuzzlePlayScene", false);
+        await SceneChange.Instance.LoadSceneAddition("SinglePuzzlePlayScene", false);
         SingleEnterEvent?.Invoke();
         SingleEnterEvent = null;
 
-        var s = _episodes[ep].stages[stage];
-        _currentSingleMapId = s.name;
-        _currentSingleBestMoves = (short)SaveManager.Instance.LoadClear(s.name);
+        _currentSingleMapId = mapId.ToString();
+        _currentSingleBestMoves = (short)SaveManager.Instance.LoadClear(_currentSingleMapId);
         if (_currentSingleBestMoves.Value == -1)
             _currentSingleBestMoves = null;
 
-        var data = StringHelper.DecodeCube(s.mapData);
-        var portalPairDic = PortalPairHelper.ToDict(PortalPairHelper.Decode(s.portalData));
-        var rotInfo = RotateHelper.Decode(s.rotData);
+        var data = StringHelper.DecodeCube(mapData);
+        var portalPairDic = PortalPairHelper.ToDict(PortalPairHelper.Decode(portalData));
+        var rotInfo = RotateHelper.Decode(rotData);
         
         PlayGame(data, portalPairDic, rotInfo.Axis, rotInfo.Layers);
-        await SceneChange.Instance.ManualEndFade();
+        await SceneChange.Instance.UnloadScene("SingleHub");
+        //await SceneChange.Instance.ManualEndFade();
     }
     
     public async UniTask EnterGameUser(long id, Guid userId, short? best, char[,,] data, Dictionary<Vector3Int, Vector3Int> portalPairDic = null, int rotateAxis = 0, bool[] canRotate = null)
@@ -222,7 +203,7 @@ public class GameManager : MonoBehaviour
     public async void ReturnToHubMap()
     {
         singleClearPanel.SetActive(false);
-        await SceneChange.Instance.UnloadScene("PuzzlePlayScene");
+        await SceneChange.Instance.LoadScene("SingleHub");
     }
     
     public async UniTaskVoid GameClearedUser(short moves)

@@ -4,6 +4,8 @@ using UnityEngine;
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance;
+
+    public LevelData[] datas;
     
     private void Awake()
     {
@@ -28,5 +30,17 @@ public class SaveManager : MonoBehaviour
     public int LoadClear(string mapId)
     {
         return PlayerPrefs.GetInt(mapId, -1);
+    }
+
+    public void UnlockAllMaps()
+    {
+        foreach(var i in datas)
+            SaveClear(i.mapId.ToString(), 1);
+    }
+
+    public void LockAllMaps()
+    {
+        foreach(var i in datas)
+            SaveClear(i.mapId.ToString(), -1);
     }
 }
