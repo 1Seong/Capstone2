@@ -77,11 +77,13 @@ public class UserLevelList : MonoBehaviour
         {
             Debug.LogWarning(e.Message);
             PopUpManager.Instance.Show("맵을 가져올 수 없습니다.");
+            AudioManager.Instance.PlayBGM(AudioManager.BGMType.UserMapHub);
             await SceneChange.Instance.ManualEndFade();
             return;
         }
         
         await UpdateCells(maps);
+        AudioManager.Instance.PlayBGM(AudioManager.BGMType.UserMapHub);
         await SceneChange.Instance.ManualEndFade();
     }
 

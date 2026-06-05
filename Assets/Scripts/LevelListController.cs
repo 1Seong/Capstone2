@@ -67,6 +67,7 @@ public class LevelListController : MonoBehaviour
         {
             Debug.LogWarning(e.Message);
             PopUpManager.Instance.Show("맵을 가져올 수 없습니다.");
+            AudioManager.Instance.PlayBGM(AudioManager.BGMType.EditorHub);
             await SceneChange.Instance.ManualEndFade();
             return;
         }
@@ -125,6 +126,7 @@ public class LevelListController : MonoBehaviour
         }
 
         // 버튼이 다 생성됐으니 화면 먼저 표시
+        AudioManager.Instance.PlayBGM(AudioManager.BGMType.EditorHub);
         await SceneChange.Instance.ManualEndFade();
     }
 

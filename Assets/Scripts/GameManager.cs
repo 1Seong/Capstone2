@@ -5,6 +5,7 @@ using com.example;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
@@ -149,6 +150,7 @@ public class GameManager : MonoBehaviour
         
         PlayGame(data, portalPairDic, rotInfo.Axis, rotInfo.Layers);
         await SceneChange.Instance.UnloadScene("SingleHub");
+        AudioManager.Instance.PlayBGM("SinglePuzzlePlayScene", (int)mapId / 100);
         //await SceneChange.Instance.ManualEndFade();
     }
     
@@ -161,6 +163,7 @@ public class GameManager : MonoBehaviour
         _currentUserMapUserId =  userId;
         _currentUserBestMoves = best;
         PlayGame(data, portalPairDic, rotateAxis, canRotate);
+        AudioManager.Instance.PlayBGM(AudioManager.BGMType.UserMapPlay);
         await SceneChange.Instance.ManualEndFade();
     }
 
@@ -237,6 +240,7 @@ public class GameManager : MonoBehaviour
     {
         userClearPanel.SetActive(false);
         await SceneChange.Instance.UnloadScene("PuzzlePlayScene");
+        AudioManager.Instance.PlayBGM(SceneManager.GetActiveScene().name);
     }
 
     public void GameClearedEventInvoke()

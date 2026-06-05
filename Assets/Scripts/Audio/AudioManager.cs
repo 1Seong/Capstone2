@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -29,9 +31,27 @@ public class AudioManager : MonoBehaviour
     private const string MasterMuteKey = "Mute_Master";
     private const string BGMMuteKey    = "Mute_BGM";
     private const string SFXMuteKey    = "Mute_SFX";
+    
+    private Tween bgmFadeTween;
+    private float defaultBgmVolume = 1f;
 
-    public enum BGMType { MainMenu, MapEditor, GamePlay }
+    public enum BGMType
+    {
+        EditorEdit, EditorHub, Polaris, SingleHub, Title, Tutorial,
+        UserMapHub, UserMapPlay, Zodiac
+    }
     public enum SFXType { ButtonClick, TilePlace, TileErase, PuzzleClear, PuzzleFail }
+
+    private Dictionary<string, BGMType> _sceneBGM =  new Dictionary<string, BGMType>()
+    {
+        {"SampleScene", BGMType.Title},
+        {"SingleHub",  BGMType.SingleHub},
+        {"SinglePuzzlePlayScene",  BGMType.Polaris},
+        {"EditorMenu",  BGMType.EditorHub},
+        {"PuzzleEdit",  BGMType.EditorEdit},
+        {"UsermapMenu",  BGMType.UserMapHub},
+        {"PuzzlePlayScene",  BGMType.UserMapPlay},
+    };
 
     private void Awake()
     {
@@ -128,12 +148,37 @@ public class AudioManager : MonoBehaviour
 
     // ── BGM / SFX 재생 ───────────────────────────────────
 
-    public void PlayBGM(BGMType type)
+    public void PlayBGM(string sceneName, int singleMapType = 0)
     {
-        int index = (int)type;
+        int index = 0;
+        if (sceneName == "SinglePuzzlePlayScene" && singleMapType != 0)
+        {
+            index = singleMapType switch
+            {
+                1 => (int)BGMType.Tutorial,
+                2 => (int)BGMType.Zodiac,
+                _ => index
+            };
+        }
+        else
+            index = (int)_sceneBGM[sceneName];
         if (index < 0 || index >= bgmClips.Length || bgmClips[index] == null)
         {
-            Debug.LogWarning($"[AudioManager] BGM 클립 없음: {type}");
+            Debug.LogWarning($"[AudioManager] BGM 클립 없음: {_sceneBGM[sceneName]}");
+            return;
+        }
+        if (bgmSource.clip == bgmClips[index] && bgmSource.isPlaying) return;
+        bgmSource.clip = bgmClips[index];
+        bgmSource.loop = true;
+        bgmSource.Play();
+    }
+    
+    public void PlayBGM(BGMType bgm)
+    {
+        int index = (int)bgm;
+        if (index < 0 || index >= bgmClips.Length || bgmClips[index] == null)
+        {
+            Debug.LogWarning($"[AudioManager] BGM 클립 없음: {bgm}");
             return;
         }
         if (bgmSource.clip == bgmClips[index] && bgmSource.isPlaying) return;
@@ -142,7 +187,20 @@ public class AudioManager : MonoBehaviour
         bgmSource.Play();
     }
 
-    public void StopBGM() => bgmSource.Stop();
+    public void StopBGM(float fadeDuration = 0.5f)
+    {
+        bgmFadeTween?.Kill();
+        
+        float originalVolume = bgmSource.volume;
+
+        bgmFadeTween = bgmSource
+            .DOFade(0f, fadeDuration)
+            .OnComplete(() =>
+            {
+                bgmSource.Stop();
+                bgmSource.volume = originalVolume;
+            });
+    }
 
     public void PlaySFX(SFXType type)
     {
