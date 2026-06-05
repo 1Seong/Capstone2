@@ -1,5 +1,21 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!244 &-7452937057101196981
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: 5b53dd59d68764b4f9fff8d3e14affc5
+  m_EffectName: Lowpass Simple
+  m_MixLevel: 074494773f9b9c144892210559751638
+  m_Parameters:
+  - m_ParameterName: Cutoff freq
+    m_GUID: ad0ee57070a2f5349a8f03231cdf2fc9
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
 --- !u!244 &-3976553386932535031
 AudioMixerEffectController:
   m_ObjectHideFlags: 3
@@ -53,6 +69,8 @@ AudioMixerController:
     name: BGM
   - guid: 40cf66604bd687442b37195bd08ecf30
     name: Master
+  - guid: ad0ee57070a2f5349a8f03231cdf2fc9
+    name: MasterLowpassCutoff
   - guid: 526a50330b9ef3a4ab9c7096a90b240d
     name: SFX
   m_AudioMixerGroupViews:
@@ -80,6 +98,7 @@ AudioMixerGroupController:
   m_Send: 00000000000000000000000000000000
   m_Effects:
   - {fileID: 24400004}
+  - {fileID: -7452937057101196981}
   m_UserColorIndex: 0
   m_Mute: 0
   m_Solo: 0

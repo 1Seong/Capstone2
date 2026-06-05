@@ -110,7 +110,7 @@ public class PuzzleTile : MonoBehaviour
         }
     }
 
-    public async UniTask Pop()
+    public async UniTask Pop(bool playAudio = true)
     {
         var target = Vector3.zero;
         if (transform.position.x == 0) 
@@ -127,7 +127,8 @@ public class PuzzleTile : MonoBehaviour
             ++target.z;
 
         target = transform.position + target.normalized * popDis;
-
+        if(playAudio)
+            AudioManager.Instance.PlaySFX(AudioManager.SFXType.TileWave2);
         await transform.DOMove(target, popDur).SetLoops(2, LoopType.Yoyo).AsyncWaitForCompletion().AsUniTask();
     }
     

@@ -47,6 +47,7 @@ public class StarNode : MonoBehaviour
             return;
 
         isAttached = true;
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.Click);
 
         returnTween?.Kill();
         scaleTween?.Kill();

@@ -319,6 +319,7 @@ public class LevelListController : MonoBehaviour
         
         rightPageObject.SetActive(false);
         SceneChange.Instance.LightLoading(false);
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.MapRemove);
         PopUpManager.Instance.Show("맵이 삭제되었습니다.");
     }
 
@@ -347,6 +348,7 @@ public class LevelListController : MonoBehaviour
         
         mapRightPageObject.SetActive(false);
         SceneChange.Instance.LightLoading(false);
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.MapRemove);
         PopUpManager.Instance.Show("맵이 삭제되었습니다.");
     }
     

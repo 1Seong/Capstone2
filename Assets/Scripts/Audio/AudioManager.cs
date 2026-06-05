@@ -34,13 +34,25 @@ public class AudioManager : MonoBehaviour
     
     private Tween bgmFadeTween;
     private float defaultBgmVolume = 1f;
+    
+    private const float NormalCutoff = 22000f;
+    private const float MuffledCutoff = 600f;
+    
+    private Tween masterLowpassTween;
+    private const string MasterLowpassParam = "MasterLowpassCutoff";
 
     public enum BGMType
     {
         EditorEdit, EditorHub, Polaris, SingleHub, Title, Tutorial,
         UserMapHub, UserMapPlay, Zodiac
     }
-    public enum SFXType { ButtonClick, TilePlace, TileErase, PuzzleClear, PuzzleFail }
+
+    public enum SFXType
+    {
+        Click, Dash, Esc, GhostEnd, GhostGet, Inverter, LaserGet,
+        LaserShoot, MapClear, MapRemove, Move, MoveBlocked, PopUp, Portal,
+        Rotation, SceneSwitch, TileDelete, TileLoad, TileWave1, TileWave2, Undo
+    }
 
     private Dictionary<string, BGMType> _sceneBGM =  new Dictionary<string, BGMType>()
     {
@@ -211,5 +223,29 @@ public class AudioManager : MonoBehaviour
             return;
         }
         sfxSource.PlayOneShot(sfxClips[index]);
+        if(type == SFXType.GhostGet)
+            SetMasterMuffled(true);
+        else if(type == SFXType.GhostEnd)
+            SetMasterMuffled(false);
+    }
+    
+    public void SetMasterMuffled(bool muffled, float duration = 0.5f)
+    {
+        masterLowpassTween?.Kill();
+
+        float targetCutoff = muffled ? MuffledCutoff : NormalCutoff;
+
+        audioMixer.GetFloat(MasterLowpassParam, out float currentCutoff);
+
+        masterLowpassTween = DOTween.To(
+            () => currentCutoff,
+            value =>
+            {
+                currentCutoff = value;
+                audioMixer.SetFloat(MasterLowpassParam, value);
+            },
+            targetCutoff,
+            duration
+        );
     }
 }

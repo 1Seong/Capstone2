@@ -872,6 +872,7 @@ GameObject:
   - component: {fileID: 123166408}
   - component: {fileID: 123166407}
   - component: {fileID: 123166406}
+  - component: {fileID: 123166409}
   m_Layer: 5
   m_Name: ResetButton
   m_TagString: Untagged
@@ -944,6 +945,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 123166409}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 1787173176}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -994,6 +1007,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 123166404}
   m_CullTransparentMesh: 1
+--- !u!114 &123166409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 123166404}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &133322738
 GameObject:
   m_ObjectHideFlags: 0
@@ -4519,6 +4544,7 @@ GameObject:
   - component: {fileID: 941864281}
   - component: {fileID: 941864280}
   - component: {fileID: 941864279}
+  - component: {fileID: 941864282}
   m_Layer: 5
   m_Name: UndoButton
   m_TagString: Untagged
@@ -4591,6 +4617,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 941864282}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 1908423374}
         m_TargetAssemblyTypeName: PuzzlePlayer, Assembly-CSharp
         m_MethodName: Undo
@@ -4641,6 +4679,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 941864277}
   m_CullTransparentMesh: 1
+--- !u!114 &941864282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 941864277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &966368299
 GameObject:
   m_ObjectHideFlags: 0
@@ -6976,6 +7026,7 @@ GameObject:
   - component: {fileID: 1387561981}
   - component: {fileID: 1387561980}
   - component: {fileID: 1387561979}
+  - component: {fileID: 1387561982}
   m_Layer: 5
   m_Name: HelpButton
   m_TagString: Untagged
@@ -7048,6 +7099,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1387561982}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 1273150189}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -7098,6 +7161,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1387561977}
   m_CullTransparentMesh: 1
+--- !u!114 &1387561982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1387561977}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1428208805
 GameObject:
   m_ObjectHideFlags: 0
@@ -7211,6 +7286,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1495906069}
   m_CullTransparentMesh: 1
+--- !u!114 &1509479465 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6146261268481945688, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
+  m_PrefabInstance: {fileID: 5818843854885425131}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5818843854885425132}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1510973768
 GameObject:
   m_ObjectHideFlags: 0
@@ -7761,6 +7847,7 @@ GameObject:
   - component: {fileID: 1658231074}
   - component: {fileID: 1658231073}
   - component: {fileID: 1658231072}
+  - component: {fileID: 1658231075}
   m_Layer: 5
   m_Name: PauseButton
   m_TagString: Untagged
@@ -7833,6 +7920,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1658231075}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 1908423375}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -7883,6 +7982,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1658231070}
   m_CullTransparentMesh: 1
+--- !u!114 &1658231075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1658231070}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1716056196
 GameObject:
   m_ObjectHideFlags: 0
@@ -9752,14 +9863,34 @@ PrefabInstance:
     - target: {fileID: 4521114083069614947, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
+      objectReference: {fileID: 1509479465}
+    - target: {fileID: 4521114083069614947, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
       objectReference: {fileID: 5818843854885425133}
     - target: {fileID: 4521114083069614947, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnClick
+      objectReference: {fileID: 0}
+    - target: {fileID: 4521114083069614947, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
       value: Onclick
       objectReference: {fileID: 0}
     - target: {fileID: 4521114083069614947, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ButtonSFX, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4521114083069614947, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
       value: ReturnToLevelList, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 4521114083069614947, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_BoolArgument
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4521114083069614947, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_BoolArgument
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5189118016716664447, guid: 0cc71ca1499106a41925e62e95eee208, type: 3}
       propertyPath: m_Material

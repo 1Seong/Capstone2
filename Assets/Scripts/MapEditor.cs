@@ -134,6 +134,7 @@ public class MapEditor : MonoBehaviour
     {
         if (_undoStack.Count == 0) return;
         
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.Undo);
         SetValidated(false);
         var s = _undoStack.Pop();
         _map = s.Map;
@@ -221,6 +222,7 @@ public class MapEditor : MonoBehaviour
 
     public void ResetEditor()
     {
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.MapRemove);
         SetValidated(false);
         
         playerModel.gameObject.SetActive(false);
@@ -291,6 +293,8 @@ public class MapEditor : MonoBehaviour
             SaveUndoState();
         //Debug.Log(layer + " " + row + " " + col);
         SetValidated(false);
+        AudioManager.Instance.PlaySFX(currentTile == (char)TileType.Empty ? 
+            AudioManager.SFXType.TileDelete : AudioManager.SFXType.TileLoad);
         
         if(playerModel.position == new Vector3(layer, row, col))
         {
@@ -356,8 +360,12 @@ public class MapEditor : MonoBehaviour
     public void SetLayer(int index)
     {
         RotAxis = _selectedAxis;
+        
         _canRotate[index] = !_canRotate[index];
         innerCubes[_rotAxis].GetChild(index).GetChild(0).gameObject.SetActive(_canRotate[index]);
+        AudioManager.Instance.PlaySFX(_canRotate[index]
+            ? AudioManager.SFXType.TileLoad
+            : AudioManager.SFXType.TileDelete);
         if (_canRotate.Any(i => i))
             return;
         RotAxis = 0;

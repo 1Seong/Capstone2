@@ -121,6 +121,7 @@ public class StarController : MonoBehaviour
         GameManager.Instance.SingleEnterEvent += () => { cam.SetActive(false); };
         var p = NormalizeJsonString(levelData.portalPairs);
         var r = NormalizeJsonString(levelData.rotationInfo);
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.Click);
         await GameManager.Instance.EnterGameSingle(levelData.mapId, levelData.data, p, r);
     }
     

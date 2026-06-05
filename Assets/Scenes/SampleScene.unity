@@ -1658,6 +1658,7 @@ GameObject:
   - component: {fileID: 125719006}
   - component: {fileID: 125719005}
   - component: {fileID: 125719004}
+  - component: {fileID: 125719008}
   m_Layer: 5
   m_Name: Sign Out Button
   m_TagString: Untagged
@@ -1749,6 +1750,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 125719008}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 8238521}
         m_TargetAssemblyTypeName: com.example.SignInWithEmailPassword, App
         m_MethodName: SignOut
@@ -1799,6 +1812,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 125719001}
   m_CullTransparentMesh: 1
+--- !u!114 &125719008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 125719001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &130396402
 GameObject:
   m_ObjectHideFlags: 0
@@ -1906,7 +1931,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 7192571297359133013, guid: e71d424c9de71114e9859bd3564d4f41, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -2116,14 +2141,14 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 3a546f7f0bc1d5b499d0c95f030ff9a7, type: 3}
   - {fileID: 8300000, guid: 179819aa0a1e8bf498a87e00f2ef393e, type: 3}
   - {fileID: 8300000, guid: 4b9e184ab6473624fa8939ee0f2e245d, type: 3}
-  - {fileID: 8300000, guid: a2e66bc9fcab4394d9effe85bca5cf64, type: 3}
+  - {fileID: 8300000, guid: 34ad8303048e47f488eeaacc06e1a12a, type: 3}
   - {fileID: 8300000, guid: 11c736602ead6bb4cab6725d6854afa1, type: 3}
   - {fileID: 8300000, guid: 609c154ff542b24448463be6736b09f4, type: 3}
   - {fileID: 8300000, guid: 22dc0e2f51fb03e46bddce01689f6d73, type: 3}
   - {fileID: 8300000, guid: 9a75672cd837bf64c95ca457dd7b96f2, type: 3}
   sfxClips:
   - {fileID: 8300000, guid: 9306bf6184044774daecb0bb241d829d, type: 3}
-  - {fileID: 8300000, guid: 5fc44315d6d6ce04ca34d6dc1a66f311, type: 3}
+  - {fileID: 8300000, guid: 33db67dff1a4d8c41ad57b1eff634cb6, type: 3}
   - {fileID: 8300000, guid: 283561e02ae4de246be327388d805ba4, type: 3}
   - {fileID: 8300000, guid: 83170aa0588392648bf853d3443cdefa, type: 3}
   - {fileID: 8300000, guid: 740a51248f6dab24684d19db0319c5ae, type: 3}
@@ -2131,7 +2156,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 348ebcf4b08bc524095d6cd9b910cb9d, type: 3}
   - {fileID: 8300000, guid: 90371bc4380d679438ec3e88ba826a41, type: 3}
   - {fileID: 8300000, guid: c9cda0a9c3b890948b0717edae27cebe, type: 3}
-  - {fileID: 8300000, guid: 4a0c1a4a582bee6418a72103b5a1d09b, type: 3}
+  - {fileID: 8300000, guid: 1bee1a2700a04464dadd33f11dc01f96, type: 3}
   - {fileID: 8300000, guid: 8455b50e82f913147a9e6703d922fbbe, type: 3}
   - {fileID: 8300000, guid: 878b7580b88ed2a44984921f17e95636, type: 3}
   - {fileID: 8300000, guid: 8255a33584533044398372328e075159, type: 3}
@@ -2142,7 +2167,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 6d31062bac84dcf4a926ce21f97a9d0a, type: 3}
   - {fileID: 8300000, guid: 12b564dff20930d47a5c9f053b34a4b6, type: 3}
   - {fileID: 8300000, guid: dcfea8d11cbe6624caea981abccbbd61, type: 3}
-  - {fileID: 8300000, guid: 14481aba6e424bd42aabfb48f2d91bc6, type: 3}
+  - {fileID: 8300000, guid: 2fc9147ed29ad60438f599d7e1040141, type: 3}
 --- !u!4 &130549042
 Transform:
   m_ObjectHideFlags: 0
@@ -2554,6 +2579,7 @@ GameObject:
   - component: {fileID: 177022241}
   - component: {fileID: 177022240}
   - component: {fileID: 177022239}
+  - component: {fileID: 177022243}
   m_Layer: 5
   m_Name: Sign Up Button
   m_TagString: Untagged
@@ -2645,6 +2671,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 177022243}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 397966754}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -2707,6 +2745,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 177022237}
   m_CullTransparentMesh: 1
+--- !u!114 &177022243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 177022237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &178748916
 GameObject:
   m_ObjectHideFlags: 0
@@ -4330,6 +4380,7 @@ GameObject:
   - component: {fileID: 334729659}
   - component: {fileID: 334729658}
   - component: {fileID: 334729657}
+  - component: {fileID: 334729660}
   m_Layer: 5
   m_Name: CloseButton
   m_TagString: Untagged
@@ -4401,6 +4452,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 334729660}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 4360864}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -4463,6 +4526,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 334729655}
   m_CullTransparentMesh: 1
+--- !u!114 &334729660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 334729655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &338095963
 GameObject:
   m_ObjectHideFlags: 0
@@ -4634,6 +4709,7 @@ GameObject:
   - component: {fileID: 348309457}
   - component: {fileID: 348309456}
   - component: {fileID: 348309455}
+  - component: {fileID: 348309459}
   m_Layer: 5
   m_Name: Recovery Button
   m_TagString: Untagged
@@ -4725,6 +4801,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 348309459}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 863169449}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -4787,6 +4875,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 348309452}
   m_CullTransparentMesh: 1
+--- !u!114 &348309459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 348309452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &355356202
 GameObject:
   m_ObjectHideFlags: 0
@@ -5294,6 +5394,7 @@ GameObject:
   - component: {fileID: 400046981}
   - component: {fileID: 400046980}
   - component: {fileID: 400046983}
+  - component: {fileID: 400046984}
   m_Layer: 5
   m_Name: UsermapButton
   m_TagString: Untagged
@@ -5365,6 +5466,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 400046984}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 400046983}
         m_TargetAssemblyTypeName: SceneLoader, Assembly-CSharp
         m_MethodName: LoadSceneWithLoginCheck
@@ -5427,6 +5540,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 612eaf70e7927fb4b8f72cb78e342730, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneLoader
+--- !u!114 &400046984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 400046978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &411214961
 GameObject:
   m_ObjectHideFlags: 0
@@ -7224,6 +7349,7 @@ GameObject:
   - component: {fileID: 648434067}
   - component: {fileID: 648434066}
   - component: {fileID: 648434065}
+  - component: {fileID: 648434068}
   m_Layer: 5
   m_Name: CreditButton
   m_TagString: Untagged
@@ -7295,6 +7421,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 648434068}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 1892493989}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -7369,6 +7507,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 648434063}
   m_CullTransparentMesh: 1
+--- !u!114 &648434068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 648434063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &652424582
 GameObject:
   m_ObjectHideFlags: 0
@@ -8762,6 +8912,7 @@ GameObject:
   - component: {fileID: 781379833}
   - component: {fileID: 781379832}
   - component: {fileID: 781379831}
+  - component: {fileID: 781379835}
   m_Layer: 5
   m_Name: NicknameButton
   m_TagString: Untagged
@@ -8853,6 +9004,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 781379835}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 4360864}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -8915,6 +9078,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 781379829}
   m_CullTransparentMesh: 1
+--- !u!114 &781379835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 781379829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &790783526
 GameObject:
   m_ObjectHideFlags: 0
@@ -9103,6 +9278,7 @@ GameObject:
   - component: {fileID: 840507367}
   - component: {fileID: 840507366}
   - component: {fileID: 840507369}
+  - component: {fileID: 840507370}
   m_Layer: 5
   m_Name: EditorButton
   m_TagString: Untagged
@@ -9174,6 +9350,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 840507370}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 840507369}
         m_TargetAssemblyTypeName: SceneLoader, Assembly-CSharp
         m_MethodName: LoadSceneWithLoginCheck
@@ -9236,6 +9424,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 612eaf70e7927fb4b8f72cb78e342730, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneLoader
+--- !u!114 &840507370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 840507364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &843945777
 GameObject:
   m_ObjectHideFlags: 0
@@ -9389,6 +9589,7 @@ GameObject:
   - component: {fileID: 848386465}
   - component: {fileID: 848386464}
   - component: {fileID: 848386467}
+  - component: {fileID: 848386468}
   m_Layer: 5
   m_Name: SingleButton
   m_TagString: Untagged
@@ -9460,6 +9661,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 848386468}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 848386467}
         m_TargetAssemblyTypeName: SceneLoader, Assembly-CSharp
         m_MethodName: LoadScene
@@ -9522,6 +9735,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 612eaf70e7927fb4b8f72cb78e342730, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneLoader
+--- !u!114 &848386468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 848386462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &863169449
 GameObject:
   m_ObjectHideFlags: 0
@@ -10776,6 +11001,7 @@ GameObject:
   - component: {fileID: 970454049}
   - component: {fileID: 970454048}
   - component: {fileID: 970454047}
+  - component: {fileID: 970454050}
   m_Layer: 5
   m_Name: AccountButton
   m_TagString: Untagged
@@ -10847,6 +11073,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 970454050}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 8238521}
         m_TargetAssemblyTypeName: com.example.SignInWithEmailPassword, App
         m_MethodName: OpenAccount
@@ -10921,6 +11159,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 970454045}
   m_CullTransparentMesh: 1
+--- !u!114 &970454050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 970454045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1007964743
 GameObject:
   m_ObjectHideFlags: 0
@@ -12767,6 +13017,7 @@ GameObject:
   - component: {fileID: 1258274280}
   - component: {fileID: 1258274279}
   - component: {fileID: 1258274278}
+  - component: {fileID: 1258274281}
   m_Layer: 5
   m_Name: CloseButton
   m_TagString: Untagged
@@ -12838,6 +13089,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1258274281}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 1489183276}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -12900,6 +13163,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1258274276}
   m_CullTransparentMesh: 1
+--- !u!114 &1258274281
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1258274276}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1261935823
 GameObject:
   m_ObjectHideFlags: 0
@@ -13229,6 +13504,7 @@ GameObject:
   - component: {fileID: 1271333628}
   - component: {fileID: 1271333627}
   - component: {fileID: 1271333626}
+  - component: {fileID: 1271333630}
   m_Layer: 5
   m_Name: Sign In Button
   m_TagString: Untagged
@@ -13320,6 +13596,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1271333630}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 8238521}
         m_TargetAssemblyTypeName: com.example.SignInWithEmailPassword, App
         m_MethodName: SignIn
@@ -13370,6 +13658,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1271333624}
   m_CullTransparentMesh: 1
+--- !u!114 &1271333630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1271333624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1290721290
 GameObject:
   m_ObjectHideFlags: 0
@@ -13519,6 +13819,7 @@ GameObject:
   - component: {fileID: 1302703487}
   - component: {fileID: 1302703486}
   - component: {fileID: 1302703485}
+  - component: {fileID: 1302703488}
   m_Layer: 5
   m_Name: CloseButton
   m_TagString: Untagged
@@ -13590,6 +13891,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1302703488}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 1965326598}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -13664,6 +13977,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1302703483}
   m_CullTransparentMesh: 1
+--- !u!114 &1302703488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1302703483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1307749560
 GameObject:
   m_ObjectHideFlags: 0
@@ -13946,6 +14271,7 @@ GameObject:
   - component: {fileID: 1315446872}
   - component: {fileID: 1315446871}
   - component: {fileID: 1315446870}
+  - component: {fileID: 1315446873}
   m_Layer: 5
   m_Name: CloseButton
   m_TagString: Untagged
@@ -14017,6 +14343,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1315446873}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 863169449}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -14079,6 +14417,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1315446868}
   m_CullTransparentMesh: 1
+--- !u!114 &1315446873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1315446868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1324905746
 GameObject:
   m_ObjectHideFlags: 0
@@ -14091,6 +14441,7 @@ GameObject:
   - component: {fileID: 1324905750}
   - component: {fileID: 1324905749}
   - component: {fileID: 1324905748}
+  - component: {fileID: 1324905751}
   m_Layer: 5
   m_Name: CloseButton
   m_TagString: Untagged
@@ -14162,6 +14513,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1324905751}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 594095231}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -14224,6 +14587,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1324905746}
   m_CullTransparentMesh: 1
+--- !u!114 &1324905751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1324905746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1333949601
 GameObject:
   m_ObjectHideFlags: 0
@@ -14237,6 +14612,7 @@ GameObject:
   - component: {fileID: 1333949606}
   - component: {fileID: 1333949605}
   - component: {fileID: 1333949604}
+  - component: {fileID: 1333949608}
   m_Layer: 5
   m_Name: Discord Sign In Button
   m_TagString: Untagged
@@ -14329,6 +14705,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1333949608}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 8238521}
         m_TargetAssemblyTypeName: com.example.SignInWithEmailPassword, App
         m_MethodName: DiscordSignIn
@@ -14379,6 +14767,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1333949601}
   m_CullTransparentMesh: 1
+--- !u!114 &1333949608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1333949601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1342591223
 GameObject:
   m_ObjectHideFlags: 0
@@ -14718,6 +15118,7 @@ GameObject:
   - component: {fileID: 1372980577}
   - component: {fileID: 1372980576}
   - component: {fileID: 1372980575}
+  - component: {fileID: 1372980579}
   m_Layer: 5
   m_Name: Recovery Button
   m_TagString: Untagged
@@ -14809,6 +15210,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1372980579}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 8238521}
         m_TargetAssemblyTypeName: com.example.SignInWithEmailPassword, App
         m_MethodName: Recovery
@@ -14859,6 +15272,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1372980572}
   m_CullTransparentMesh: 1
+--- !u!114 &1372980579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1372980572}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1403481227
 GameObject:
   m_ObjectHideFlags: 0
@@ -15300,6 +15725,7 @@ GameObject:
   - component: {fileID: 1437796544}
   - component: {fileID: 1437796543}
   - component: {fileID: 1437796542}
+  - component: {fileID: 1437796545}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -15371,6 +15797,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1437796545}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 1874518090}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
         m_MethodName: SetColor1
@@ -15421,6 +15859,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1437796540}
   m_CullTransparentMesh: 1
+--- !u!114 &1437796545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1437796540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1439594116
 GameObject:
   m_ObjectHideFlags: 0
@@ -15773,6 +16223,7 @@ GameObject:
   - component: {fileID: 1464483111}
   - component: {fileID: 1464483110}
   - component: {fileID: 1464483109}
+  - component: {fileID: 1464483113}
   m_Layer: 5
   m_Name: Google Sign In Button
   m_TagString: Untagged
@@ -15865,6 +16316,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1464483113}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 8238521}
         m_TargetAssemblyTypeName: com.example.SignInWithEmailPassword, App
         m_MethodName: GoogleSignIn
@@ -15915,6 +16378,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1464483106}
   m_CullTransparentMesh: 1
+--- !u!114 &1464483113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1464483106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1465348228
 GameObject:
   m_ObjectHideFlags: 0
@@ -15927,6 +16402,7 @@ GameObject:
   - component: {fileID: 1465348232}
   - component: {fileID: 1465348231}
   - component: {fileID: 1465348230}
+  - component: {fileID: 1465348233}
   m_Layer: 5
   m_Name: CloseButton
   m_TagString: Untagged
@@ -15998,6 +16474,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1465348233}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 397966754}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -16072,6 +16560,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1465348228}
   m_CullTransparentMesh: 1
+--- !u!114 &1465348233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465348228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1479494448
 GameObject:
   m_ObjectHideFlags: 0
@@ -16325,6 +16825,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1507753963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874518091}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1530193932
 GameObject:
   m_ObjectHideFlags: 0
@@ -18414,6 +18926,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1748642965}
   - component: {fileID: 1748642966}
+  - component: {fileID: 1748642967}
   m_Layer: 5
   m_Name: PulseToggle
   m_TagString: Untagged
@@ -18489,6 +19002,18 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1748642967}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 1874518090}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
         m_MethodName: PulseToggle
@@ -18502,6 +19027,18 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   m_IsOn: 1
+--- !u!114 &1748642967
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1748642964}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1748779445
 GameObject:
   m_ObjectHideFlags: 0
@@ -19010,6 +19547,7 @@ GameObject:
   - component: {fileID: 1787710594}
   - component: {fileID: 1787710593}
   - component: {fileID: 1787710592}
+  - component: {fileID: 1787710596}
   m_Layer: 5
   m_Name: ChangePw Button
   m_TagString: Untagged
@@ -19101,6 +19639,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1787710596}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 1965326604}
         m_TargetAssemblyTypeName: NicknameUI, Assembly-CSharp
         m_MethodName: OnClick
@@ -19151,6 +19701,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1787710590}
   m_CullTransparentMesh: 1
+--- !u!114 &1787710596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1787710590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1794091558
 GameObject:
   m_ObjectHideFlags: 0
@@ -19301,6 +19863,7 @@ GameObject:
   - component: {fileID: 1809398933}
   - component: {fileID: 1809398932}
   - component: {fileID: 1809398931}
+  - component: {fileID: 1809398935}
   m_Layer: 5
   m_Name: Sign Up Button
   m_TagString: Untagged
@@ -19392,6 +19955,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1809398935}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 8238521}
         m_TargetAssemblyTypeName: com.example.SignInWithEmailPassword, App
         m_MethodName: SignUp
@@ -19442,6 +20017,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1809398928}
   m_CullTransparentMesh: 1
+--- !u!114 &1809398935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809398928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1818801202
 GameObject:
   m_ObjectHideFlags: 0
@@ -19653,6 +20240,7 @@ GameObject:
   - component: {fileID: 1839912639}
   - component: {fileID: 1839912638}
   - component: {fileID: 1839912637}
+  - component: {fileID: 1839912640}
   m_Layer: 5
   m_Name: OnlineButton
   m_TagString: Untagged
@@ -19724,6 +20312,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1839912640}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 1982586201}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -19786,6 +20386,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1839912635}
   m_CullTransparentMesh: 1
+--- !u!114 &1839912640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1839912635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1843590057
 GameObject:
   m_ObjectHideFlags: 0
@@ -19798,6 +20410,7 @@ GameObject:
   - component: {fileID: 1843590061}
   - component: {fileID: 1843590060}
   - component: {fileID: 1843590059}
+  - component: {fileID: 1843590062}
   m_Layer: 5
   m_Name: ReturnButton
   m_TagString: Untagged
@@ -19869,6 +20482,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1843590062}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
       - m_Target: {fileID: 2144696288}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -19931,6 +20556,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1843590057}
   m_CullTransparentMesh: 1
+--- !u!114 &1843590062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1843590057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1873250887
 GameObject:
   m_ObjectHideFlags: 0
@@ -20014,6 +20651,54 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1507753963}
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 1874518090}
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnClick
+      objectReference: {fileID: 0}
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: GridToggle
+      objectReference: {fileID: 0}
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ButtonSFX, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: GameManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 446601778589303524, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 1452302541489750296, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -20050,6 +20735,66 @@ PrefabInstance:
       propertyPath: m_text
       value: "\uD30C\uD2F0\uD074"
       objectReference: {fileID: 0}
+    - target: {fileID: 2626081858502619999, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_fontColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2626081858502619999, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_fontColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2626081858502619999, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_fontColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2626081858502619999, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: 2662819132513085627, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2662819132513085627, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2662819132513085627, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1874518101}
+    - target: {fileID: 2662819132513085627, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 1874518090}
+    - target: {fileID: 2662819132513085627, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2662819132513085627, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnClick
+      objectReference: {fileID: 0}
+    - target: {fileID: 2662819132513085627, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: ReturnToEditor
+      objectReference: {fileID: 0}
+    - target: {fileID: 2662819132513085627, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ButtonSFX, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 2662819132513085627, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: GameManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 2662819132513085627, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 2780801717700607788, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2853757243517849920, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -20077,6 +20822,94 @@ PrefabInstance:
     - target: {fileID: 2853757243517849920, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3121228550157341651, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3121228550157341651, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3121228550157341651, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1874518099}
+    - target: {fileID: 3121228550157341651, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 1874518090}
+    - target: {fileID: 3121228550157341651, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3121228550157341651, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnClick
+      objectReference: {fileID: 0}
+    - target: {fileID: 3121228550157341651, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: ReturnToHubMap
+      objectReference: {fileID: 0}
+    - target: {fileID: 3121228550157341651, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ButtonSFX, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3121228550157341651, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: GameManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3121228550157341651, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 3121228550157341651, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1874518098}
+    - target: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnClick
+      objectReference: {fileID: 0}
+    - target: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ButtonSFX, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 3515006799077599800, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3515006799077599800, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3515006799077599800, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3515006799077599800, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: GameManager, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 3550998031713821845, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_AnchorMax.y
@@ -20120,6 +20953,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4133849620765892087, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4616970978800520981, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4984492726213740483, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
@@ -20322,6 +21159,54 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -105
       objectReference: {fileID: 0}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1874518097}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 1874518090}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnClick
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: ParticleToggle
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ButtonSFX, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: GameManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036678721405380721, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 8184153285563829995, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_IsActive
       value: 1
@@ -20338,6 +21223,50 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8746880613931955385, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8746880613931955385, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8746880613931955385, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1874518100}
+    - target: {fileID: 8746880613931955385, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 1874518090}
+    - target: {fileID: 8746880613931955385, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8746880613931955385, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnClick
+      objectReference: {fileID: 0}
+    - target: {fileID: 8746880613931955385, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: ReturnToUserMapList
+      objectReference: {fileID: 0}
+    - target: {fileID: 8746880613931955385, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: ButtonSFX, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8746880613931955385, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: GameManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 8746880613931955385, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 8746880613931955385, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -20348,9 +21277,27 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 843945778}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8514847664985576134, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1874518101}
+    - targetCorrespondingSourceObject: {fileID: 9187193549312900601, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1874518100}
+    - targetCorrespondingSourceObject: {fileID: 5524268030994688908, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1874518099}
+    - targetCorrespondingSourceObject: {fileID: 7117159951275927480, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1874518098}
     - targetCorrespondingSourceObject: {fileID: 299599147525347692, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1874518088}
+    - targetCorrespondingSourceObject: {fileID: 4971863479364183028, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1874518097}
+    - targetCorrespondingSourceObject: {fileID: 6118746134335398941, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1507753963}
   m_SourcePrefab: {fileID: 100100000, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
 --- !u!1 &1874518087 stripped
 GameObject:
@@ -20399,6 +21346,96 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa90739f06d605c45850921d002a3745, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &1874518091 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6118746134335398941, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+  m_PrefabInstance: {fileID: 1874518086}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1874518092 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4971863479364183028, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+  m_PrefabInstance: {fileID: 1874518086}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1874518093 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7117159951275927480, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+  m_PrefabInstance: {fileID: 1874518086}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1874518094 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5524268030994688908, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+  m_PrefabInstance: {fileID: 1874518086}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1874518095 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9187193549312900601, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+  m_PrefabInstance: {fileID: 1874518086}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1874518096 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8514847664985576134, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+  m_PrefabInstance: {fileID: 1874518086}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1874518097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874518092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
+--- !u!114 &1874518098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874518093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
+--- !u!114 &1874518099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874518094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
+--- !u!114 &1874518100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874518095}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
+--- !u!114 &1874518101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874518096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1881977187
 GameObject:
   m_ObjectHideFlags: 0
@@ -20762,6 +21799,7 @@ GameObject:
   - component: {fileID: 1905528427}
   - component: {fileID: 1905528426}
   - component: {fileID: 1905528425}
+  - component: {fileID: 1905528429}
   m_Layer: 5
   m_Name: ChangePw Button
   m_TagString: Untagged
@@ -20853,6 +21891,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1905528429}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 1489183276}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -20915,6 +21965,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1905528422}
   m_CullTransparentMesh: 1
+--- !u!114 &1905528429
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1905528422}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1906047328
 GameObject:
   m_ObjectHideFlags: 0
@@ -21003,6 +22065,7 @@ GameObject:
   - component: {fileID: 1924085379}
   - component: {fileID: 1924085378}
   - component: {fileID: 1924085377}
+  - component: {fileID: 1924085381}
   m_Layer: 5
   m_Name: ChangePw Button
   m_TagString: Untagged
@@ -21094,6 +22157,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 1924085381}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 8238521}
         m_TargetAssemblyTypeName: com.example.SignInWithEmailPassword, App
         m_MethodName: ChangePw
@@ -21144,6 +22219,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1924085374}
   m_CullTransparentMesh: 1
+--- !u!114 &1924085381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1924085374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &1951923233
 GameObject:
   m_ObjectHideFlags: 0
@@ -22798,6 +23885,7 @@ GameObject:
   - component: {fileID: 2140667846}
   - component: {fileID: 2140667845}
   - component: {fileID: 2140667844}
+  - component: {fileID: 2140667847}
   m_Layer: 5
   m_Name: Button (1)
   m_TagString: Untagged
@@ -22869,6 +23957,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 2140667847}
+        m_TargetAssemblyTypeName: ButtonSFX, Assembly-CSharp
+        m_MethodName: OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 1874518090}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
         m_MethodName: SetColor2
@@ -22919,6 +24019,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2140667842}
   m_CullTransparentMesh: 1
+--- !u!114 &2140667847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2140667842}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
 --- !u!1 &2144696288
 GameObject:
   m_ObjectHideFlags: 0

@@ -38,6 +38,7 @@ public class PopUpManager : MonoBehaviour
     /// </summary>
     public void Show(string message)
     {
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.PopUp);
         _ = ShowAsync(message);
     }
 

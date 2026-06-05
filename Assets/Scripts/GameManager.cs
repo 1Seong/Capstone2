@@ -125,11 +125,13 @@ public class GameManager : MonoBehaviour
 
     public void ShowOption()
     {
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.Esc);
         optionPanel.SetActive(true);
     }
 
     public void HideOption()
     {
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.Esc);
         optionPanel.SetActive(false);
     }
 

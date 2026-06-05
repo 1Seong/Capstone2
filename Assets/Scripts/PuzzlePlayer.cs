@@ -115,6 +115,7 @@ public class PuzzlePlayer : MonoBehaviour
             ghostText.text = value.ToString();
             if (_currentGhostCount > 0 && value == 0) // 카운트가 꺼지는 경우
             {
+                AudioManager.Instance.PlaySFX(AudioManager.SFXType.GhostEnd);
                 /*
                 playerModel.GetComponent<MeshRenderer>().materials[0].DOFade(1f, 0.5f)
                     .SetEase(Ease.InOutSine).OnComplete(()=>ghostText.gameObject.SetActive(false));
@@ -124,6 +125,7 @@ public class PuzzlePlayer : MonoBehaviour
             }
             else if (_currentGhostCount == 0 && value > 0) // 켜지는 경우
             {
+                AudioManager.Instance.PlaySFX(AudioManager.SFXType.GhostGet);
                 ghostText.gameObject.SetActive(true);
                 GhostEffectController.Instance.Enter();
                 /*
@@ -145,6 +147,7 @@ public class PuzzlePlayer : MonoBehaviour
         {
             if (!_hasLaser && value) // 켜짐
             {
+                AudioManager.Instance.PlaySFX(AudioManager.SFXType.LaserGet);
                 _highlightCells.Clear();
                 var p = playerModel.position;
                 int x = (int)p.x, y = (int)p.y, z = (int)p.z;
@@ -379,6 +382,7 @@ public class PuzzlePlayer : MonoBehaviour
         
         _edgeCubeInitializer.Clear();
         GhostEffectController.Instance.Exit();
+        AudioManager.Instance.SetMasterMuffled(false);
     }
     #endregion
 
@@ -497,6 +501,7 @@ public class PuzzlePlayer : MonoBehaviour
         if (_roadLeftCount != 0) return;
 
         _isCleared = true;
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.MapClear);
         
         if (_isTesting)
         {
@@ -550,6 +555,7 @@ public class PuzzlePlayer : MonoBehaviour
                     || _rotAxis == 3 && (!_canRotate[cz] || dir.z != 0))))
         {
             // 이동 불가 애니메이션
+            AudioManager.Instance.PlaySFX(AudioManager.SFXType.MoveBlocked);
             await playerModel.DOShakePosition(0.2f, 0.2f, 20).AsyncWaitForCompletion().AsUniTask();
             return;
         }
@@ -586,6 +592,7 @@ public class PuzzlePlayer : MonoBehaviour
 
         if (_hasLaser)
         {
+            AudioManager.Instance.PlaySFX(AudioManager.SFXType.LaserShoot);
             HasLaser = false;
             var animTasks =  new List<UniTask>();
             do
@@ -603,6 +610,7 @@ public class PuzzlePlayer : MonoBehaviour
         else
         {
             // 플레이어 움직임 애니메이션 기다리고
+            AudioManager.Instance.PlaySFX(AudioManager.SFXType.Move);
             await playerModel.DOMove(nPos, playerMoveDuration).SetEase(playerMoveEase).AsyncWaitForCompletion()
                 .AsUniTask();
             // 색칠 및 아이템 사용
@@ -624,6 +632,7 @@ public class PuzzlePlayer : MonoBehaviour
         {
             case (char)TileType.PortalIn:
                 //Debug.Log(before);
+                AudioManager.Instance.PlaySFX(AudioManager.SFXType.Portal);
                 await playerModel.DOScale(Vector3.zero, playerMoveDuration).SetEase(Ease.InOutSine)
                     .AsyncWaitForCompletion().AsUniTask();
                 var afterPos = _portalPairDic[new Vector3Int(x, y, z)];
@@ -643,27 +652,34 @@ public class PuzzlePlayer : MonoBehaviour
                 break;
             
             case (char)TileType.Inv:
+                AudioManager.Instance.PlaySFX(AudioManager.SFXType.Inverter);
                 await InverterEffectAsync(x, y, z);
                 break;
             case (char)TileType.Laser:
                 HasLaser = true;
                 break;
             case (char)TileType.DashXp:
+                AudioManager.Instance.PlaySFX(AudioManager.SFXType.Dash);
                 await MovePlayer(new Vector3(1, 0, 0), false);
                 break;
             case (char)TileType.DashXm:
+                AudioManager.Instance.PlaySFX(AudioManager.SFXType.Dash);
                 await MovePlayer(new Vector3(-1, 0, 0), false);
                 break;
             case (char)TileType.DashYp:
+                AudioManager.Instance.PlaySFX(AudioManager.SFXType.Dash);
                 await MovePlayer(new Vector3(0, 1, 0), false);
                 break;
             case (char)TileType.DashYm:
+                AudioManager.Instance.PlaySFX(AudioManager.SFXType.Dash);
                 await MovePlayer(new Vector3(0, -1, 0), false);
                 break;
             case (char)TileType.DashZp:
+                AudioManager.Instance.PlaySFX(AudioManager.SFXType.Dash);
                 await MovePlayer(new Vector3(0, 0, 1), false);
                 break;
             case (char)TileType.DashZm:
+                AudioManager.Instance.PlaySFX(AudioManager.SFXType.Dash);
                 await MovePlayer(new Vector3(0, 0, -1), false);
                 break;
         }
@@ -715,9 +731,9 @@ public class PuzzlePlayer : MonoBehaviour
             foreach (var (cx, cy, cz) in waveGroups[dist])
             {
                 _tiles[cx, cy, cz].SimpleRender(_map[cx, cy, cz]);
-                allAnimTasks.Add(_tiles[cx, cy, cz].Pop());
+                allAnimTasks.Add(_tiles[cx, cy, cz].Pop(false));
             }
-
+            AudioManager.Instance.PlaySFX(AudioManager.SFXType.TileWave2);
             await UniTask.Delay(TimeSpan.FromSeconds(waveInterval));
         }
 
@@ -1063,6 +1079,7 @@ public class PuzzlePlayer : MonoBehaviour
             {
                 _layers[index].localRotation = Quaternion.identity;
             }).AsyncWaitForCompletion().AsUniTask();
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.Rotation);
         await UniTask.WhenAll(t1, t2);
     }
     
@@ -1086,7 +1103,8 @@ public class PuzzlePlayer : MonoBehaviour
     {
         if (_undoStack.Count == 0 || _isMoving || _isCleared) return;
         if (!GameManager.Instance.isPlaying) return;
-
+        
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.Undo);
         var s = _undoStack.Pop();
         _map = s.Map;
         HasLaser = false;

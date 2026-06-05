@@ -34,6 +34,7 @@ public class SceneChange : MonoBehaviour
     public async UniTask LoadScene(string sceneName, bool autoEndFade = true)
     {
         // 암전
+        //AudioManager.Instance.PlaySFX(AudioManager.SFXType.SceneSwitch);
         AudioManager.Instance.StopBGM();
         background.gameObject.SetActive(true);
         await background.DOFade(1f, 0.5f).AsyncWaitForCompletion().AsUniTask();
@@ -71,6 +72,7 @@ public class SceneChange : MonoBehaviour
     public async UniTask LoadSceneAddition(string sceneName, bool autoEndFade = true)
     {
         // 암전
+        //AudioManager.Instance.PlaySFX(AudioManager.SFXType.SceneSwitch);
         AudioManager.Instance.StopBGM();
         background.gameObject.SetActive(true);
         await background.DOFade(1f, 0.5f).AsyncWaitForCompletion().AsUniTask();
@@ -100,6 +102,7 @@ public class SceneChange : MonoBehaviour
     public async UniTask UnloadScene(string sceneName, bool autoEndFade = true)
     {
         // 암전
+        //AudioManager.Instance.PlaySFX(AudioManager.SFXType.SceneSwitch);
         AudioManager.Instance.StopBGM();
         background.gameObject.SetActive(true);
         await background.DOFade(1f, 0.5f).AsyncWaitForCompletion().AsUniTask();
