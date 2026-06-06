@@ -1299,6 +1299,7 @@ public class PuzzlePlayer : MonoBehaviour
     private void TransitionTo(Vector3 corner, Vector3 up, bool byPassIsMoving = false)
     {
         var target = Quaternion.LookRotation(-corner, up);
+        AudioManager.Instance.PlaySFX(AudioManager.SFXType.CamRotate);
         // Pivot 회전만 바꾸면 카메라는 자동으로 따라옴
         pivot.DORotateQuaternion(target, camMoveDuration).SetEase(camMoveEase).OnComplete(() => 
         {

@@ -49,7 +49,7 @@ public class AudioManager : MonoBehaviour
 
     public enum SFXType
     {
-        Click, Dash, Esc, GhostEnd, GhostGet, Inverter, LaserGet,
+        CamRotate, Click, Dash, Esc, GhostEnd, GhostGet, Inverter, LaserGet,
         LaserShoot, MapClear, MapRemove, Move, MoveBlocked, PopUp, Portal,
         Rotation, SceneSwitch, TileDelete, TileLoad, TileWave1, TileWave2, Undo
     }
