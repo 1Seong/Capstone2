@@ -9755,6 +9755,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 808923034}
   m_CullTransparentMesh: 1
+--- !u!114 &816126344 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
+  m_PrefabInstance: {fileID: 1874518086}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1874518093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Slider
 --- !u!1 &840507364
 GameObject:
   m_ObjectHideFlags: 0
@@ -21389,6 +21400,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+      - m_Target: {fileID: 648434063}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1839912638
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21548,6 +21571,18 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 1982586201}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 648434063}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
@@ -21910,7 +21945,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
@@ -21919,7 +21954,7 @@ PrefabInstance:
     - target: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1874518098}
+      objectReference: {fileID: 0}
     - target: {fileID: 3493747377867711722, guid: cd63b57219bd1ab4684982b6ea8efe1b, type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
@@ -22438,9 +22473,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1874518093}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0488851179316f4fb0e66f8b8e5837d, type: 3}
+  m_Script: {fileID: 11500000, guid: 7ab5fa0cd84a4fe4cad051ecfe8a5285, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ButtonSFX
+  m_EditorClassIdentifier: Assembly-CSharp::SliderReleaseSFX
+  slider: {fileID: 816126344}
 --- !u!114 &1874518099
 MonoBehaviour:
   m_ObjectHideFlags: 0
